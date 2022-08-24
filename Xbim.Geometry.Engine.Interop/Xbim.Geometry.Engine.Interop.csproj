@@ -78,5 +78,9 @@
     <Folder Include="images\" />
     <None Include="..\xbim-toolkit-icon.png" Pack="True" PackagePath="\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ThXbim.Geometry.Interface\ThXbim.Geometry.Interface.csproj" />
+  </ItemGroup>
  
 </Project>

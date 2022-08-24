@@ -43,7 +43,7 @@ namespace Xbim.Geometry.Engine.Interop
         /// <summary>
         /// name of the dll that that holds the geometry functionality
         /// </summary>
-        public string ModuleName
+        public virtual string ModuleName
         {
             get
             {

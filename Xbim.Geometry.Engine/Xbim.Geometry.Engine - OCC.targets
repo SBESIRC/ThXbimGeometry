@@ -3251,6 +3251,7 @@
     <ClInclude Include="XbimEdge.h" />
     <ClInclude Include="XbimEdgeSet.h" />
     <ClInclude Include="XbimFace.h" />
+	<ClInclude Include="XbimGeometryUtils.h" />
     <ClInclude Include="XbimFaceSet.h" />
     <ClInclude Include="XbimGeometryCreator.h" />
     <ClInclude Include="XbimGeometryObject.h" />
@@ -4676,6 +4677,9 @@
       <CompileAsManaged>true</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="XbimFace.cpp">
+      <CompileAsManaged>true</CompileAsManaged>
+    </ClCompile>
+	<ClCompile Include="XbimGeometryUtils.cpp">
       <CompileAsManaged>true</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="XbimFaceSet.cpp">

@@ -175,6 +175,9 @@
     <Reference Include="System.Runtime">
       <HintPath>..\Xbim.Geometry.Engine.Interop\bin\$(Configuration)\net472\System.Runtime.dll</HintPath>
     </Reference>
+	 <Reference Include="ThXbim.Geometry.Interface">
+      <HintPath>..\Xbim.Geometry.Engine.Interop\bin\$(Configuration)\net472\ThXbim.Geometry.Interface.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">

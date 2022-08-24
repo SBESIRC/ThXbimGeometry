@@ -9462,6 +9462,9 @@
     <ClInclude Include="OCC\src\BOPDS\BOPDS_VectorOfVectorOfPair.hxx">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XbimGeometryUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -15363,6 +15366,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XbimProgressMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XbimGeometryUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

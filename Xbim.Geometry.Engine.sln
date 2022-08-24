@@ -29,6 +29,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xbim.ModelGeometry.Scene", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XbimRegression", "Xbim.Geometry.Regression\XbimRegression.csproj", "{592094B6-DA55-40BC-8030-0E9B6EFE36CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThXbim.Geometry.Interface", "ThXbim.Geometry.Interface\ThXbim.Geometry.Interface.csproj", "{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +97,18 @@ Global
 		{592094B6-DA55-40BC-8030-0E9B6EFE36CC}.Release|x64.Build.0 = Release|Any CPU
 		{592094B6-DA55-40BC-8030-0E9B6EFE36CC}.Release|x86.ActiveCfg = Release|Any CPU
 		{592094B6-DA55-40BC-8030-0E9B6EFE36CC}.Release|x86.Build.0 = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|x64.Build.0 = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Debug|x86.Build.0 = Debug|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|x64.ActiveCfg = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|x64.Build.0 = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|x86.ActiveCfg = Release|Any CPU
+		{8B6ABBFE-8877-42B3-9676-E76F7CF9F616}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

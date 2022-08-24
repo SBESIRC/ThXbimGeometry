@@ -45,7 +45,7 @@ namespace Xbim.Geometry.Engine.Interop
                 _logger.LogTrace("Loaded {fullName} from {codebase}", ass.GetName().FullName, ass.CodeBase);
                 var t = ass.GetType("Xbim.Geometry.XbimGeometryCreator");
                 var obj = Activator.CreateInstance(t);
-                _logger.LogTrace("Created Instance of {fullName}", obj.GetType().FullName);
+                _logger.LogTrace("Created Instance of {fullName}", obj.GetType().FullName); 
                 if (obj == null)
                 {
                     throw new Exception("Failed to create Geometry Engine");
