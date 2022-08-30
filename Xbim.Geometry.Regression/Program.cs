@@ -17,24 +17,28 @@ namespace XbimRegression
             //    return;
             //var processor = new BatchProcessor(arguments);
             //processor.Run();
-            MyTest(@"D:\文档\三维平台项目\随坡图纸\建筑结构标高贴合(1)\建筑结构标高贴合\√咸宁际华园H-20#\FL1KA0BZ_S-plan.ifc");
+            string path1 = @"D:\文档\三维平台项目\随坡图纸\建筑结构标高贴合(1)\建筑结构标高贴合\√咸宁际华园H-20#\FL1KA0BZ_S-plan.ifc";
+            string path2 = @"D:\文档\三维平台项目\随坡图纸\建筑结构标高贴合(1)\建筑结构标高贴合\√咸宁际华园H-20#\FLA0EXWJ_A10-H-20#线框文件.ifc";
+            MyTest(path1, path2);
+            
         }
 
-        public static void MyTest(string filePath1)
+        public static void MyTest(string filePath1, string filePath2)
         {
             using (var model = IfcStore.Open(filePath1))
+            using (var roofModel = IfcStore.Open(filePath2))
             {
                 //...do something with the model
                 var specificElement = model.Instances.OfType<IfcBuildingElementProxyType>().ToList();
-                var s = model.Instances.OfType<IfcBuildingElement>().ToList();
                 var beams = model.Instances.Where<IfcBuildingElement>(x => x.Name == "承重结构梁").ToList();
-                var beam = beams.Where<IfcBuildingElement>(x => x.GlobalId == "3_LamJC_X4k8vXXDsAgh1V").ToList();
+                var beam = beams.Where<IfcBuildingElement>(x => x.GlobalId == "2_Fy5vstD2ZBlaQGH_MMAd").ToList();
 
-                foreach (var element in beam)
-                {
-                    CreateSolidFaceService createSolidFaceService = new CreateSolidFaceService();
-                    createSolidFaceService.CreateFaces(element);
-                }
+                var specificRoof = roofModel.Instances.OfType<IfcBuildingElementProxyType>().ToList();
+                var roofs = roofModel.Instances.Where<IfcBuildingElement>(x => x.Name == "常规模型").ToList();
+                var roof = roofs.Where(x => x.GlobalId == "1w70dCYSL3Che9XNKZPZA$").ToList();
+
+                CreateSolidFaceService createSolidFaceService = new CreateSolidFaceService();
+                createSolidFaceService.CreateFaces(beam.First(), roof.First());
             }
         }
     }

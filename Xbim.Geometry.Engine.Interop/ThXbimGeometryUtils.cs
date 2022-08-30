@@ -42,6 +42,7 @@ namespace Xbim.Geometry.Engine.Interop
                 throw new FileLoadException($"Failed to load Xbim.Geometry.Engine{conventions.Suffix}.dll", e);
             }
         }
+
         /// <summary>
         /// 判断两个face是否相交
         /// </summary>
@@ -72,6 +73,12 @@ namespace Xbim.Geometry.Engine.Interop
         public IXbimFace FaceUnion(List<IXbimFace> faceSet)
         {
             return _engine.FaceUnion(faceSet);
+        }
+
+
+        public void CurveProjectToSurface(XbimPoint3D sp, XbimPoint3D ep, IXbimFace face)
+        {
+            _engine.CurveProjectToSurface(sp, ep, face);
         }
     }
 }

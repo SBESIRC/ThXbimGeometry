@@ -9465,6 +9465,9 @@
     <ClInclude Include="XbimGeometryUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="XbimPointExtensionUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -15369,6 +15372,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XbimGeometryUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="XbimPointExtensionUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

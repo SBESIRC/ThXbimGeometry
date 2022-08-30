@@ -13,7 +13,7 @@ namespace XbimRegression
 {
     public class CreateSolidFaceService
     {
-        public void CreateFaces(IfcBuildingElement element)
+        public void CreateFaces(IfcBuildingElement element, IfcBuildingElement roof)
         {
             var allPolyLoop = new List<IfcPolyLoop>();
             foreach (var rep in element.Representation.Representations)
@@ -30,20 +30,38 @@ namespace XbimRegression
                 }
             }
 
-            CreateNtsElementFace(allPolyLoop);
+            var allRoofPolyLoop = new List<IfcPolyLoop>();
+            foreach (var rep in roof.Representation.Representations)
+            {
+                foreach (var item in rep.Items)
+                {
+                    foreach (var face in ((IfcManifoldSolidBrep)item).Outer.CfsFaces)
+                    {
+                        foreach (var bound in face.Bounds)
+                        {
+                            allRoofPolyLoop.Add((IfcPolyLoop)bound.Bound);
+                        }
+                    }
+                }
+            }
+
+            FilterFace filterFace = new FilterFace();
+            var faceLst = CreateOCCTElementFace(allPolyLoop);
+            var beamPts = filterFace.FilterBeamFace(faceLst);     //获取梁面点
+
+            var roofFaceElm = CreateOCCTElementFace(allRoofPolyLoop);
+            var roofFaces = filterFace.FilterRoofFace(roofFaceElm);     //获取屋面面
+
+            FollowTheSlopeService followTheSlopeService = new FollowTheSlopeService(beamPts, roofFaces);
+            followTheSlopeService.FollowSlope();
         }
 
-        private void CreateNtsElementFace(List<IfcPolyLoop> ifcPolyLoops)
+        private List<List<IXbimFace>> CreateOCCTElementFace(List<IfcPolyLoop> ifcPolyLoops)
         {
             var xbimfaceLst = CreateOCCTTriangleFace(ifcPolyLoops);
             var faceLst = ClassifyTriangle(xbimfaceLst);
-            ThXbimGeometryUtils thXbimGeometryUtils = new ThXbimGeometryUtils();
-            List<IXbimFace> allUniFaces = new List<IXbimFace>();
-            foreach (var faces in faceLst)
-            {
-                var uninFace = thXbimGeometryUtils.FaceUnion(faces);
-                allUniFaces.Add(uninFace);
-            }
+
+            return faceLst;
         }
 
         /// <summary>
@@ -57,7 +75,7 @@ namespace XbimRegression
             foreach (var loop in ifcPolyLoops)
             {
                 XbimGeometryEngine xbimGeometryEngine = new XbimGeometryEngine();
-                var face = xbimGeometryEngine.CreateFace(loop, null);
+                var face = xbimGeometryEngine.CreateFace(loop, null); 
                 allFaces.Add(face);
             }
 
@@ -70,7 +88,7 @@ namespace XbimRegression
             foreach (var face in faces)
             {
                 var dir = face.Normal;
-                var dirKeys = faceGroup.Keys.Where(x => x == dir || x == dir.Negated()).ToList();
+                var dirKeys = faceGroup.Keys.Where(x => x.IsEqual(dir, 0.001) || x.IsEqual(dir.Negated(), 0.001)).ToList();
                 if (dirKeys.Count > 0)
                 {
                     faceGroup[dirKeys.First()].Add(face);
@@ -96,13 +114,6 @@ namespace XbimRegression
                         faceLst.Add(firLinestring);
                     }
 
-                    foreach (var item in groupLineStrings)
-                    {
-                        foreach (var sss in faceLst)
-                        {
-                            var res = thXbimGeometryUtils.FaceIntersects(item, sss);
-                        }
-                    }
                     var closeLines = groupLineStrings.Where(x => faceLst.Any(y => thXbimGeometryUtils.FaceIntersects(x, y))).ToList();
                     if (closeLines.Count <= 0)
                     {
