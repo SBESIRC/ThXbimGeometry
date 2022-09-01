@@ -54,7 +54,7 @@ namespace Xbim
             auto tempCurve = adaptorCurve.Curve();
             
             XbimFace^ xFace = dynamic_cast<XbimFace^>(face);
-            Handle(Geom_Plane) aPlane = Handle(Geom_Plane)::DownCast(BRep_Tool::Surface(xFace));
+            Handle(Geom_Plane) aPlane = Handle(Geom_Plane)::DownCast(BRep_Tool::Surface(xFace)); 
             gp_Dir dir(0, 0, 1);
             Handle(Geom_Curve) resCurve = GeomProjLib::ProjectOnPlane(tempCurve, aPlane, dir, Standard_True);
             
@@ -71,8 +71,20 @@ namespace Xbim
             auto adaptorCurve1 = GeomAdaptor_Curve(aCurve, f1, l1);
             auto tempCurve1 = adaptorCurve1.Curve();
 
-            GeomAPI_IntCS Intersector1(tempCurve1, BRep_Tool::Surface(xFace));
+            GeomAPI_IntCS Intersector1(aCurve1, BRep_Tool::Surface(xFace));
             auto nums1 = Intersector1.NbPoints();
+
+            //Handle_Geom_Curve Curve1 = new Geom_Line(gp_Lin(gp_Ax1(spiont, Xax1.Direction())));
+            //Handle_Geom_Curve Curve2 = new Geom_Line(gp_Lin(gp_Ax1(epiont, Yax1.Direction())));
+            //Handle_Geom_Curve Curve3 = new Geom_Line(gp_Lin(gp_Ax1(spiont, Yax1.Direction())));
+            //Handle_Geom_Curve Curve4 = new Geom_Line(gp_Lin(gp_Ax1(epiont, Xax1.Direction())));
+
+            //GeomAPI_ExtremaCurveCurve InterCurve1(Curve1, Curve2);//这里有问题，整个函数可以运行出去，但是这个会发生一些未知错误
+            //GeomAPI_ExtremaCurveCurve InterCurve2(Curve3, Curve4);
+
+            //gp_Pnt  p1, p2, p3, p4;
+            //InterCurve1.NearestPoints(p1, p2);
+            //InterCurve2.NearestPoints(p3, p4);
         }
     }
 }
