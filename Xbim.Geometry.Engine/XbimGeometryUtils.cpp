@@ -5,6 +5,8 @@
 #include <BRepLib.hxx>
 #include<GeomAdaptor_Curve.hxx>
 #include <Geom_Line.hxx>
+#include <GeomAPI_ExtremaCurveCurve.hxx>
+#include <BRep_Builder.hxx>
 
 namespace Xbim
 {
@@ -57,10 +59,30 @@ namespace Xbim
             Handle(Geom_Plane) aPlane = Handle(Geom_Plane)::DownCast(BRep_Tool::Surface(xFace));
             gp_Dir dir(0, 0, 1);
             Handle(Geom_Curve) resCurve = GeomProjLib::ProjectOnPlane(tempCurve, aPlane, dir, Standard_True);
-            
+
             Handle(Geom_Curve) curve1 = GeomProjLib::Project(tempCurve, BRep_Tool::Surface(xFace));
             GeomAPI_IntCS Intersector(resCurve, BRep_Tool::Surface(xFace));
-            auto nums = Intersector.NbPoints();
+            auto nums2 = Intersector.NbPoints();
+
+            TopoDS_Edge E;
+            Standard_Real tol = 0.0001;
+            BRep_Builder builder;
+            builder.MakeEdge(E, resCurve, tol);
+            auto qqqq = BRep_Tool::Curve(E, f, l);
+           /* BOPAlgo_Section build;
+            build.AddArgument(xFace);
+            build.AddArgument(xOtherFace);
+            build.Perform();
+            BOPDS_DS* ds = build.PDS();
+            BOPDS_VectorOfInterfEE& ee = ds->InterfEE();*/
+
+
+
+
+
+
+
+
 
             //auto aPnt11 = gp_Pnt((sp.X + ep.X)/ 2, (sp.Y + ep.Y) / 2, (sp.Z + ep.Z) / 2);
             auto aPnt11 = gp_Pnt(sp.X, sp.Y, sp.Z);
@@ -73,6 +95,8 @@ namespace Xbim
 
             GeomAPI_IntCS Intersector1(tempCurve1, BRep_Tool::Surface(xFace));
             auto nums1 = Intersector1.NbPoints();
+
+            //GeomAPI_ExtremaCurveCurve extrem(resCurve, BRep_Tool::Surface(xFace));
         }
     }
 }
