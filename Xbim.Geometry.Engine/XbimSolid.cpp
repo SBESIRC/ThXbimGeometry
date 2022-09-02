@@ -81,7 +81,7 @@
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <ShapeUpgrade_UnifySameDomain.hxx>
 #include <BRepGProp_Face.hxx>
-//#include <BRepAlgo_Section.hxx>
+#include <BRepAlgo_Section.hxx>
 #include <GeomProjLib.hxx>
 #include <BRepOffsetAPI_NormalProjection.hxx>
 #include <TopTools_Array1OfShape.hxx>
@@ -90,7 +90,7 @@
 #include <Geom_Ellipse.hxx>
 #include <gp_Ax1.hxx>
 #include <Geom_BSplineSurface.hxx>
-//#include <BRepAdaptor_HSurface.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <CSLib_NormalStatus.hxx>
 #include <CSLib.hxx>
 
@@ -533,160 +533,160 @@ namespace Xbim
 				gp_Pnt pos;
 				prop.Normal(u, v, pos, norm);
 				norm.Normalize();
-				//Handle(BRepAdaptor_HSurface) adaptedSurface = new BRepAdaptor_HSurface(refSurface);
-				//GeomAbs_Shape cont = (adaptedSurface->UContinuity() < adaptedSurface->VContinuity()) ?
-				//	adaptedSurface->UContinuity() : adaptedSurface->VContinuity();
-				//gp_Vec d1U, d1V;
-				//adaptedSurface->D1(0, 0, pos, d1U, d1V);
-				//Standard_Real MagTol = 0.000000001;
-				//CSLib_NormalStatus NStatus;
-				//gp_Dir normal;
-				//CSLib::Normal(d1U, d1V, MagTol, NStatus, normal);
+				Handle(BRepAdaptor_HSurface) adaptedSurface = new BRepAdaptor_HSurface(refSurface);
+				GeomAbs_Shape cont = (adaptedSurface->UContinuity() < adaptedSurface->VContinuity()) ?
+					adaptedSurface->UContinuity() : adaptedSurface->VContinuity();
+				gp_Vec d1U, d1V;
+				adaptedSurface->D1(0, 0, pos, d1U, d1V);
+				Standard_Real MagTol = 0.000000001;
+				CSLib_NormalStatus NStatus;
+				gp_Dir normal;
+				CSLib::Normal(d1U, d1V, MagTol, NStatus, normal);
 
-				//bool ignoreRefSurface = false;
-				//if (NStatus != CSLib_Defined) //this avoids cases where the swept surface is incompatible with OCC (i.e. in the same plane as the sweep and Status is singular)
-				//{
-				//	if (cont == GeomAbs_C0 ||
-				//		cont == GeomAbs_C1)
-				//	{
-				//		ignoreRefSurface = true; //if this occurs projection onto the sweep will fails
-				//	}
-				//}
+				bool ignoreRefSurface = false;
+				if (NStatus != CSLib_Defined) //this avoids cases where the swept surface is incompatible with OCC (i.e. in the same plane as the sweep and Status is singular)
+				{
+					if (cont == GeomAbs_C0 ||
+						cont == GeomAbs_C1)
+					{
+						ignoreRefSurface = true; //if this occurs projection onto the sweep will fails
+					}
+				}
 
-				//TopoDS_Edge edge;
-				//Standard_Real uoe;
-				//cc.Edge(0, edge, uoe);
-				//edgeFixer.FixAddPCurve(edge, refSurface, false, precision); //add pcurves
-				////BRepTools::Write(edge, "c://tmp//edge.");
+				TopoDS_Edge edge;
+				Standard_Real uoe;
+				cc.Edge(0, edge, uoe);
+				edgeFixer.FixAddPCurve(edge, refSurface, false, precision); //add pcurves
+				//BRepTools::Write(edge, "c://tmp//edge.");
 
-				////move the wire to the start point
+				//move the wire to the start point
 
-				//Standard_Real l, f;
-				//TopLoc_Location loc;
-				//Handle(Geom_Curve) curve = BRep_Tool::Curve(edge, loc, f, l);
-				//gp_Pnt p1;
-				//gp_Vec tangent;
-				//
-				//curve->D1(f, p1, tangent);
-				//tangent.Normalize();
-				////tangent.Reverse();
-				//gp_Ax3 toAx3(p1, tangent, norm); //Zdir pointing tangentally to sweep, XDir perpendicular to the ref surfac
-				//gp_Ax3 fromAx3(gp::Origin(), faceStartZDir, faceStartXDir);
-				//gp_Trsf trsf;
-				//trsf.SetTransformation(toAx3, fromAx3);
-				//TopLoc_Location topLoc(trsf);
-				//faceStartOcc.Move(topLoc);
-				////BRepTools::Write(faceStartOcc, "c://tmp//facePositioned.");
-				//TopoDS_Wire outerBound = ShapeAnalysis::OuterWire(faceStartOcc);
+				Standard_Real l, f;
+				TopLoc_Location loc;
+				Handle(Geom_Curve) curve = BRep_Tool::Curve(edge, loc, f, l);
+				gp_Pnt p1;
+				gp_Vec tangent;
+				
+				curve->D1(f, p1, tangent);
+				tangent.Normalize();
+				//tangent.Reverse();
+				gp_Ax3 toAx3(p1, tangent, norm); //Zdir pointing tangentally to sweep, XDir perpendicular to the ref surfac
+				gp_Ax3 fromAx3(gp::Origin(), faceStartZDir, faceStartXDir);
+				gp_Trsf trsf;
+				trsf.SetTransformation(toAx3, fromAx3);
+				TopLoc_Location topLoc(trsf);
+				faceStartOcc.Move(topLoc);
+				//BRepTools::Write(faceStartOcc, "c://tmp//facePositioned.");
+				TopoDS_Wire outerBound = ShapeAnalysis::OuterWire(faceStartOcc);
 
-				//BRepOffsetAPI_MakePipeShell pipeMaker1(sweepOcc);
-				//if (!ignoreRefSurface) //no pint in adding a planar ref surface normal dir will be constant
-				//	pipeMaker1.SetMode(refSurface); //project normal to ref surface
-				//pipeMaker1.SetTransitionMode(transitionMode);
-				//pipeMaker1.Add(outerBound, TopExp::FirstVertex(edge), Standard_False, Standard_False);
-				//try
-				//{
-				//	pipeMaker1.Build();
-				//}
-				//catch (Standard_Failure sf)
-				//{
+				BRepOffsetAPI_MakePipeShell pipeMaker1(sweepOcc);
+				if (!ignoreRefSurface) //no pint in adding a planar ref surface normal dir will be constant
+					pipeMaker1.SetMode(refSurface); //project normal to ref surface
+				pipeMaker1.SetTransitionMode(transitionMode);
+				pipeMaker1.Add(outerBound, TopExp::FirstVertex(edge), Standard_False, Standard_False);
+				try
+				{
+					pipeMaker1.Build();
+				}
+				catch (Standard_Failure sf)
+				{
 
-				//	retflag = -5;
-				//	return;
-				//}
-				//catch (...)
-				//{
+					retflag = -5;
+					return;
+				}
+				catch (...)
+				{
 
-				//	retflag = -5;
-				//	return;
-				//}
+					retflag = -5;
+					return;
+				}
 
-				//if (pipeMaker1.IsDone())
-				//{
-				//	TopoDS_Wire firstOuter = TopoDS::Wire(pipeMaker1.FirstShape().Reversed());
-				//	TopoDS_Wire lastOuter = TopoDS::Wire(pipeMaker1.LastShape());
-				//	BRepBuilderAPI_MakeFace firstMaker(firstOuter);
-				//	BRepBuilderAPI_MakeFace lastMaker(lastOuter);
+				if (pipeMaker1.IsDone())
+				{
+					TopoDS_Wire firstOuter = TopoDS::Wire(pipeMaker1.FirstShape().Reversed());
+					TopoDS_Wire lastOuter = TopoDS::Wire(pipeMaker1.LastShape());
+					BRepBuilderAPI_MakeFace firstMaker(firstOuter);
+					BRepBuilderAPI_MakeFace lastMaker(lastOuter);
 
 
-				//	TopTools_ListOfShape innerWires;
-				//	for (TopExp_Explorer wireEx(faceStartOcc, TopAbs_WIRE); wireEx.More(); wireEx.Next())
-				//	{
-				//		if (!wireEx.Current().IsEqual(outerBound))
-				//			innerWires.Append(TopoDS::Wire(wireEx.Current()));
-				//	}
-				//	TopTools_ListIteratorOfListOfShape itl;
-				//	for (itl.Initialize(innerWires); itl.More(); itl.Next())
-				//	{
-				//		//it is a hollow section so we need to build the inside
-				//		BRepOffsetAPI_MakePipeShell pipeMaker2(sweepOcc);
-				//		TopoDS_Wire innerBoundStart = TopoDS::Wire(itl.Value());
-				//		pipeMaker2.SetTransitionMode(transitionMode);
-				//		pipeMaker1.SetMode(refSurface);
-				//		pipeMaker2.Add(innerBoundStart);
-				//		pipeMaker2.Build();
-				//		if (pipeMaker2.IsDone())
-				//		{
-				//			for (TopExp_Explorer explr(pipeMaker2.Shape(), TopAbs_FACE); explr.More(); explr.Next())
-				//			{
-				//				b.AddShellFace(shell, TopoDS::Face(explr.Current().Reversed()));
-				//			}
-				//		}
-				//		firstMaker.Add(TopoDS::Wire(pipeMaker2.FirstShape()));
-				//		lastMaker.Add(TopoDS::Wire(pipeMaker2.LastShape().Reversed()));
-				//	}
-				//	b.AddShellFace(shell, firstMaker.Face());
-				//	b.AddShellFace(shell, lastMaker.Face());
-				//	for (TopExp_Explorer explr(pipeMaker1.Shape(), TopAbs_FACE); explr.More(); explr.Next())
-				//	{
-				//		b.AddShellFace(shell, TopoDS::Face(explr.Current()));
-				//	}
-				//	TopoDS_Solid solid;
-				//	BRep_Builder bs;
-				//	bs.MakeSolid(solid);
-				//	bs.Add(solid, shell);
-				//	BRepClass3d_SolidClassifier sc(solid);
-				//	sc.PerformInfinitePoint(Precision::Confusion());
-				//	if (sc.State() == TopAbs_IN)
-				//	{
-				//		bs.MakeSolid(solid);
-				//		shell.Reverse();
-				//		bs.Add(solid, shell);
-				//	}
+					TopTools_ListOfShape innerWires;
+					for (TopExp_Explorer wireEx(faceStartOcc, TopAbs_WIRE); wireEx.More(); wireEx.Next())
+					{
+						if (!wireEx.Current().IsEqual(outerBound))
+							innerWires.Append(TopoDS::Wire(wireEx.Current()));
+					}
+					TopTools_ListIteratorOfListOfShape itl;
+					for (itl.Initialize(innerWires); itl.More(); itl.Next())
+					{
+						//it is a hollow section so we need to build the inside
+						BRepOffsetAPI_MakePipeShell pipeMaker2(sweepOcc);
+						TopoDS_Wire innerBoundStart = TopoDS::Wire(itl.Value());
+						pipeMaker2.SetTransitionMode(transitionMode);
+						pipeMaker1.SetMode(refSurface);
+						pipeMaker2.Add(innerBoundStart);
+						pipeMaker2.Build();
+						if (pipeMaker2.IsDone())
+						{
+							for (TopExp_Explorer explr(pipeMaker2.Shape(), TopAbs_FACE); explr.More(); explr.Next())
+							{
+								b.AddShellFace(shell, TopoDS::Face(explr.Current().Reversed()));
+							}
+						}
+						firstMaker.Add(TopoDS::Wire(pipeMaker2.FirstShape()));
+						lastMaker.Add(TopoDS::Wire(pipeMaker2.LastShape().Reversed()));
+					}
+					b.AddShellFace(shell, firstMaker.Face());
+					b.AddShellFace(shell, lastMaker.Face());
+					for (TopExp_Explorer explr(pipeMaker1.Shape(), TopAbs_FACE); explr.More(); explr.Next())
+					{
+						b.AddShellFace(shell, TopoDS::Face(explr.Current()));
+					}
+					TopoDS_Solid solid;
+					BRep_Builder bs;
+					bs.MakeSolid(solid);
+					bs.Add(solid, shell);
+					BRepClass3d_SolidClassifier sc(solid);
+					sc.PerformInfinitePoint(Precision::Confusion());
+					if (sc.State() == TopAbs_IN)
+					{
+						bs.MakeSolid(solid);
+						shell.Reverse();
+						bs.Add(solid, shell);
+					}
 
-				//	if (BRepCheck_Analyzer(solid, Standard_False).IsValid() == Standard_False)
-				//	{
-				//		ShapeFix_Shape shapeFixer(solid);
-				//		shapeFixer.SetPrecision(precision);
-				//		shapeFixer.SetMinTolerance(precision);
-				//		shapeFixer.FixFaceTool()->FixIntersectingWiresMode() = Standard_True;
-				//		shapeFixer.FixFaceTool()->FixOrientationMode() = Standard_True;
-				//		shapeFixer.FixFaceTool()->FixWireTool()->FixAddCurve3dMode() = Standard_True;
-				//		shapeFixer.FixFaceTool()->FixWireTool()->FixIntersectingEdgesMode() = Standard_True;
-				//		if (shapeFixer.Perform())
-				//		{
-				//			TopoDS_Shell sshell;
-				//			b.MakeShell(sshell);
-				//			for (TopExp_Explorer explr(shapeFixer.Shape(), TopAbs_FACE); explr.More(); explr.Next())
-				//			{
-				//				b.AddShellFace(sshell, TopoDS::Face(explr.Current()));
-				//			}
-				//			bs.MakeSolid(result);
-				//			bs.Add(result, sshell);
-				//		}
-				//		else
-				//			result = solid;
-				//	}
-				//	else
-				//		result = solid;
+					if (BRepCheck_Analyzer(solid, Standard_False).IsValid() == Standard_False)
+					{
+						ShapeFix_Shape shapeFixer(solid);
+						shapeFixer.SetPrecision(precision);
+						shapeFixer.SetMinTolerance(precision);
+						shapeFixer.FixFaceTool()->FixIntersectingWiresMode() = Standard_True;
+						shapeFixer.FixFaceTool()->FixOrientationMode() = Standard_True;
+						shapeFixer.FixFaceTool()->FixWireTool()->FixAddCurve3dMode() = Standard_True;
+						shapeFixer.FixFaceTool()->FixWireTool()->FixIntersectingEdgesMode() = Standard_True;
+						if (shapeFixer.Perform())
+						{
+							TopoDS_Shell sshell;
+							b.MakeShell(sshell);
+							for (TopExp_Explorer explr(shapeFixer.Shape(), TopAbs_FACE); explr.More(); explr.Next())
+							{
+								b.AddShellFace(sshell, TopoDS::Face(explr.Current()));
+							}
+							bs.MakeSolid(result);
+							bs.Add(result, sshell);
+						}
+						else
+							result = solid;
+					}
+					else
+						result = solid;
 
-				//	result.Closed(Standard_True);
+					result.Closed(Standard_True);
 
-				//	ShapeFix_ShapeTolerance fTol;
-				//	fTol.LimitTolerance(result, precision);
-				//	//BRepTools::Write(result, "c://tmp//result.");
-				//	return;
-				//}
+					ShapeFix_ShapeTolerance fTol;
+					fTol.LimitTolerance(result, precision);
+					//BRepTools::Write(result, "c://tmp//result.");
+					return;
+				}
 			}
 			catch (Standard_Failure sf)
 			{

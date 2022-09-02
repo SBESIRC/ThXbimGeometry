@@ -41,12 +41,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Xbim.Geometry.Engine.Interop\Xbim.Geometry.Engine.Interop.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Xbim.ModelGeometry.Scene">
-      <HintPath>..\Xbim.ModelGeometry.Scene\obj\Debug\net472\Xbim.ModelGeometry.Scene.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj" />
   </ItemGroup>
 
   <ItemGroup>
