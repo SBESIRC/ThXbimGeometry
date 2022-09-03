@@ -24,9 +24,6 @@
     <ProjectReference Include="..\Xbim.ModelGeometry.Scene\Xbim.ModelGeometry.Scene.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Xbim.Geometry.Engine.Interop\bin\$(Configuration)\net472\Xbim.Geometry.Engine32.dll" Link="Xbim.Geometry.Engine32.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="..\Xbim.Geometry.Engine.Interop\bin\$(Configuration)\net472\Xbim.Geometry.Engine64.dll" Link="Xbim.Geometry.Engine64.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
