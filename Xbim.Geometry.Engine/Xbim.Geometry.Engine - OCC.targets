@@ -39,7 +39,7 @@
       <CompileAs>Default</CompileAs>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <AdditionalIncludeDirectories>$(OCCT_DIR)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\OCCUtils\include;$(BOOST71_DIR);$(OCCT_DIR)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
 
@@ -60,7 +60,7 @@
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalOptions>/ignore:4248 </AdditionalOptions>
       <Profile>false</Profile>
-      <AdditionalDependencies>TKBO.lib;TKG2d.lib;TKG3d.lib;TKBool.lib;TKPrim.lib;TKMath.lib;TKernel.lib;TKFillet.lib;TKOffset.lib;TKBRep.lib;TKMesh.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKShHealing.lib;TKGeomBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKXSBase.lib;TKSTEP.lib;TKIGES.lib;TKXCAF.lib;TKXDESTEP.lib;TKLCAF.lib;TKBO.lib;TKG2d.lib;TKG3d.lib;TKBool.lib;TKPrim.lib;TKMath.lib;TKernel.lib;TKFillet.lib;TKOffset.lib;TKBRep.lib;TKMesh.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKShHealing.lib;TKGeomBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OCCT_DIR)\win64\vc14\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -102,7 +102,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>NDEBUG;HAVE_NO_DLL;No_Exception;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;$(CSF_DEFINES);OCC_6_9_SUPPORTED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(OCCT_DIR)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\OCCUtils\include;$(BOOST71_DIR);$(OCCT_DIR)\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
 
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
 
@@ -123,7 +123,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalOptions>/ignore:4248 </AdditionalOptions>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>TKBO.lib;TKG2d.lib;TKG3d.lib;TKBool.lib;TKPrim.lib;TKMath.lib;TKernel.lib;TKFillet.lib;TKOffset.lib;TKBRep.lib;TKMesh.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKShHealing.lib;TKGeomBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>TKXSBase.lib;TKSTEP.lib;TKIGES.lib;TKXCAF.lib;TKXDESTEP.lib;TKLCAF.lib;TKBO.lib;TKG2d.lib;TKG3d.lib;TKBool.lib;TKPrim.lib;TKMath.lib;TKernel.lib;TKFillet.lib;TKOffset.lib;TKBRep.lib;TKMesh.lib;TKTopAlgo.lib;TKGeomAlgo.lib;TKShHealing.lib;TKGeomBase.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(OCCT_DIR)\win64\vc14\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -152,6 +152,34 @@
     <ClInclude Include="XbimVertexSet.h" />
     <ClInclude Include="XbimWire.h" />
     <ClInclude Include="XbimWireSet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OCCUtils\include\occutils\Axis.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Boolean.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Compound.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Curve.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Curves.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Direction.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Edge.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Equality.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Exceptions.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\ExtendedSTEP.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Face.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Fillet.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\IO.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Line.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\ListUtils.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Pipe.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Plane.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Point.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Primitive.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\PrintOCC.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Shape.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\ShapeComponents.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Shapes.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\STEPExport.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Surface.hxx" />
+    <ClInclude Include="OCCUtils\include\occutils\Wire.hxx" />
   </ItemGroup>
   <ItemGroup Label="OpenCascade">
     <ClCompile Include="XbimCompound.cpp">
@@ -220,6 +248,30 @@
     <ClCompile Include="XbimWireSet.cpp">
       <CompileAsManaged>true</CompileAsManaged>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="OCCUtils\src\Axis.cxx" />
+    <ClCompile Include="OCCUtils\src\Boolean.cxx" />
+    <ClCompile Include="OCCUtils\src\Compound.cxx" />
+    <ClCompile Include="OCCUtils\src\Curve.cxx" />
+    <ClCompile Include="OCCUtils\src\Direction.cxx" />
+    <ClCompile Include="OCCUtils\src\Edge.cxx" />
+    <ClCompile Include="OCCUtils\src\Equality.cxx" />
+    <ClCompile Include="OCCUtils\src\ExtendedSTEP.cxx" />
+    <ClCompile Include="OCCUtils\src\Face.cxx" />
+    <ClCompile Include="OCCUtils\src\Fillet.cxx" />
+    <ClCompile Include="OCCUtils\src\IO.cxx" />
+    <ClCompile Include="OCCUtils\src\Line.cxx" />
+    <ClCompile Include="OCCUtils\src\Pipe.cxx" />
+    <ClCompile Include="OCCUtils\src\Plane.cxx" />
+    <ClCompile Include="OCCUtils\src\Point.cxx" />
+    <ClCompile Include="OCCUtils\src\Primitive.cxx" />
+    <ClCompile Include="OCCUtils\src\PrintOCC.cxx" />
+    <ClCompile Include="OCCUtils\src\Shape.cxx" />
+    <ClCompile Include="OCCUtils\src\ShapeComponents.cxx" />
+    <ClCompile Include="OCCUtils\src\STEPExport.cxx" />
+    <ClCompile Include="OCCUtils\src\Surface.cxx" />
+    <ClCompile Include="OCCUtils\src\Wire.cxx" />
   </ItemGroup>
   <!--Override the target GenerateTargetFrameworkMonikerAttribute so that we ClCompile as clr, default is not so-->
   <Target Name="GenerateTargetFrameworkMonikerAttribute" BeforeTargets="ClCompile" DependsOnTargets="PrepareForBuild;GetReferenceAssemblyPaths" Inputs="$(VCTargetsPath)\Microsoft.BuildSteps.targets" Outputs="$(TargetFrameworkMonikerAssemblyAttributesPath)" Condition="'$(GenerateTargetFrameworkAttribute)' == 'true'">

@@ -99,6 +99,84 @@
     <ClInclude Include="XbimProgressMonitor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Axis.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Boolean.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Compound.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Curve.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Curves.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Direction.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Edge.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Equality.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Exceptions.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\ExtendedSTEP.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Face.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Fillet.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\IO.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Line.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\ListUtils.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Pipe.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Plane.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Point.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Primitive.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\PrintOCC.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Shape.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\ShapeComponents.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Shapes.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\STEPExport.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Surface.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OCCUtils\include\occutils\Wire.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -177,6 +255,72 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="XbimProgressMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Axis.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Boolean.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Compound.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Curve.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Direction.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Edge.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Equality.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\ExtendedSTEP.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Face.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Fillet.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\IO.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Line.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Pipe.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Plane.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Point.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Primitive.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\PrintOCC.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Shape.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\ShapeComponents.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\STEPExport.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Surface.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OCCUtils\src\Wire.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
