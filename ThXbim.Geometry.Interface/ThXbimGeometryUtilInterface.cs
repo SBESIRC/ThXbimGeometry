@@ -12,6 +12,6 @@ namespace ThXbim.Geometry.Interface
         bool FaceIntersects(IXbimFace face, IXbimFace otherFace);
         IXbimFace FaceUnion(IXbimFace face, IXbimFace otherFace);
         IXbimFace FaceUnion(List<IXbimFace> faceSet);
-        void CurveProjectToSurface(XbimPoint3D sp, XbimPoint3D ep, IXbimFace face);
+        List<IXbimEdge> CurveProjectToSurface(XbimPoint3D sp, XbimPoint3D ep, List<IXbimFace> face);
     }
 }

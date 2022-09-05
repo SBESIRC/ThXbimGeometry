@@ -76,9 +76,9 @@ namespace Xbim.Geometry.Engine.Interop
         }
 
 
-        public void CurveProjectToSurface(XbimPoint3D sp, XbimPoint3D ep, IXbimFace face)
+        public List<IXbimEdge> CurveProjectToSurface(XbimPoint3D sp, XbimPoint3D ep, List<IXbimFace> faces)
         {
-            _engine.CurveProjectToSurface(sp, ep, face);
+            return _engine.CurveProjectToSurface(sp, ep, faces);
         }
     }
 }

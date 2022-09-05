@@ -5,15 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Xbim.Common.Geometry;
 using Xbim.Geometry.Engine.Interop;
+using Xbim.Ifc;
 using Xbim.Ifc2x3.GeometricModelResource;
 using Xbim.Ifc2x3.ProductExtension;
 using Xbim.Ifc2x3.TopologyResource;
+using XbimRegression.CreateIFCService;
 
 namespace XbimRegression
 {
     public class CreateSolidFaceService
     {
-        public void CreateFaces(IfcBuildingElement element, IfcBuildingElement roof)
+        public void CreateFaces(IfcStore model, IfcBuildingElement element, IfcBuildingElement roof)
         {
             var allPolyLoop = new List<IfcPolyLoop>();
             foreach (var rep in element.Representation.Representations)
@@ -53,7 +55,9 @@ namespace XbimRegression
             var roofFaces = filterFace.FilterRoofFace(roofFaceElm);     //获取屋面面
 
             FollowTheSlopeService followTheSlopeService = new FollowTheSlopeService(beamPts, roofFaces);
-            followTheSlopeService.FollowSlope();
+            var beam = followTheSlopeService.FollowSlope();
+
+            CreateBeamService.CreateIFCBeamInIfc(model, beam);
         }
 
         private List<List<IXbimFace>> CreateOCCTElementFace(List<IfcPolyLoop> ifcPolyLoops)

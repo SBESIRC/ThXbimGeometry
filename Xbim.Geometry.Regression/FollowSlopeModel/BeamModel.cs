@@ -26,6 +26,8 @@ namespace XbimRegression.FollowSlopeModel
             var ep = new XbimPoint3D((pt3.X + pt4.X) / 2, (pt3.Y + pt4.Y) / 2, (pt3.Z + pt4.Z) / 2);
             BeamLine = new BeamLine(sp, ep);
             BeamWidth = thXbimPointUtils.PointDistance(pt1, pt2);
+            BeamThick = 300;
+            FollowSlopeLines = new List<BeamLine>();
         }
 
         /// <summary>
