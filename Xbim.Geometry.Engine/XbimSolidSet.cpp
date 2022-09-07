@@ -491,19 +491,19 @@ namespace Xbim
 				aBOP.SetNonDestructive(true);
 				aBOP.SetFuzzyValue(fuzzyTol);
 				
-				Handle(XbimProgressMonitor) pi = new XbimProgressMonitor(timeout);
-				aBOP.SetProgressIndicator(pi);
+				//Handle(XbimProgressMonitor) pi = new XbimProgressMonitor(timeout);
+				//aBOP.SetProgressIndicator(pi);
 				TopoDS_Shape aR;
 
 
 				aBOP.Perform();
 				aR = aBOP.Shape();
 
-				if (pi->TimedOut())
-				{
-					return BOOLEAN_TIMEDOUT;
+				//if (pi->TimedOut())
+				//{
+				//	return BOOLEAN_TIMEDOUT;
 
-				}
+				//}
 				bool bopErr = aBOP.HasErrors();
 #ifdef _DEBUG
 
@@ -561,8 +561,8 @@ namespace Xbim
 					fixer.SetPrecision(tolerance);
 					try
 					{
-						Handle(XbimProgressMonitor) pi2 = new XbimProgressMonitor(timeout);
-						if (fixer.Perform(pi2))
+						//Handle(XbimProgressMonitor) pi2 = new XbimProgressMonitor(timeout);
+						if (fixer.Perform())
 						{
 							result = fixer.Shape();
 							retVal = BOOLEAN_SUCCESS;

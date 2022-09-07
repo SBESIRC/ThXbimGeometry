@@ -81,7 +81,7 @@
 #include <GeomLib_IsPlanarSurface.hxx>
 #include <ShapeUpgrade_UnifySameDomain.hxx>
 #include <BRepGProp_Face.hxx>
-#include <BRepAlgo_Section.hxx>
+//#include <BRepAlgo_Section.hxx>
 #include <GeomProjLib.hxx>
 #include <BRepOffsetAPI_NormalProjection.hxx>
 #include <TopTools_Array1OfShape.hxx>
@@ -90,7 +90,8 @@
 #include <Geom_Ellipse.hxx>
 #include <gp_Ax1.hxx>
 #include <Geom_BSplineSurface.hxx>
-#include <BRepAdaptor_HSurface.hxx>
+#include <BRepAdaptor_Surface.hxx>
+//#include <BRepAdaptor_HSurface.hxx>
 #include <CSLib_NormalStatus.hxx>
 #include <CSLib.hxx>
 
@@ -533,7 +534,7 @@ namespace Xbim
 				gp_Pnt pos;
 				prop.Normal(u, v, pos, norm);
 				norm.Normalize();
-				Handle(BRepAdaptor_HSurface) adaptedSurface = new BRepAdaptor_HSurface(refSurface);
+				Handle(BRepAdaptor_Surface) adaptedSurface = new BRepAdaptor_Surface(refSurface);
 				GeomAbs_Shape cont = (adaptedSurface->UContinuity() < adaptedSurface->VContinuity()) ?
 					adaptedSurface->UContinuity() : adaptedSurface->VContinuity();
 				gp_Vec d1U, d1V;
