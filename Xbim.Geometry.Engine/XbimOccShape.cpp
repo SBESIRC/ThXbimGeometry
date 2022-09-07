@@ -76,7 +76,7 @@ namespace Xbim
 					continue;
 				gp_Trsf transform = loc.Transformation();
 				gp_Quaternion quaternion = transform.GetRotation();
-				const TColgp_Array1OfPnt& nodes = mesh->Nodes();
+				//const TColgp_Array1OfPnt& nodes = mesh->Nodes();
 				triangleCount += mesh->NbTriangles();
 				bool faceReversed = face->IsReversed;
 				bool isPolygonal = face->IsPolygonal;
@@ -86,9 +86,10 @@ namespace Xbim
 				{
 					Poly::ComputeNormals(mesh); //we need the normals
 					norms = gcnew List<size_t>(mesh->NbNodes());
-					for (Standard_Integer i = 1; i <= mesh->NbNodes() * 3; i += 3) //visit each node
+					for (Standard_Integer i = 1; i <= mesh->NbNodes(); i++) //visit each node
 					{
-						gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
+						gp_Dir dir = mesh->Normal(i);
+						//gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
 						if (faceReversed) dir.Reverse();
 						size_t index;
 						dir = quaternion.Multiply(dir);
@@ -118,7 +119,8 @@ namespace Xbim
 				normalLookup->Add(norms);
 				for (Standard_Integer i = 1; i <= mesh->NbNodes(); i++) //visit each node for vertices
 				{
-					gp_XYZ p = nodes.Value(i).XYZ();
+					gp_XYZ p = mesh->Node(i).XYZ();
+					//gp_XYZ p = nodes.Value(i).XYZ();
 					transform.Transforms(p);
 					size_t index;
 					XbimPoint3DWithTolerance^ pt = gcnew XbimPoint3DWithTolerance(p.X(), p.Y(), p.Z(), tolerance);
@@ -232,16 +234,17 @@ namespace Xbim
 				bool hasSeam = hasSeams[f - 1];
 				gp_Trsf transform = loc.Transformation();
 				gp_Quaternion quaternion = transform.GetRotation();
-				const TColgp_Array1OfPnt& nodes = mesh->Nodes();
+				//const TColgp_Array1OfPnt& nodes = mesh->Nodes();
 				Poly::ComputeNormals(mesh); //we need the normals					
 
 				if (hasSeam)
 				{
 
-					TColStd_Array1OfReal norms(1, mesh->Normals().Length());
-					for (Standard_Integer i = 1; i <= mesh->NbNodes() * 3; i += 3) //visit each node
+					TColStd_Array1OfReal norms(1, mesh->NbNodes() * 3);
+					for (Standard_Integer i = 1; i <= mesh->NbNodes(); i++) //visit each node
 					{
-						gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
+						gp_Dir dir = mesh->Normal(i);
+						//gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
 						if (faceReversed) dir.Reverse();
 						dir = quaternion.Multiply(dir);
 						norms.SetValue(i, dir.X());
@@ -251,7 +254,8 @@ namespace Xbim
 					Dictionary<XbimPoint3DWithTolerance^, int>^ uniquePointsOnFace = gcnew Dictionary<XbimPoint3DWithTolerance^, int>(mesh->NbNodes());
 					for (Standard_Integer j = 1; j <= mesh->NbNodes(); j++) //visit each node for vertices
 					{
-						gp_Pnt p = nodes.Value(j);
+						gp_Pnt p = mesh->Node(j);
+						//gp_Pnt p = nodes.Value(j);
 						XbimPoint3DWithTolerance^ pt = gcnew XbimPoint3DWithTolerance(p.X(), p.Y(), p.Z(), tolerance);
 						int nodeIndex;
 						if (uniquePointsOnFace->TryGetValue(pt, nodeIndex)) //we have a duplicate point on face need to smooth the normal
@@ -274,7 +278,8 @@ namespace Xbim
 					//write the nodes
 					for (Standard_Integer j = 0; j < mesh->NbNodes(); j++) //visit each node for vertices
 					{
-						gp_Pnt p = nodes.Value(j + 1);
+						gp_Pnt p = mesh->Node(j + 1);
+						//gp_Pnt p = nodes.Value(j + 1);
 						Standard_Real px = p.X();
 						Standard_Real py = p.Y();
 						Standard_Real pz = p.Z();
@@ -287,12 +292,14 @@ namespace Xbim
 				{
 					for (Standard_Integer j = 0; j < mesh->NbNodes(); j++) //visit each node for vertices
 					{
-						gp_Pnt p = nodes.Value(j + 1);
+						gp_Pnt p = mesh->Node(j + 1);
+						//gp_Pnt p = nodes.Value(j + 1);
 						Standard_Real px = p.X();
 						Standard_Real py = p.Y();
 						Standard_Real pz = p.Z();
 						transform.Transforms(px, py, pz); //transform the point to the right location
-						gp_Dir dir(mesh->Normals().Value((j * 3) + 1), mesh->Normals().Value((j * 3) + 2), mesh->Normals().Value((j * 3) + 3));
+						gp_Dir dir = mesh->Normal(j * 3);
+						//gp_Dir dir(mesh->Normals().Value((j * 3) + 1), mesh->Normals().Value((j * 3) + 2), mesh->Normals().Value((j * 3) + 3));
 						if (faceReversed) dir.Reverse();
 						dir = quaternion.Multiply(dir); //rotate the norm to the new location
 						meshReceiver->AddNode(faceId, px, py, pz, dir.X(), dir.Y(), dir.Z()); //add the node to the face
@@ -428,16 +435,17 @@ namespace Xbim
 					bool hasSeam = hasSeams[f - 1];
 					gp_Trsf transform = loc.Transformation();
 					gp_Quaternion quaternion = transform.GetRotation();
-					const TColgp_Array1OfPnt& nodes = mesh->Nodes();
+					//const TColgp_Array1OfPnt& nodes = mesh->Nodes();
 					triangleCount += mesh->NbTriangles();
 					pointLookup->Add(gcnew List<int>(mesh->NbNodes()));
 					if (!isPlanar)
 					{
 						Poly::ComputeNormals(mesh); //we need the normals
 						norms = gcnew List<XbimPackedNormal>(mesh->NbNodes());
-						for (Standard_Integer i = 1; i <= mesh->NbNodes() * 3; i += 3) //visit each node
+						for (Standard_Integer i = 1; i <= mesh->NbNodes(); i++) //visit each node
 						{
-							gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
+							gp_Dir dir = mesh->Normal(i);
+							//gp_Dir dir(mesh->Normals().Value(i), mesh->Normals().Value(i + 1), mesh->Normals().Value(i + 2));
 							if (faceReversed) dir.Reverse();
 
 							dir = quaternion.Multiply(dir);
@@ -457,7 +465,8 @@ namespace Xbim
 					Dictionary<XbimPoint3DWithTolerance^, int>^ uniquePointsOnFace = nullptr;
 					for (Standard_Integer j = 1; j <= mesh->NbNodes(); j++) //visit each node for vertices
 					{
-						gp_XYZ p = nodes.Value(j).XYZ();
+						gp_XYZ p = mesh->Node(j).XYZ();
+						//gp_XYZ p = nodes.Value(j).XYZ();
 						transform.Transforms(p);
 						int index;
 						XbimPoint3DWithTolerance^ pt = gcnew XbimPoint3DWithTolerance(p.X(), p.Y(), p.Z(), tolerance);
