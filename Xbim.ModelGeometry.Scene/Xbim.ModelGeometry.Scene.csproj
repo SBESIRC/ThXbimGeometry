@@ -16,10 +16,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="Xbim.Ifc" Version="5.1.341" />
-    <PackageReference Include="Xbim.Tessellator" Version="5.1.341" />
+    <Reference Include="Xbim.Common">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Xbim.Ifc">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.Ifc.dll</HintPath>
+    </Reference>
+    <Reference Include="Xbim.Ifc2x3">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.Ifc2x3.dll</HintPath>
+    </Reference>
+    <Reference Include="Xbim.Ifc4">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.Ifc4.dll</HintPath>
+    </Reference>
+    <Reference Include="Xbim.IO.MemoryModel">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.IO.MemoryModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Xbim.Tessellator">
+      <HintPath>..\Xbim.Essentials\5.x\Xbim.Tessellator.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
