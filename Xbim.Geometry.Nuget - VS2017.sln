@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32825.248
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CFAD1D1D-D584-4FB9-B795-64F25B888F26}"
 	ProjectSection(SolutionItems) = preProject
@@ -54,7 +54,7 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A3BC7A64-262C-4675-8276-BAE1D7097383}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{A3BC7A64-262C-4675-8276-BAE1D7097383}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{A3BC7A64-262C-4675-8276-BAE1D7097383}.Debug|x64.ActiveCfg = Debug|x64
 		{A3BC7A64-262C-4675-8276-BAE1D7097383}.Debug|x64.Build.0 = Debug|x64
 		{A3BC7A64-262C-4675-8276-BAE1D7097383}.Debug|x86.ActiveCfg = Debug|Win32
@@ -127,5 +127,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F594C42-CF23-4E97-9A66-CEA2759C04C8}
 	EndGlobalSection
 EndGlobal
