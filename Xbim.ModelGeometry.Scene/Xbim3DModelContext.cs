@@ -1349,22 +1349,22 @@ namespace Xbim.ModelGeometry.Scene
                             XbimShapeGeometry shapeGeom = null;
                             IXbimGeometryObject geomModel = null;
 
-                            if (UseSimplifiedFastExtruder && shape is IIfcSweptDiskSolid)
-                            {
-                                // work out the sweeping profile and then extrude in simplified form
+                            //if (UseSimplifiedFastExtruder && shape is IIfcSweptDiskSolid)
+                            //{
+                            //    // work out the sweeping profile and then extrude in simplified form
 
-                                var swDisk = shape as IIfcSweptDiskSolid;
-                                var pts = Engine.GetDiscretisedDirectrix(swDisk, 3);
-                                if (pts.Count < 2)
-                                {
-                                    LogInfo(_model.Instances[shapeId], "Is an empty shape");
-                                    return; // we are inside a lambda, equivalent to a continue.
-                                }
-                                var r = (double)swDisk.Radius.Value;
-                                const int pointsOnProfile = 5;
-                                shapeGeom = ProfileExtruder.ExtrudeCircle(pts, r, pointsOnProfile, true);
-                            }
-                            else
+                            //    var swDisk = shape as IIfcSweptDiskSolid;
+                            //    var pts = Engine.GetDiscretisedDirectrix(swDisk, 3);
+                            //    if (pts.Count < 2)
+                            //    {
+                            //        LogInfo(_model.Instances[shapeId], "Is an empty shape");
+                            //        return; // we are inside a lambda, equivalent to a continue.
+                            //    }
+                            //    var r = (double)swDisk.Radius.Value;
+                            //    const int pointsOnProfile = 5;
+                            //    shapeGeom = ProfileExtruder.ExtrudeCircle(pts, r, pointsOnProfile, true);
+                            //}
+                            //else
                             if (!isFeatureElementShape && !isVoidedProductShape && xbimTessellator.CanMesh(shape)) // if we can mesh the shape directly just do it
                             {
                                 shapeGeom = xbimTessellator.Mesh(shape);

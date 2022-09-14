@@ -134,6 +134,12 @@
   <ItemGroup>
     <None Include="XbimOpenSourceKeyFile.snk" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Xbim.Geometry.Engine.Interop\Xbim.Geometry.Engine.Interop - VS2017.csproj">
+      <Project>{f94a98ea-ab29-4818-a51f-6b33beb7561a}</Project>
+      <Name>Xbim.Geometry.Engine.Interop - VS2017</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
