@@ -746,7 +746,8 @@ namespace Xbim.ModelGeometry.Scene
             PerformSubtractions = 2,
             ReplaceBoundingBox = 4,
             Skip = 8,
-            Default = PerformAdditions | PerformSubtractions
+            Default = PerformAdditions,
+            //Default = PerformAdditions | PerformSubtractions
         }
 
         public delegate MeshingBehaviourResult MeshingBehaviourSetter(int elementId, int typeId, ref double linearDeflection,
@@ -1442,8 +1443,8 @@ namespace Xbim.ModelGeometry.Scene
 
                 if (s.ElapsedMilliseconds > 20000)
                 {
-					LogWarning(shape, "Long meshing time of shape geometry: {0} ms.", s.ElapsedMilliseconds);
-					Debug.WriteLine($"-\t{s.ElapsedMilliseconds,5}\tms {shape.GetType()}: #{shape.EntityLabel}");
+                    LogWarning(shape, "Long meshing time of shape geometry: {0} ms.", s.ElapsedMilliseconds);
+                    Debug.WriteLine($"-\t{s.ElapsedMilliseconds,5}\tms {shape.GetType()}: #{shape.EntityLabel}");
                 }
             }
             );
