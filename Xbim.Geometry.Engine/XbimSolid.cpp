@@ -2083,6 +2083,7 @@ namespace Xbim
 				BRepAlgoAPI_Cut boolOp;
 				boolOp.SetArguments(shapeObjects);
 				boolOp.SetTools(shapeTools);
+				boolOp.SetOperation(BOPAlgo_Operation::BOPAlgo_CUT);
 				boolOp.SetNonDestructive(Standard_True);
 				Handle(XbimProgressIndicator) aPI = new XbimProgressIndicator(XbimGeometryCreator::BooleanTimeOut);
 				boolOp.SetProgressIndicator(aPI);

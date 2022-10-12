@@ -99,5 +99,10 @@
     <TargetName>$(ProjectName)64</TargetName>
     <IntDir>obj\$(Platform)-VS2017\$(Configuration)\</IntDir>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <Import Project="Xbim.Geometry.Engine - OCC.targets" />
 </Project>

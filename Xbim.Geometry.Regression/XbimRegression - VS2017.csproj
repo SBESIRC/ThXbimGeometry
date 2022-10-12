@@ -66,7 +66,9 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="Xbim.CobieExpress, Version=4.0.0.0, Culture=neutral, PublicKeyToken=11e3655e576ec5a9, processorArchitecture=MSIL">
       <HintPath>..\Xbim.Essentials\4.x\Xbim.CobieExpress.dll</HintPath>
     </Reference>

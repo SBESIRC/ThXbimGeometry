@@ -46,11 +46,12 @@ namespace Xbim.Geometry.Engine.Interop
         {
             get
             {
-#if VS2015
-                return "Xbim.Geometry.Engine2015";
-#else
-                return "Xbim.Geometry.Engine";
-#endif
+                return "Xbim.Geometry.Engine2017";
+                //#if VS2017
+                //                return "Xbim.Geometry.Engine2017";
+                //#else
+                //                return "Xbim.Geometry.Engine";
+                //#endif
             }
         }
 
