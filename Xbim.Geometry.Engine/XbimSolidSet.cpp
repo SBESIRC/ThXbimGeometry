@@ -678,7 +678,7 @@ namespace Xbim
 		IXbimSolidSet^ XbimSolidSet::Cut(IXbimSolidSet^ solidsToCut, double tolerance, ILogger^ logger)
 		{
 
-			return DoBoolean(solidsToCut, BOPAlgo_CUT, tolerance, logger);
+			return DoBoolean(solidsToCut, BOPAlgo_CUT21, tolerance, logger);
 		}
 		//This will throw an XbimGeometryExcpetion if the operation is illegal
 		IXbimSolidSet^ XbimSolidSet::Union(IXbimSolidSet^ solidsToUnion, double tolerance, ILogger^ logger)

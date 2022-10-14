@@ -12,16 +12,23 @@ using System.Collections.Generic;
 using System.IO;
 using Xbim.Ifc.Extensions;
 using Xbim.Common.Exceptions;
+using Xbim.Geometry.Engine.Interop;
+
 namespace XbimRegression
 {
     class Program
     {
         private static void Main(string[] args)
         {
-            using (var model = MemoryModel.OpenRead(@"""D:\IfcProject\test2.ifc"""))
+            //顺序inter engine scene reg
+
+            using (var m = IfcStore.Open(@"D:\IfcProject\test2.ifc"))
             {
-                var wallBCR = model.Instances[34] as IIfcBooleanClippingResult;
-                var solidSet = geomEngine.CreateSolidSet(wallBCR, null);
+                XbimGeometryEngine geomEngine = new XbimGeometryEngine();
+                var bres = m.Instances[57015] as IIfcBooleanClippingResult;
+                //var solid = _xbimGeometryCreator.Create(bres);
+                //500 250 7~8k 正确答案
+                var solidSet = geomEngine.CreateSolidSet(bres, null);
                 ;
             }
 
