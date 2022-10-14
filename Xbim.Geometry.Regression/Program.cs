@@ -30,6 +30,8 @@ namespace XbimRegression
                 //500 250 7~8k 正确答案
                 var solidSet = geomEngine.CreateSolidSet(bres, null);
                 ;
+
+                //重点关注PerformInternal1
             }
 
             //// ContextTesting is a class that has been temporarily created to test multiple files
