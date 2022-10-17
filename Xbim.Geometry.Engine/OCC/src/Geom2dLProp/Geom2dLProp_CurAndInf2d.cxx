@@ -32,7 +32,6 @@
 //purpose  : 
 //=======================================================================
 Geom2dLProp_CurAndInf2d::Geom2dLProp_CurAndInf2d()
-: isDone(Standard_False)
 {
 }
 

@@ -42,15 +42,8 @@ static const int Pourcent3[9] = {0, 1, 2, 0, 1, 2, 0, 1, 2};
 //=======================================================================
 
 IntPatch_InterferencePolyhedron::IntPatch_InterferencePolyhedron  ()
-: Intf_Interference(Standard_False),
-  Incidence(0)
-{
-  memset (OI, 0, sizeof (OI));
-  memset (TI, 0, sizeof (TI));
-  memset (dpOeT, 0, sizeof (dpOeT));
-  memset (dpOpT, 0, sizeof (dpOpT));
-  memset (deOpT, 0, sizeof (deOpT));
-}
+: Intf_Interference(Standard_False)
+{}
 
 //=======================================================================
 //function : IntPatch_InterferencePolyhedron
@@ -59,14 +52,8 @@ IntPatch_InterferencePolyhedron::IntPatch_InterferencePolyhedron  ()
 
 IntPatch_InterferencePolyhedron::IntPatch_InterferencePolyhedron 
   (const IntPatch_Polyhedron& FirstPol, const IntPatch_Polyhedron& SeconPol)
-: Intf_Interference(Standard_False),
-  Incidence(0)
+: Intf_Interference(Standard_False)
 {
-  memset (OI, 0, sizeof (OI));
-  memset (TI, 0, sizeof (TI));
-  memset (dpOeT, 0, sizeof (dpOeT));
-  memset (dpOpT, 0, sizeof (dpOpT));
-  memset (deOpT, 0, sizeof (deOpT));
   if (!IntPatch_PolyhedronTool::Bounding(FirstPol).IsOut
       (IntPatch_PolyhedronTool::Bounding(SeconPol))) {
     Tolerance=IntPatch_PolyhedronTool::DeflectionOverEstimation(FirstPol)+
@@ -84,14 +71,8 @@ IntPatch_InterferencePolyhedron::IntPatch_InterferencePolyhedron
 
 IntPatch_InterferencePolyhedron::IntPatch_InterferencePolyhedron 
   (const IntPatch_Polyhedron& Objet)
-: Intf_Interference(Standard_True),
-  Incidence(0)
+: Intf_Interference(Standard_True)
 {
-  memset (OI, 0, sizeof (OI));
-  memset (TI, 0, sizeof (TI));
-  memset (dpOeT, 0, sizeof (dpOeT));
-  memset (dpOpT, 0, sizeof (dpOpT));
-  memset (deOpT, 0, sizeof (deOpT));
   Tolerance=IntPatch_PolyhedronTool::DeflectionOverEstimation(Objet)*2;
   if (Tolerance==0.)
     Tolerance=Epsilon(1000.);
@@ -485,7 +466,7 @@ void IntPatch_InterferencePolyhedron::Intersect
 		  Standard_Real div = dpOeT[iObj][iToo]-dpOeT[inext][iToo];
 		  if(div>floatGap || div<-floatGap) { 
 		    parO[iObj]=dpOeT[iObj][iToo]/
-		      (dpOeT[iObj][iToo]-dpOeT[inext][iToo]);
+		      (dpOeT[iObj][iToo]-dpOeT[inext][iToo]);;
 		    piO=(IntPatch_PolyhedronTool::Point(FirstPol,OI[iObj]).XYZ()) +
 		      (voo[iObj]*parO[iObj]);
 		  }
@@ -582,7 +563,7 @@ void IntPatch_InterferencePolyhedron::Intersect
 
     if (nbpiOT>1) {
 
-// Sort the <nbpiOT> sections points along the intersection between the
+// Sort the <nbpiOT> sections points along the intersection beetween the
 // two triangles :
 
       gp_XYZ dir=ONor^TNor;

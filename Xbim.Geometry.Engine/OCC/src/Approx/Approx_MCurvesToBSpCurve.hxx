@@ -25,6 +25,7 @@
 #include <Standard_Boolean.hxx>
 #include <AppParCurves_SequenceOfMultiCurve.hxx>
 class AppParCurves_MultiCurve;
+class AppParCurves_MultiBSpCurve;
 
 
 

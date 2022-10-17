@@ -41,17 +41,17 @@ namespace Xbim
 			
 		}
 
-		XbimPoint3DWithTolerance::XbimPoint3DWithTolerance(IIfcPointOnCurve^ point, ILogger^ logger)
+		XbimPoint3DWithTolerance::XbimPoint3DWithTolerance(IIfcPointOnCurve^ point)
 		{
-			XbimWire^ w = gcnew XbimWire(point->BasisCurve, logger, XbimConstraints::None);
+			XbimWire^ w = gcnew XbimWire(point->BasisCurve);
 			this->point = w->PointAtParameter(point->PointParameter);
 			this->tolerance = point->Model->ModelFactors->Precision;
 			CalculateHashCode();
 		}
 
-		XbimPoint3DWithTolerance::XbimPoint3DWithTolerance(IIfcPointOnSurface^ point, ILogger^ logger)
+		XbimPoint3DWithTolerance::XbimPoint3DWithTolerance(IIfcPointOnSurface^ point)
 		{
-			XbimFace^ f = gcnew XbimFace(point->BasisSurface, logger);
+			XbimFace^ f = gcnew XbimFace(point->BasisSurface);
 			this->point = f->PointAtParameters(point->PointParameterU, point->PointParameterV);
 			this->tolerance = point->Model->ModelFactors->Precision;
 			CalculateHashCode();

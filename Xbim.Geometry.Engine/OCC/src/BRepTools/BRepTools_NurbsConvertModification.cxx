@@ -14,7 +14,6 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <BRepTools_NurbsConvertModification.hxx>
 
 #include <Approx_SameParameter.hxx>
 #include <BRep_GCurve.hxx>
@@ -22,6 +21,7 @@
 #include <BRep_TEdge.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepTools.hxx>
+#include <BRepTools_NurbsConvertModification.hxx>
 #include <BSplCLib.hxx>
 #include <ElSLib.hxx>
 #include <Extrema_LocateExtPC.hxx>
@@ -30,6 +30,7 @@
 #include <Geom2d_Curve.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
 #include <Geom2dConvert.hxx>
 #include <Geom_BezierCurve.hxx>
 #include <Geom_BezierSurface.hxx>
@@ -45,6 +46,8 @@
 #include <Geom_Surface.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <GeomConvert.hxx>
 #include <gp_GTrsf2d.hxx>
@@ -393,7 +396,7 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
     C2d = new Geom2d_TrimmedCurve(C2d, f2d, l2d);
 
     Geom2dAdaptor_Curve   G2dAC(C2d, f2d, l2d);
-    Handle(Geom2dAdaptor_Curve) G2dAHC = new Geom2dAdaptor_Curve(G2dAC);
+    Handle(Geom2dAdaptor_HCurve) G2dAHC = new Geom2dAdaptor_HCurve(G2dAC);
     
     if(!newE.IsNull()) {
       C3d = BRep_Tool::Curve(newE, f3d, l3d);
@@ -402,7 +405,7 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
       C3d = BRep_Tool::Curve(E,f3d,l3d);
     }
     GeomAdaptor_Curve   G3dAC(C3d, f3d, l3d);
-    Handle(GeomAdaptor_Curve) G3dAHC = new GeomAdaptor_Curve(G3dAC);
+    Handle(GeomAdaptor_HCurve) G3dAHC = new GeomAdaptor_HCurve(G3dAC);
     
     Standard_Real Uinf, Usup, Vinf, Vsup, u = 0, v = 0;
     Handle(Geom_Surface) S = BRep_Tool::Surface(F);
@@ -458,7 +461,7 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
     else {
       S = BRep_Tool::Surface(F);// Si S est un plan, pas de changement de parametrisation
       GeomAdaptor_Surface GAS(S);
-      Handle(GeomAdaptor_Surface) GAHS = new GeomAdaptor_Surface(GAS);
+      Handle(GeomAdaptor_HSurface) GAHS = new GeomAdaptor_HSurface(GAS);
       ProjLib_ComputeApprox ProjOnCurve(G3dAHC,GAHS,Tol);
       if(ProjOnCurve.BSpline().IsNull()) {
         Curve2d = Geom2dConvert::CurveToBSplineCurve(ProjOnCurve.Bezier());
@@ -479,40 +482,14 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
       }
       return Standard_True;
     }
-
-    //
     GeomAdaptor_Surface GAS(S,Uinf-u,Usup+u,Vinf-v,Vsup+v);
 
-    Handle(GeomAdaptor_Surface) GAHS = new GeomAdaptor_Surface(GAS);
+    Handle(GeomAdaptor_HSurface) GAHS = new GeomAdaptor_HSurface(GAS);
 
     ProjLib_ComputeApproxOnPolarSurface ProjOnCurve(G2dAHC,G3dAHC,GAHS,Tol);
 
     if(ProjOnCurve.IsDone()) {
       Curve2d = ProjOnCurve.BSpline();
-      if (S->IsUPeriodic() || S->IsVPeriodic())
-      {
-        //Surface is periodic, checking curve2d domain 
-        //Old domain
-        Standard_Real aMinDist = Precision::Infinite();
-        if (S->IsUPeriodic())
-        {
-          aMinDist = Min(0.5 * S->UPeriod(), aMinDist);
-        }
-        if (S->IsVPeriodic())
-        {
-          aMinDist = Min(0.5 * S->VPeriod(), aMinDist);
-        }
-        aMinDist *= aMinDist;
-        //Old domain
-        gp_Pnt2d aPf = C2d->Value(f2d);
-        //New domain
-        gp_Pnt2d aNewPf = Curve2d->Value(f2d);
-        gp_Vec2d aT(aNewPf, aPf);
-        if (aT.SquareMagnitude() > aMinDist)
-        {
-          Curve2d = Handle(Geom2d_Curve)::DownCast(Curve2d->Translated(aT));
-        }
-      }
       Standard_Real newTol = BRepTools::EvalAndUpdateTol(newE, C3d, Curve2d, S, f3d, l3d);
       if(newTol > Tol)
       {
@@ -549,14 +526,14 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
       Standard_Real f2dBis,l2dBis;
       C2d = new Geom2d_TrimmedCurve(C2d, f2d, l2d);
       Geom2dAdaptor_Curve G2dAC(C2d, f2d, l2d);
-      Handle(Geom2dAdaptor_Curve) G2dAHC = new Geom2dAdaptor_Curve(G2dAC);
+      Handle(Geom2dAdaptor_HCurve) G2dAHC = new Geom2dAdaptor_HCurve(G2dAC);
       TopoDS_Edge ERevers = E;
       ERevers.Reverse();
       C2dBis = BRep_Tool::CurveOnSurface(ERevers,F,f2dBis,l2dBis);
       Handle(Standard_Type) TheTypeC2dBis = C2dBis->DynamicType();
       C2dBis = new Geom2d_TrimmedCurve(C2dBis,f2dBis, l2dBis);
       Geom2dAdaptor_Curve   G2dACBis(C2dBis, f2dBis, l2dBis); 
-      Handle(Geom2dAdaptor_Curve) G2dAHCBis = new Geom2dAdaptor_Curve(G2dACBis);
+      Handle(Geom2dAdaptor_HCurve) G2dAHCBis = new Geom2dAdaptor_HCurve(G2dACBis);
       
       if(C3d.IsNull()) {
          if(isConvert2d) {
@@ -582,7 +559,7 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
         C3d = BRep_Tool::Curve(newE, f3d,l3d);
       }
       GeomAdaptor_Curve G3dAC(C3d, f3d, l3d);
-      Handle(GeomAdaptor_Curve) G3dAHC = new GeomAdaptor_Curve(G3dAC);
+      Handle(GeomAdaptor_HCurve) G3dAHC = new GeomAdaptor_HCurve(G3dAC);
       
       Handle(Geom_Surface) S = BRep_Tool::Surface(F);
       Handle(Standard_Type) myT = S->DynamicType();
@@ -631,7 +608,7 @@ Standard_Boolean BRepTools_NurbsConvertModification::NewCurve2d
         }
       }
       GeomAdaptor_Surface GAS(S, Uinf-u,Usup+u,Vinf-v,Vsup+v);
-      Handle(GeomAdaptor_Surface) GAHS = new GeomAdaptor_Surface(GAS);
+      Handle(GeomAdaptor_HSurface) GAHS = new GeomAdaptor_HSurface(GAS);
       myled.Append(E);
 
       ProjLib_ComputeApproxOnPolarSurface 

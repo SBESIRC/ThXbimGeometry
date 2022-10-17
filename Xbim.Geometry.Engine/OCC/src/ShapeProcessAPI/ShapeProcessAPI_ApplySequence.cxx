@@ -61,8 +61,7 @@ Handle(ShapeProcess_ShapeContext)& ShapeProcessAPI_ApplySequence::Context()
 
 TopoDS_Shape ShapeProcessAPI_ApplySequence::PrepareShape(const TopoDS_Shape& shape,
                                                          const Standard_Boolean /*fillmap*/,
-                                                         const TopAbs_ShapeEnum /*until*/,
-                                                         const Message_ProgressRange& theProgress)
+                                                         const TopAbs_ShapeEnum /*until*/)
 {
   if (shape.IsNull())
     return shape;
@@ -72,7 +71,7 @@ TopoDS_Shape ShapeProcessAPI_ApplySequence::PrepareShape(const TopoDS_Shape& sha
   TCollection_AsciiString str(mySeq);
   str += ".exec.op";
   if ( rsc->Find ( str.ToCString() ) ) {
-    ShapeProcess::Perform(myContext, mySeq.ToCString(), theProgress);
+    ShapeProcess::Perform ( myContext, mySeq.ToCString() );
   }
   
   return myContext->Result();
@@ -123,29 +122,29 @@ void ShapeProcessAPI_ApplySequence::PrintPreparationResult () const
 
   // mapping
   Message_Msg EPMSG100 ("PrResult.Print.MSG100"); //Mapping:
-  aMessenger->Send (EPMSG100, Message_Info);
+  aMessenger->Send (EPMSG100, Message_Info, Standard_True);
   Message_Msg TPMSG50 ("PrResult.Print.MSG50"); //  Shells:
-  aMessenger->Send (TPMSG50, Message_Info);
+  aMessenger->Send (TPMSG50, Message_Info, Standard_True);
   Message_Msg EPMSG110 ("PrResult.Print.MSG110"); //    Result is Shell                 : %d
   EPMSG110.Arg (SS);
-  aMessenger->Send (EPMSG110, Message_Info);
+  aMessenger->Send (EPMSG110, Message_Info, Standard_True);
   Message_Msg EPMSG150 ("PrResult.Print.MSG150"); //    No Result                       : %d
   EPMSG150.Arg (SN);
-  aMessenger->Send (EPMSG150, Message_Info);
+  aMessenger->Send (EPMSG150, Message_Info, Standard_True);
   
   TCollection_AsciiString tmp110 (EPMSG110.Original()), tmp150  (EPMSG150.Original());
   EPMSG110.Set (tmp110.ToCString());
   EPMSG150.Set (tmp150.ToCString());
 
   Message_Msg TPMSG55 ("PrResult.Print.MSG55"); //  Faces:
-  aMessenger->Send (TPMSG55, Message_Info);
+  aMessenger->Send (TPMSG55, Message_Info, Standard_True);
   Message_Msg EPMSG115 ("PrResult.Print.MSG115"); //    Result is Face                  : %d
   EPMSG115.Arg (FF);
-  aMessenger->Send (EPMSG115, Message_Info);
+  aMessenger->Send (EPMSG115, Message_Info, Standard_True);
   EPMSG110.Arg (FS);
-  aMessenger->Send (EPMSG110, Message_Info);
+  aMessenger->Send (EPMSG110, Message_Info, Standard_True);
   EPMSG150.Arg (FN);
-  aMessenger->Send (EPMSG150, Message_Info);
+  aMessenger->Send (EPMSG150, Message_Info, Standard_True);
   
   // preparation ratio
   Standard_Real SPR = 1, FPR = 1;
@@ -154,12 +153,12 @@ void ShapeProcessAPI_ApplySequence::PrintPreparationResult () const
   if (NbS > 0) SPR = 1. * (NbS - SN) / NbS;
   if (NbF > 0) FPR = 1. * (NbF - FN) / NbF;
   Message_Msg PMSG200 ("PrResult.Print.MSG200"); //Preparation ratio:
-  aMessenger->Send (PMSG200, Message_Info);
+  aMessenger->Send (PMSG200, Message_Info, Standard_True);
   Message_Msg PMSG205 ("PrResult.Print.MSG205"); //  Shells: %d per cent
   PMSG205.Arg ((Standard_Integer) (100 * SPR));
-  aMessenger->Send (PMSG205, Message_Info);
+  aMessenger->Send (PMSG205, Message_Info, Standard_True);
   Message_Msg PMSG210 ("PrResult.Print.MSG210"); //  Faces : %d per cent
   PMSG210.Arg ((Standard_Integer) (100 * FPR));
-  aMessenger->Send (PMSG210, Message_Info);
+  aMessenger->Send (PMSG210, Message_Info, Standard_True);
 }
 

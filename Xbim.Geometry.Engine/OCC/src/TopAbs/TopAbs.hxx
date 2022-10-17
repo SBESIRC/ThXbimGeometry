@@ -34,7 +34,7 @@
 //! It contains :
 //!
 //! * The ShapeEnum   enumeration  to  describe  the
-//! different topological shapes.
+//! differents topological shapes.
 //!
 //! * The  Orientation  enumeration to  describe the
 //! orientation of a topological shape.

@@ -27,6 +27,8 @@
 #include <Standard_Real.hxx>
 #include <Standard_OStream.hxx>
 class Standard_Transient;
+class Standard_OutOfRange;
+class Standard_DimensionError;
 class gp_Pnt;
 class gp_Pnt2d;
 

@@ -25,7 +25,10 @@
 #include <TopoDS_Edge.hxx>
 #include <BRepLib_MakeShape.hxx>
 #include <Standard_Boolean.hxx>
+class StdFail_NotDone;
 class gp_Pnt;
+class TopoDS_Vertex;
+class TopoDS_Edge;
 class TopoDS_Wire;
 
 
@@ -71,7 +74,7 @@ public:
   Standard_EXPORT void Add (const TopoDS_Vertex& V);
   
   //! Returns  True if  the last   vertex  or point  was
-  //! successfully added.
+  //! succesfully added.
   Standard_EXPORT Standard_Boolean Added() const;
   
   Standard_EXPORT void Close();

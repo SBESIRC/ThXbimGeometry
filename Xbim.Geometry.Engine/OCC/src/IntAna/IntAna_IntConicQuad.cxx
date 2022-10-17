@@ -53,10 +53,6 @@ static Standard_Real PIpPI = M_PI + M_PI;
 //== 
 CREATE(void) {
   done=Standard_False;
-  parallel = Standard_False;
-  inquadric = Standard_False;
-  nbpts = 0;
-  memset (paramonc, 0, sizeof (paramonc));
 }
 //=============================================================================
 //==                                                 L i n e  -   Q u a d r i c  

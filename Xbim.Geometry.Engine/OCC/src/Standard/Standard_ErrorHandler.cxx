@@ -13,7 +13,7 @@
 // commercial license or contractual agreement.
 
 //============================================================================
-//==== Title: Standard_ErrorHandler.cxx
+//==== Titre: Standard_ErrorHandler.cxx
 //==== Role : class "Standard_ErrorHandler" implementation.
 //============================================================================
 #include <Standard_ErrorHandler.hxx>
@@ -39,16 +39,10 @@
 //==== The top of the Errors Stack ===========================================
 static Standard_ErrorHandler* Top = 0;
 
-//! A mutex to protect from concurrent access to Top.
-//! Mutex is defined as function to avoid issues caused by
-//! an undefined static variables initialization order across compilation units (@sa #0031681 bug).
-//! Note that we should NOT use Sentry while in this class, as Sentry
-//! would register mutex as callback in the current exception handler.
-static Standard_Mutex& GetMutex()
-{
-  static Standard_Mutex theMutex;
-  return theMutex;
-}
+// A mutex to protect from concurrent access to Top
+// Note that we should NOT use Sentry while in this class, as Sentry
+// would register mutex as callback in the current exception handler
+static Standard_Mutex theMutex; 
 
 static inline Standard_ThreadId GetThreadID()
 {
@@ -70,10 +64,10 @@ Standard_ErrorHandler::Standard_ErrorHandler () :
   myThread   = GetThreadID();
   memset (&myLabel, 0, sizeof(myLabel));
 
-  GetMutex().Lock();
+  theMutex.Lock();
   myPrevious = Top;
   Top        = this;
-  GetMutex().Unlock();
+  theMutex.Unlock();
 }
 
 
@@ -100,7 +94,7 @@ void Standard_ErrorHandler::Destroy()
 void Standard_ErrorHandler::Unlink()
 {
   // put a lock on the stack
-  GetMutex().Lock();
+  theMutex.Lock();
   
   Standard_ErrorHandler* aPrevious = 0;
   Standard_ErrorHandler* aCurrent = Top;
@@ -112,7 +106,7 @@ void Standard_ErrorHandler::Unlink()
   }
   
   if(aCurrent==0) {
-    GetMutex().Unlock();
+    theMutex.Unlock();
     return;
   }
   
@@ -124,7 +118,7 @@ void Standard_ErrorHandler::Unlink()
     aPrevious->myPrevious=aCurrent->myPrevious;
   }
   myPrevious = 0;
-  GetMutex().Unlock();
+  theMutex.Unlock();
 
   // unlink and destroy all registered callbacks
   Standard_Address aPtr = aCurrent->myCallbackPtr;
@@ -223,7 +217,7 @@ Standard_ErrorHandler* Standard_ErrorHandler::FindHandler(const Standard_Handler
                                                           const Standard_Boolean theUnlink)
 {
   // lock the stack
-  GetMutex().Lock();
+  theMutex.Lock();
     
   // Find the current ErrorHandler Accordin tread
   Standard_ErrorHandler* aPrevious = 0;
@@ -268,7 +262,7 @@ Standard_ErrorHandler* Standard_ErrorHandler::FindHandler(const Standard_Handler
       aStop = Standard_True;
     }
   }
-  GetMutex().Unlock();
+  theMutex.Unlock();
   
   return anActive;
 }

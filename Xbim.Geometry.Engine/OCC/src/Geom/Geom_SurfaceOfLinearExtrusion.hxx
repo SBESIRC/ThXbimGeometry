@@ -25,6 +25,8 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 #include <Standard_Integer.hxx>
+class Standard_RangeError;
+class Geom_UndefinedDerivative;
 class Geom_Curve;
 class gp_Dir;
 class gp_Pnt;
@@ -209,46 +211,43 @@ public:
   
   //! Computes the  parameters on the  transformed  surface for
   //! the transform of the point of parameters U,V on <me>.
-  //! @code
-  //!   me->Transformed(T)->Value(U',V')
-  //! @endcode
+  //!
+  //! me->Transformed(T)->Value(U',V')
+  //!
   //! is the same point as
-  //! @code
-  //!   me->Value(U,V).Transformed(T)
-  //! @endcode
+  //!
+  //! me->Value(U,V).Transformed(T)
+  //!
   //! Where U',V' are the new values of U,V after calling
-  //! @code
-  //!   me->TransformParameters(U,V,T)
-  //! @endcode
-  //! This method multiplies:
+  //!
+  //! me->TranformParameters(U,V,T)
+  //!
+  //! This methods multiplies :
   //! U by BasisCurve()->ParametricTransformation(T)
   //! V by T.ScaleFactor()
   Standard_EXPORT virtual void TransformParameters (Standard_Real& U, Standard_Real& V, const gp_Trsf& T) const Standard_OVERRIDE;
   
   //! Returns a 2d transformation  used to find the  new
   //! parameters of a point on the transformed surface.
-  //! @code
-  //!   me->Transformed(T)->Value(U',V')
-  //! @endcode
+  //!
+  //! me->Transformed(T)->Value(U',V')
+  //!
   //! is the same point as
-  //! @code
-  //!   me->Value(U,V).Transformed(T)
-  //! @endcode
+  //!
+  //! me->Value(U,V).Transformed(T)
+  //!
   //! Where U',V' are  obtained by transforming U,V with
-  //! the 2d transformation returned by
-  //! @code
-  //!   me->ParametricTransformation(T)
-  //! @endcode
-  //! This method returns a scale
+  //! th 2d transformation returned by
+  //!
+  //! me->ParametricTransformation(T)
+  //!
+  //! This  methods  returns  a scale
   //! U by BasisCurve()->ParametricTransformation(T)
   //! V by T.ScaleFactor()
   Standard_EXPORT virtual gp_GTrsf2d ParametricTransformation (const gp_Trsf& T) const Standard_OVERRIDE;
   
   //! Creates a new object which is a copy of this surface of linear extrusion.
   Standard_EXPORT Handle(Geom_Geometry) Copy() const Standard_OVERRIDE;
-
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
 
 
 

@@ -153,7 +153,7 @@ public:
   //! Surface evaluation
   //! The following functions compute the point and the
   //! derivatives on elementary surfaces defined with their
-  //! geometric characteristics.
+  //! geometric characterisitics.
   //! You don't need to create the surface to use these functions.
   //! These functions are called by the previous  ones.
   //! Example :

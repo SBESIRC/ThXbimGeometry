@@ -16,8 +16,9 @@
 #define _Geom2dEvaluator_OffsetCurve_HeaderFile
 
 #include <Geom2d_Curve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
 #include <Geom2dEvaluator_Curve.hxx>
+
+class Geom2dAdaptor_HCurve;
 
 //! Allows to calculate values and derivatives for offset curves in 2D
 class Geom2dEvaluator_OffsetCurve : public Geom2dEvaluator_Curve
@@ -29,7 +30,7 @@ public:
       const Standard_Real theOffset);
   //! Initialize evaluator by curve adaptor
   Standard_EXPORT Geom2dEvaluator_OffsetCurve(
-      const Handle(Geom2dAdaptor_Curve)& theBase,
+      const Handle(Geom2dAdaptor_HCurve)& theBase,
       const Standard_Real theOffset);
 
   //! Change the offset value
@@ -53,11 +54,30 @@ public:
   Standard_EXPORT gp_Vec2d DN(const Standard_Real theU,
                               const Standard_Integer theDeriv) const Standard_OVERRIDE;
 
-  Standard_EXPORT Handle(Geom2dEvaluator_Curve) ShallowCopy() const Standard_OVERRIDE;
-
   DEFINE_STANDARD_RTTIEXT(Geom2dEvaluator_OffsetCurve,Geom2dEvaluator_Curve)
 
 private:
+  //! Recalculate D1 values of base curve into D0 value of offset curve
+  void CalculateD0(      gp_Pnt2d& theValue,
+                   const gp_Vec2d& theD1) const;
+  //! Recalculate D2 values of base curve into D1 values of offset curve
+  void CalculateD1(      gp_Pnt2d& theValue,
+                         gp_Vec2d& theD1,
+                   const gp_Vec2d& theD2) const;
+  //! Recalculate D3 values of base curve into D2 values of offset curve
+  void CalculateD2(      gp_Pnt2d& theValue,
+                         gp_Vec2d& theD1,
+                         gp_Vec2d& theD2,
+                   const gp_Vec2d& theD3,
+                   const Standard_Boolean theIsDirChange) const;
+  //! Recalculate D3 values of base curve into D3 values of offset curve
+  void CalculateD3(      gp_Pnt2d& theValue,
+                         gp_Vec2d& theD1,
+                         gp_Vec2d& theD2,
+                         gp_Vec2d& theD3,
+                   const gp_Vec2d& theD4,
+                   const Standard_Boolean theIsDirChange) const;
+
   //! Calculate value of base curve/adaptor
   void BaseD0(const Standard_Real theU, gp_Pnt2d& theValue) const;
   //! Calculate value and first derivatives of base curve/adaptor
@@ -86,7 +106,7 @@ private:
 
 private:
   Handle(Geom2d_Curve)         myBaseCurve;
-  Handle(Geom2dAdaptor_Curve) myBaseAdaptor;
+  Handle(Geom2dAdaptor_HCurve) myBaseAdaptor;
 
   Standard_Real myOffset;    ///< offset value
 };

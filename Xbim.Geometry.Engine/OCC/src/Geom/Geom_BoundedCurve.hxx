@@ -54,9 +54,6 @@ public:
   //! Returns the start point of the curve.
   Standard_EXPORT virtual gp_Pnt StartPoint() const = 0;
 
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
-
 
 
 

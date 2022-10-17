@@ -21,11 +21,18 @@
 #include <Standard_DefineAlloc.hxx>
 #include <Standard_Handle.hxx>
 
+#include <Adaptor3d_CurvePtr.hxx>
+#include <Adaptor3d_SurfacePtr.hxx>
+#include <Standard_Real.hxx>
+#include <Standard_Integer.hxx>
 #include <math_FunctionSetWithDerivatives.hxx>
+#include <Standard_Boolean.hxx>
 #include <math_Vector.hxx>
-
+class Standard_ConstructionError;
 class math_Matrix;
 class gp_Pnt2d;
+
+
 
 class ProjLib_PrjFunc  : public math_FunctionSetWithDerivatives
 {
@@ -34,7 +41,7 @@ public:
   DEFINE_STANDARD_ALLOC
 
   
-  Standard_EXPORT ProjLib_PrjFunc(const Adaptor3d_Curve* C, const Standard_Real FixVal, const Adaptor3d_Surface* S, const Standard_Integer Fix);
+  Standard_EXPORT ProjLib_PrjFunc(const Adaptor3d_CurvePtr& C, const Standard_Real FixVal, const Adaptor3d_SurfacePtr& S, const Standard_Integer Fix);
   
   //! returns the number of variables of the function.
   Standard_EXPORT Standard_Integer NbVariables() const;
@@ -63,16 +70,34 @@ public:
   //! returns  point  on  surface
   Standard_EXPORT gp_Pnt2d Solution() const;
 
+
+
+
+protected:
+
+
+
+
+
 private:
 
-  const Adaptor3d_Curve* myCurve;
-  const Adaptor3d_Surface* mySurface;
+
+
+  Adaptor3d_CurvePtr myCurve;
+  Adaptor3d_SurfacePtr mySurface;
   Standard_Real myt;
   Standard_Real myU;
   Standard_Real myV;
   Standard_Integer myFix;
   Standard_Real myNorm;
 
+
 };
+
+
+
+
+
+
 
 #endif // _ProjLib_PrjFunc_HeaderFile

@@ -38,7 +38,6 @@
 #include <TColgp_Array1OfPnt2d.hxx>
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array1OfReal.hxx>
-#include <Message_ProgressScope.hxx>
 
 #define LINE      1
 #define CIRCLE    2
@@ -106,11 +105,34 @@ Standard_Integer  BinTools_Curve2dSet::Index
 }
 
 //=======================================================================
+//function : operator << (gp_Pnt2d)
+//purpose  : 
+//=======================================================================
+
+static Standard_OStream& operator <<(Standard_OStream& OS, const gp_Pnt2d P)
+		  
+{
+  BinTools::PutReal(OS, P.X());
+  return BinTools::PutReal(OS, P.Y());
+}
+
+//=======================================================================
+//function : operator << (gp_Dir2d D)
+//purpose  : 
+//=======================================================================
+
+static Standard_OStream& operator <<(Standard_OStream& OS, const gp_Dir2d D)
+{
+  BinTools::PutReal(OS, D.X());
+  return BinTools::PutReal(OS, D.Y());
+}
+
+//=======================================================================
 //function : operator << ((Geom2d_Line)& L)
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_Line)& L)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_Line)& L)
 {
 
   OS << (Standard_Byte)LINE;
@@ -125,14 +147,14 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_L
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_Circle)& C)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_Circle)& C)
 {
   OS << (Standard_Byte)CIRCLE;
   gp_Circ2d C2d = C->Circ2d();
   OS << C2d.Location();
   OS << C2d.XAxis().Direction();
   OS << C2d.YAxis().Direction();
-  OS << C2d.Radius();
+  BinTools::PutReal(OS, C2d.Radius());
   return OS;
 }
 
@@ -141,15 +163,15 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_C
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_Ellipse)& E)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_Ellipse)& E)
 {
   OS << (Standard_Byte)ELLIPSE;
   gp_Elips2d C2d = E->Elips2d();
   OS << C2d.Location();
   OS << C2d.XAxis().Direction();
   OS << C2d.YAxis().Direction();
-  OS << C2d.MajorRadius();
-  OS << C2d.MinorRadius();
+  BinTools::PutReal(OS, C2d.MajorRadius());
+  BinTools::PutReal(OS, C2d.MinorRadius());
   return OS;
 }
 
@@ -158,14 +180,14 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_E
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_Parabola)& P)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_Parabola)& P)
 {
   OS << (Standard_Byte)PARABOLA;
   gp_Parab2d C2d = P->Parab2d();
-  OS << C2d.Location(); // Loc
-  OS << C2d.Axis().XAxis().Direction(); // XDir
-  OS << C2d.Axis().YAxis().Direction(); // YDir
-  OS << C2d.Focal(); // Focal
+  OS << C2d.Location();//Loc
+  OS << C2d.Axis().XAxis().Direction();//XDir
+  OS << C2d.Axis().YAxis().Direction();//YDir
+  BinTools::PutReal(OS, C2d.Focal());//Focal
   return OS;
 }
 
@@ -174,15 +196,15 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_P
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_Hyperbola)& H)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_Hyperbola)& H)
 {
   OS << (Standard_Byte)HYPERBOLA;
   gp_Hypr2d C2d = H->Hypr2d();
-  OS << C2d.Location(); // Loc
-  OS << C2d.XAxis().Direction(); // XDir
-  OS << C2d.YAxis().Direction(); // YDir
-  OS << C2d.MajorRadius(); // MajR
-  OS << C2d.MinorRadius();
+  OS << C2d.Location(); //Loc
+  OS << C2d.XAxis().Direction();//XDir
+  OS << C2d.YAxis().Direction();//YDir
+  BinTools::PutReal(OS, C2d.MajorRadius());//MajR
+  BinTools::PutReal(OS, C2d.MinorRadius());
   return OS;
 }
 
@@ -191,18 +213,18 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_H
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_BezierCurve)& B)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_BezierCurve)& B)
 {
   OS << (Standard_Byte)BEZIER;
   Standard_Boolean aRational = B->IsRational() ? 1:0;
-  OS << aRational; // rational
+  BinTools::PutBool(OS, aRational); //rational
   // poles and weights
   Standard_Integer i,aDegree = B->Degree(); 
-  OS << (Standard_ExtCharacter)aDegree; // Degree
+  BinTools::PutExtChar(OS, (Standard_ExtCharacter)aDegree); //Degree
   for (i = 1; i <= aDegree+1; i++) {
-    OS << B->Pole(i); // Pnt2d
+    OS << B->Pole(i); //Pnt2d
     if (aRational)
-      OS << B->Weight(i); // Real
+      BinTools::PutReal(OS, B->Weight(i));//Real
   }
   return OS;
 }
@@ -212,30 +234,30 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_B
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_BSplineCurve)& B)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_BSplineCurve)& B)
 {
   OS << (Standard_Byte)BSPLINE;
   Standard_Boolean aRational = B->IsRational() ? 1:0;
-  OS << aRational; //rational
+  BinTools::PutBool(OS, aRational); //rational
   Standard_Boolean aPeriodic = B->IsPeriodic() ? 1:0;
-  OS << aPeriodic; //periodic
+  BinTools::PutBool(OS, aPeriodic); //periodic
   // poles and weights
   Standard_Integer i,aDegree,aNbPoles,aNbKnots;
   aDegree = B->Degree();
   aNbPoles = B->NbPoles();
   aNbKnots = B->NbKnots();
-  OS << (Standard_ExtCharacter) aDegree;
-  OS <<  aNbPoles;
-  OS <<  aNbKnots;
+  BinTools::PutExtChar(OS, (Standard_ExtCharacter) aDegree);
+  BinTools::PutInteger(OS,  aNbPoles);
+  BinTools::PutInteger(OS,  aNbKnots);
   for (i = 1; i <= aNbPoles; i++) {
     OS << B->Pole(i); // Pnt2d
     if (aRational)
-      OS << B->Weight(i);
+      BinTools::PutReal(OS, B->Weight(i));
   }
 
   for (i = 1; i <= aNbKnots; i++) {
-    OS << B->Knot(i);
-    OS << B->Multiplicity(i);
+    BinTools::PutReal(OS, B->Knot(i));
+    BinTools::PutInteger(OS, B->Multiplicity(i));
   }
 
   return OS;
@@ -246,12 +268,12 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_B
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_TrimmedCurve)& C)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_TrimmedCurve)& C)
 {
   OS << (Standard_Byte)TRIMMED;
-  OS << C->FirstParameter(); 
-  OS << C->LastParameter();
-  BinTools_Curve2dSet::WriteCurve2d (C->BasisCurve(), OS);
+  BinTools::PutReal(OS, C->FirstParameter()); 
+  BinTools::PutReal(OS, C->LastParameter());
+  BinTools_Curve2dSet::WriteCurve2d(C->BasisCurve(),OS);
   return OS;
 }
 
@@ -260,11 +282,11 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_T
 //purpose  : 
 //=======================================================================
 
-static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_OffsetCurve)& C)
+static Standard_OStream& operator <<(Standard_OStream& OS, const Handle(Geom2d_OffsetCurve)& C)
 {
   OS << (Standard_Byte)OFFSET;
-  OS << C->Offset(); // Offset 
-  BinTools_Curve2dSet::WriteCurve2d (C->BasisCurve(), OS);
+  BinTools::PutReal(OS,C->Offset());//Offset 
+  BinTools_Curve2dSet::WriteCurve2d(C->BasisCurve(),OS);
   return OS;  
 }
 
@@ -273,8 +295,8 @@ static BinTools_OStream& operator <<(BinTools_OStream& OS, const Handle(Geom2d_O
 //purpose  : 
 //=======================================================================
 
-void BinTools_Curve2dSet::WriteCurve2d(
-  const Handle(Geom2d_Curve)& C, BinTools_OStream& OS)
+void BinTools_Curve2dSet::WriteCurve2d(const Handle(Geom2d_Curve)& C,
+					Standard_OStream& OS)
 {
   Handle(Standard_Type) TheType = C->DynamicType();
   try {
@@ -323,15 +345,12 @@ void BinTools_Curve2dSet::WriteCurve2d(
 //purpose  : 
 //=======================================================================
 
-void  BinTools_Curve2dSet::Write (Standard_OStream& OS,
-                                  const Message_ProgressRange& theRange) const
+void  BinTools_Curve2dSet::Write(Standard_OStream& OS)const 
 {
   Standard_Integer i, aNbCurves = myMap.Extent();
-  Message_ProgressScope aPS(theRange, "Writing 2D curves",aNbCurves);
   OS << "Curve2ds "<< aNbCurves << "\n";
-  BinTools_OStream aStream (OS);
-  for (i = 1; i <= aNbCurves && aPS.More(); i++, aPS.Next()) {
-    WriteCurve2d (Handle(Geom2d_Curve)::DownCast (myMap (i)), aStream);
+  for (i = 1; i <= aNbCurves; i++) {
+    WriteCurve2d(Handle(Geom2d_Curve)::DownCast(myMap(i)),OS);
   }
 }
 
@@ -673,8 +692,7 @@ Standard_IStream& BinTools_Curve2dSet::ReadCurve2d(Standard_IStream& IS,
 //purpose  : 
 //=======================================================================
 
-void  BinTools_Curve2dSet::Read (Standard_IStream& IS,
-                                 const Message_ProgressRange& theRange)
+void  BinTools_Curve2dSet::Read(Standard_IStream& IS)
 {
   char buffer[255];
 
@@ -692,10 +710,12 @@ void  BinTools_Curve2dSet::Read (Standard_IStream& IS,
   Handle(Geom2d_Curve) C;
   Standard_Integer i, aNbCurves;
   IS >> aNbCurves;
-  Message_ProgressScope aPS(theRange, "Reading curves 2d", aNbCurves);
-  IS.get();//remove <lf>		
-  for (i = 1; i <= aNbCurves && aPS.More(); i++, aPS.Next()) {
+  IS.get();//remove <lf>
+  for (i = 1; i <= aNbCurves; i++) {
     BinTools_Curve2dSet::ReadCurve2d(IS,C);
     myMap.Add(C);
   }
 }
+
+
+

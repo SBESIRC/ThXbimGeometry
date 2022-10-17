@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef BRepBuilderAPI_BndBoxTreeSelector_HeaderFile
-#define BRepBuilderAPI_BndBoxTreeSelector_HeaderFile
+#ifndef _BRepBuilderAPI_BndBoxTreeSelector_Header
+#define _BRepBuilderAPI_BndBoxTreeSelector_Header
 
 #include <TColStd_ListOfInteger.hxx>
 #include <Bnd_Box.hxx>

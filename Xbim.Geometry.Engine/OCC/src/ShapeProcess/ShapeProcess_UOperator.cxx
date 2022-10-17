@@ -33,8 +33,7 @@ ShapeProcess_UOperator::ShapeProcess_UOperator (const ShapeProcess_OperFunc func
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean ShapeProcess_UOperator::Perform (const Handle(ShapeProcess_Context)& context,
-                                                  const Message_ProgressRange& theProgress)
+Standard_Boolean ShapeProcess_UOperator::Perform (const Handle(ShapeProcess_Context)& context)
 {
-  return myFunc(context, theProgress);
+  return myFunc ( context );
 }

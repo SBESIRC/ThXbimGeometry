@@ -25,6 +25,7 @@
 #include <Standard_Real.hxx>
 #include <AdvApprox_Cutting.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_DomainError;
 
 
 

@@ -27,12 +27,12 @@ class IMeshData_Shape : public Standard_Transient
 public:
 
   //! Destructor.
-  virtual ~IMeshData_Shape()
+  Standard_EXPORT virtual ~IMeshData_Shape()
   {
   }
 
   //! Assigns shape to discrete shape.
-  void SetShape (const TopoDS_Shape& theShape)
+  inline void SetShape (const TopoDS_Shape& theShape)
   {
     myShape = theShape;
   }
@@ -43,17 +43,17 @@ public:
     return myShape;
   }
 
-  DEFINE_STANDARD_RTTIEXT(IMeshData_Shape, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshData_Shape, Standard_Transient)
 
 protected:
 
   //! Constructor.
-  IMeshData_Shape()
+  Standard_EXPORT IMeshData_Shape()
   {
   }
 
   //! Constructor.
-  IMeshData_Shape (const TopoDS_Shape& theShape)
+  Standard_EXPORT IMeshData_Shape (const TopoDS_Shape& theShape)
     : myShape(theShape)
   {
   }

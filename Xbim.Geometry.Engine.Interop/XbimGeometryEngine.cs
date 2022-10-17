@@ -1,607 +1,335 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using Xbim.Common;
+using System.Runtime.Remoting;
 using Xbim.Common.Geometry;
+using Xbim.Common.Logging;
 using Xbim.Ifc4;
 using Xbim.Ifc4.Interfaces;
 
+
 namespace Xbim.Geometry.Engine.Interop
-{
+{  
     public class XbimGeometryEngine : IXbimGeometryEngine
     {
         private readonly IXbimGeometryEngine _engine;
-
-        private readonly ILogger<XbimGeometryEngine> _logger;
-
-        static XbimGeometryEngine()
+        
+        public XbimGeometryEngine()
         {
-             
+            // Warn if runtime for Engine is not present
+            XbimPrerequisitesValidator.Validate();
+
             // We need to wire in a custom assembly resolver since Xbim.Geometry.Engine is 
             // not located using standard probing rules (due to way we deploy processor specific binaries)
             AppDomain.CurrentDomain.AssemblyResolve += XbimCustomAssemblyResolver.ResolverHandler;
-        }
-
-        public XbimGeometryEngine() : this(null)
-        { }
-
-        public XbimGeometryEngine(ILogger<XbimGeometryEngine> logger)
-        {
-
-            // Warn if runtime for Engine is not present, this is not necessary any more as we are net472
-            //XbimPrerequisitesValidator.Validate();
-
-
-            _logger = logger ?? XbimLogging.CreateLogger<XbimGeometryEngine>();
 
             var conventions = new XbimArchitectureConventions();    // understands the process we run under
-            string assemblyName = $"{conventions.ModuleName}.dll";// + conventions.Suffix; dropping the use of a suffix
-            _logger.LogDebug("Loading {assemblyName}", assemblyName);
             try
             {
-                var ass = Assembly.Load(assemblyName);
-                _logger.LogTrace("Loaded {fullName} from {codebase}", ass.GetName().FullName, ass.CodeBase);
-                var t = ass.GetType("Xbim.Geometry.XbimGeometryCreator");
-                var obj = Activator.CreateInstance(t);
-                _logger.LogTrace("Created Instance of {fullName}", obj.GetType().FullName);
-                if (obj == null)
-                {
-                    throw new Exception("Failed to create Geometry Engine");
-                }
-
-                _engine = obj as IXbimGeometryEngine;
-                if (_engine == null)
-                {
-                    throw new Exception("Failed to cast Geometry Engine to IXbimGeometryEngine");
-                }
-
-                _logger.LogDebug("XbimGeometryEngine constructed successfully");
+                var ass =  Assembly.Load(conventions.AssemblyName);
+                var oh = Activator.CreateInstance(ass.FullName, "Xbim.Geometry.XbimGeometryCreator");           
+                _engine = oh.Unwrap() as IXbimGeometryEngine; 
             }
             catch (Exception e)
             {
-                _logger.LogError(0, e, "Failed to construct XbimGeometryEngine");
-                throw new FileLoadException($"Failed to load Xbim.Geometry.Engine{conventions.Suffix}.dll", e);
+                // reset resolution mode
+                AppDomain.CurrentDomain.AssemblyResolve -= XbimCustomAssemblyResolver.ResolverHandler;
+                throw e;
             }
+            // reset resolution mode
+            AppDomain.CurrentDomain.AssemblyResolve -= XbimCustomAssemblyResolver.ResolverHandler;
         }
 
-        public IXbimGeometryObject Create(IIfcGeometricRepresentationItem ifcRepresentation, ILogger logger)
+        public IXbimGeometryObject Create(IIfcGeometricRepresentationItem ifcRepresentation)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcRepresentation))
-            {
-                return _engine.Create(ifcRepresentation, null, logger);
-            }
+            return Create(ifcRepresentation, null);
         }
 
         public XbimShapeGeometry CreateShapeGeometry(IXbimGeometryObject geometryObject, double precision, double deflection,
-            double angle, XbimGeometryType storageType, ILogger logger)
+            double angle, XbimGeometryType storageType)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.CreateShapeGeometry(geometryObject, precision, deflection, angle, storageType, logger);
-            }
+            return _engine.CreateShapeGeometry(geometryObject, precision, deflection, angle, storageType);
         }
 
-        public XbimShapeGeometry CreateShapeGeometry(IXbimGeometryObject geometryObject, double precision, double deflection, double angle, ILogger logger)
+        public XbimShapeGeometry CreateShapeGeometry(IXbimGeometryObject geometryObject, double precision, double deflection, double angle)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.CreateShapeGeometry(geometryObject, precision, deflection, angle, XbimGeometryType.Polyhedron, logger);
-            }
+            return _engine.CreateShapeGeometry(geometryObject,  precision,  deflection,  angle, XbimGeometryType.Polyhedron);
         }
-        public XbimShapeGeometry CreateShapeGeometry(IXbimGeometryObject geometryObject, double precision, double deflection, ILogger logger /*, angle = 0.5*/)
+        public XbimShapeGeometry CreateShapeGeometry(IXbimGeometryObject geometryObject, double precision, double deflection /*, angle = 0.5*/)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.CreateShapeGeometry(geometryObject, precision, deflection, 0.5, XbimGeometryType.Polyhedron, logger);
-            }
-        }
-        /// <summary>
-        /// Values for deflection read from config files
-        /// </summary>
-        /// <param name="oneMillimetre"></param>
-        /// <param name="geometryObject"></param>
-        /// <param name="precision"></param>
-        /// <param name="logger"></param>
-        /// <returns></returns>
-        public XbimShapeGeometry CreateShapeGeometry(double oneMillimetre,IXbimGeometryObject geometryObject, double precision,  ILogger logger )
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.CreateShapeGeometry(oneMillimetre, geometryObject, precision,  logger);
-            }
-        }
-        public IXbimSolid CreateSolid(IIfcSweptAreaSolid ifcSolid, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateShapeGeometry(geometryObject, precision, deflection, 0.5, XbimGeometryType.Polyhedron);
         }
 
-        public IXbimSolid CreateSolid(IIfcExtrudedAreaSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSweptAreaSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcRevolvedAreaSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcExtrudedAreaSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcSweptDiskSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcRevolvedAreaSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcBoundingBox ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSweptDiskSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcSurfaceCurveSweptAreaSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcBoundingBox ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcBooleanClippingResult ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSurfaceCurveSweptAreaSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcBooleanOperand ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcBooleanClippingResult ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcHalfSpaceSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcBooleanOperand ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcPolygonalBoundedHalfSpace ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcHalfSpaceSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcBoxedHalfSpace ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcPolygonalBoundedHalfSpace ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcManifoldSolidBrep ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcBoxedHalfSpace ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcFacetedBrep ifcSolid, ILogger logger)
+        public IXbimSolidSet CreateSolidSet(IIfcManifoldSolidBrep ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolidSet(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcFacetedBrepWithVoids ifcSolid, ILogger logger)
+        public IXbimSolidSet CreateSolidSet(IIfcFacetedBrep ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolidSet(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcClosedShell ifcSolid, ILogger logger)
+        public IXbimSolidSet CreateSolidSet(IIfcFacetedBrepWithVoids ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolidSet(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcCsgPrimitive3D ifcSolid, ILogger logger)
+        public IXbimSolidSet CreateSolidSet(IIfcClosedShell ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolidSet(ifcSolid);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcCsgSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcCsgPrimitive3D ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcSphere ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcCsgSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcBlock ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSphere ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcRightCircularCylinder ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcBlock ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcRightCircularCone ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcRightCircularCylinder ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcRectangularPyramid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcRightCircularCone ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcSweptDiskSolidPolygonal ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcRectangularPyramid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcRevolvedAreaSolidTapered ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSweptDiskSolidPolygonal ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcFixedReferenceSweptAreaSolid ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcRevolvedAreaSolidTapered ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcAdvancedBrep ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcFixedReferenceSweptAreaSolid ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcAdvancedBrepWithVoids ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcAdvancedBrep ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimSolid CreateSolid(IIfcSectionedSpine ifcSolid, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcAdvancedBrepWithVoids ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolid(ifcSolid, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimShell CreateShell(IIfcOpenShell shell, ILogger logger)
+        public IXbimSolid CreateSolid(IIfcSectionedSpine ifcSolid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateShell(shell, logger);
-            }
+            return _engine.CreateSolid(ifcSolid);
         }
 
-        public IXbimShell CreateShell(IIfcConnectedFaceSet shell, ILogger logger)
+        public IXbimShell CreateShell(IIfcOpenShell shell)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateShell(shell, logger);
-            }
+            return _engine.CreateShell(shell);
         }
 
-        public IXbimShell CreateShell(IIfcSurfaceOfLinearExtrusion linExt, ILogger logger)
+        public IXbimShell CreateShell(IIfcConnectedFaceSet shell)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, linExt))
-            {
-                return _engine.CreateShell(linExt, logger);
-            }
+            return _engine.CreateShell(shell);
         }
 
-        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcTriangulatedFaceSet shell, ILogger logger)
+        public IXbimShell CreateShell(IIfcSurfaceOfLinearExtrusion linExt)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSurfaceModel(shell, logger);
-            }
+            return _engine.CreateShell(linExt);
         }
 
-        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcShellBasedSurfaceModel ifcSurface, ILogger logger)
+        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcTriangulatedFaceSet shell)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSurfaceModel(ifcSurface, logger);
-            }
+            return _engine.CreateSurfaceModel(shell);
         }
 
-        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcFaceBasedSurfaceModel ifcSurface, ILogger logger)
+        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcShellBasedSurfaceModel ifcSurface)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSurfaceModel(ifcSurface, logger);
-            }
+            return _engine.CreateSurfaceModel(ifcSurface);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcTriangulatedFaceSet shell, ILogger logger)
+        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcFaceBasedSurfaceModel ifcSurface)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSolidSet(shell, logger);
-            }
-        }
-        public IXbimSolidSet CreateSolidSet(IIfcPolygonalFaceSet shell, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSolidSet(shell, logger);
-            }
+            return _engine.CreateSurfaceModel(ifcSurface);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcShellBasedSurfaceModel ifcSurface, ILogger logger)
+        public IXbimFace CreateFace(IIfcProfileDef profileDef)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSolidSet(ifcSurface, logger);
-            }
+            return _engine.CreateFace(profileDef);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcFaceBasedSurfaceModel ifcSurface, ILogger logger)
+       
+        public IXbimFace CreateFace(IIfcCompositeCurve cCurve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSolidSet(ifcSurface, logger);
-            }
+            return _engine.CreateFace(cCurve);
+
+        }
+        public IXbimFace CreateFace(IIfcPolyline pline)
+        {
+            return _engine.CreateFace(pline);
+
         }
 
-        public IXbimSolid CreateSolid(IIfcTriangulatedFaceSet shell, ILogger logger)
+        public IXbimFace CreateFace(IIfcPolyLoop loop)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSolid(shell, logger);
-            }
-        }
-
-        public IXbimSolid CreateSolid(IIfcShellBasedSurfaceModel ifcSurface, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSolid(ifcSurface, logger);
-            }
-        }
-
-        public IXbimSolid CreateSolid(IIfcFaceBasedSurfaceModel ifcSurface, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSurface))
-            {
-                return _engine.CreateSolid(ifcSurface, logger);
-            }
-        }
-
-        public IXbimFace CreateFace(IIfcProfileDef profileDef, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, profileDef))
-            {
-                return _engine.CreateFace(profileDef, logger);
-            }
+            return _engine.CreateFace(loop);
         }
 
 
-        public IXbimFace CreateFace(IIfcCompositeCurve cCurve, ILogger logger)
+        public IXbimFace CreateFace(IIfcSurface surface)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, cCurve))
-            {
-                return _engine.CreateFace(cCurve, logger);
-            }
-        }
-        public IXbimFace CreateFace(IIfcPolyline pline, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, pline))
-            {
-                return _engine.CreateFace(pline, logger);
-            }
+            return _engine.CreateFace(surface);
+
         }
 
-        public IXbimFace CreateFace(IIfcPolyLoop loop, ILogger logger)
+        public IXbimFace CreateFace(IIfcPlane plane)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, loop))
-            {
-                return _engine.CreateFace(loop, logger);
-            }
+            return _engine.CreateFace(plane);
+
+        }
+        public IXbimFace CreateFace(IXbimWire wire)
+        {
+            return _engine.CreateFace(wire);
+
         }
 
-
-        public IXbimFace CreateFace(IIfcSurface surface, ILogger logger)
+        public IXbimWire CreateWire(IIfcCurve curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, surface))
-            {
-                return _engine.CreateFace(surface, logger);
-            }
+            return _engine.CreateWire(curve);
         }
 
-        public IXbimFace CreateFace(IIfcPlane plane, ILogger logger)
+        public IXbimWire CreateWire(IIfcCompositeCurveSegment compCurveSeg)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, plane))
-            {
-                return _engine.CreateFace(plane, logger);
-            }
+            return _engine.CreateWire(compCurveSeg);
         }
-
-        public IXbimFace CreateFace(IXbimWire wire, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, wire))
-            {
-                return _engine.CreateFace(wire, logger);
-            }
-        }
-
-        public IXbimWire CreateWire(IIfcCurve curve, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateWire(curve, logger);
-            }
-        }
-
-        public IXbimWire CreateWire(IIfcCompositeCurveSegment compCurveSeg, ILogger logger)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, compCurveSeg))
-            {
-                return _engine.CreateWire(compCurveSeg, logger);
-            }
-        }
-
-
-
+        
         public IXbimPoint CreatePoint(double x, double y, double z, double tolerance)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger))
-            {
-                return _engine.CreatePoint(x, y, z, tolerance);
-            }
+            return _engine.CreatePoint(x, y, z, tolerance);
         }
 
         public IXbimPoint CreatePoint(IIfcCartesianPoint p)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, p))
-            {
-                return _engine.CreatePoint(p);
-            }
+            return _engine.CreatePoint(p);
         }
 
         public IXbimPoint CreatePoint(XbimPoint3D p, double tolerance)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, p))
-            {
-                return _engine.CreatePoint(p, tolerance);
-            }
+            return _engine.CreatePoint(p, tolerance);
         }
 
         public IXbimPoint CreatePoint(IIfcPoint pt)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, pt))
-            {
-                return _engine.CreatePoint(pt);
-            }
+            return _engine.CreatePoint(pt);
         }
 
-        public IXbimPoint CreatePoint(IIfcPointOnCurve p, ILogger logger)
+        public IXbimPoint CreatePoint(IIfcPointOnCurve p)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, p))
-            {
-                return _engine.CreatePoint(p, logger);
-            }
+            return _engine.CreatePoint(p);
         }
 
-        public IXbimPoint CreatePoint(IIfcPointOnSurface p, ILogger logger)
+        public IXbimPoint CreatePoint(IIfcPointOnSurface p)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, p))
-            {
-                return _engine.CreatePoint(p, logger);
-            }
+            return _engine.CreatePoint(p);
         }
 
         public IXbimVertex CreateVertexPoint(XbimPoint3D point, double precision)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, point))
-            {
-                return _engine.CreateVertexPoint(point, precision);
-            }
+            return _engine.CreateVertexPoint(point, precision);
         }
-
-
+        
         public IXbimSolidSet CreateSolidSet()
         {
-            try
-            {
-                using (new Tracer(LogHelper.CurrentFunctionName(), this._logger))
-                {
-                    return _engine.CreateSolidSet();
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(0, e, "Failed in CreateSolidSet");
-                throw new Exception("Engine is not valid", e);
-            }
-
+            return _engine.CreateSolidSet();
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcBooleanResult boolOp, ILogger logger)
+        public IXbimSolidSet CreateSolidSet(IIfcBooleanResult boolOp)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, boolOp))
-            {
-                return _engine.CreateSolidSet(boolOp, logger);
-            }
+            return _engine.CreateSolidSet(boolOp);
         }
 
-        public IXbimSolidSet CreateGrid(IIfcGrid grid, ILogger logger)
+        public IXbimSolidSet CreateGrid(IIfcGrid grid)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, grid))
-            {
-                return _engine.CreateGrid(grid, logger);
-            }
+            return _engine.CreateGrid(grid);
         }
 
         public void WriteTriangulation(TextWriter tw, IXbimGeometryObject shape, double tolerance, double deflection)
@@ -611,145 +339,99 @@ namespace Xbim.Geometry.Engine.Interop
 
         public void WriteTriangulation(TextWriter tw, IXbimGeometryObject shape, double tolerance, double deflection, double angle)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shape))
-            {
-                _engine.WriteTriangulation(tw, shape, tolerance, deflection, angle);
-            }
+            _engine.WriteTriangulation(tw, shape, tolerance, deflection, angle);
         }
-        public void WriteTriangulation(BinaryWriter bw, IXbimGeometryObject shape, double tolerance, double deflection, double angle)
+        public XbimPoint3D WriteTriangulation(BinaryWriter bw, IXbimGeometryObject shape, double tolerance, double deflection, double angle)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shape))
-            {
-                _engine.WriteTriangulation(bw, shape, tolerance, deflection, angle);
-            }
+            return _engine.WriteTriangulation(bw, shape, tolerance, deflection, angle);
         }
 
         public void Mesh(IXbimMeshReceiver receiver, IXbimGeometryObject geometryObject, double precision, double deflection,
             double angle = 0.5)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                _engine.Mesh(receiver, geometryObject, precision, deflection, angle);
-            }
+            _engine.Mesh(receiver, geometryObject, precision, deflection, angle);
         }
-
-
+        
         public void WriteTriangulation(BinaryWriter bw, IXbimGeometryObject shape, double tolerance, double deflection)
         {
-            WriteTriangulation(bw, shape, tolerance, deflection: deflection, angle: 0.5);
+            WriteTriangulation(bw, shape, tolerance, deflection: deflection, angle: 0.5);   
         }
-
-
-        public IXbimGeometryObject Create(IIfcGeometricRepresentationItem ifcRepresentation, IIfcAxis2Placement3D objectLocation, ILogger logger)
+             
+        public ILogger Logger
+        {
+            get { return _engine.Logger; }
+        }
+        
+        public IXbimGeometryObject Create(IIfcGeometricRepresentationItem ifcRepresentation, IIfcAxis2Placement3D objectLocation)
         {
             try
             {
-                using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcRepresentation))
-                {
-                    return _engine.Create(ifcRepresentation, objectLocation, logger);
-                }
+                return _engine.Create(ifcRepresentation, objectLocation);
             }
             catch (Exception e)
             {
-                (logger ?? _logger).LogError("EE001: Failed to create geometry #{0} of type {1}, {2}", ifcRepresentation.EntityLabel, ifcRepresentation.GetType().Name, e.Message);
+                Logger.ErrorFormat("EE001: Failed to create geometry #{0} of type {1}, {2}", ifcRepresentation.EntityLabel, ifcRepresentation.GetType().Name, e.Message);
                 return null;
             }
-
         }
 
         public IXbimGeometryObjectSet CreateGeometryObjectSet()
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger))
-            {
-                return _engine.CreateGeometryObjectSet();
-            }
+            return _engine.CreateGeometryObjectSet();
         }
 
-        public IXbimCurve CreateCurve(IIfcCurve curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcCurve curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcPolyline ifcPolyline, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcPolyline ifcPolyline)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcPolyline))
-            {
-                return _engine.CreateCurve(ifcPolyline, logger);
-            }
+            return _engine.CreateCurve(ifcPolyline);
         }
 
-        public IXbimCurve CreateCurve(IIfcCircle curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcCircle curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcEllipse curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcEllipse curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcLine curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcLine curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcTrimmedCurve curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcTrimmedCurve curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcBSplineCurveWithKnots curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcBSplineCurveWithKnots curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcRationalBSplineCurveWithKnots curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcRationalBSplineCurveWithKnots curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public IXbimCurve CreateCurve(IIfcOffsetCurve3D curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcOffsetCurve3D curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
-        public IXbimCurve CreateCurve(IIfcOffsetCurve2D curve, ILogger logger)
+        public IXbimCurve CreateCurve(IIfcOffsetCurve2D curve)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, curve))
-            {
-                return _engine.CreateCurve(curve, logger);
-            }
+            return _engine.CreateCurve(curve);
         }
 
-        public XbimMatrix3D ToMatrix3D(IIfcObjectPlacement objPlacement, ILogger logger)
+        public XbimMatrix3D ToMatrix3D(IIfcObjectPlacement objPlacement)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, objPlacement))
-            {
-                return _engine.ToMatrix3D(objPlacement, logger);
-            }
+            return _engine.ToMatrix3D(objPlacement);
         }
 
         /// <summary>
@@ -760,180 +442,42 @@ namespace Xbim.Geometry.Engine.Interop
         /// <returns></returns>
         public IXbimGeometryObject Transformed(IXbimGeometryObject geometry, IIfcCartesianTransformationOperator cartesianTransform)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometry))
-            {
-                return _engine.Transformed(geometry, cartesianTransform);
-            }
+           return _engine.Transformed(geometry, cartesianTransform);
         }
-
-
+        
         public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcAxis2Placement3D placement)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.Moved(geometryObject, placement);
-            }
+        { 
+            return _engine.Moved(geometryObject, placement);
         }
+
         public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcAxis2Placement2D placement)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.Moved(geometryObject, placement);
-            }
-        }
-        public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcPlacement placement)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.Moved(geometryObject, placement);
-            }
+            return _engine.Moved(geometryObject, placement);
         }
 
-        public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcObjectPlacement objectPlacement, ILogger logger)
+        public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcPlacement placement)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.Moved(geometryObject, objectPlacement, logger);
-            }
+            return _engine.Moved(geometryObject, placement);
+        }
+
+        public IXbimGeometryObject Moved(IXbimGeometryObject geometryObject, IIfcObjectPlacement objectPlacement)
+        {
+            return _engine.Moved(geometryObject, objectPlacement);
         }
 
         public IXbimGeometryObject FromBrep(string brepStr)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger))
-            {
-                return _engine.FromBrep(brepStr);
-            }
-        }
+            return _engine.FromBrep(brepStr);
+        }     
 
         public string ToBrep(IXbimGeometryObject geometryObject)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, geometryObject))
-            {
-                return _engine.ToBrep(geometryObject);
-            }
+            return _engine.ToBrep(geometryObject);
         }
 
-        public IXbimSolidSet CreateSolidSet(IIfcSweptAreaSolid ifcSolid, ILogger logger = null)
+        public IList<XbimPoint3D> GetDiscretisedDirectrix(IIfcSweptDiskSolid saSolid, int numberOfPoints)
         {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, ifcSolid))
-            {
-                return _engine.CreateSolidSet(ifcSolid, logger);
-            }
+            return _engine.GetDiscretisedDirectrix(saSolid, numberOfPoints);
         }
-
-        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcTessellatedFaceSet shell, ILogger logger = null)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSurfaceModel(shell, logger);
-            }
-        }
-        public IXbimGeometryObjectSet CreateSurfaceModel(IIfcPolygonalFaceSet shell, ILogger logger = null)
-        {
-            using (new Tracer(LogHelper.CurrentFunctionName(), this._logger, shell))
-            {
-                return _engine.CreateSurfaceModel(shell, logger);
-            }
-        }
-
-		public void WriteBrep(string filename, IXbimGeometryObject geomObj)
-		{
-            // no logger is provided so no tracing is started for this function
-            _engine.WriteBrep(filename, geomObj);
-		}
-
-		public IXbimGeometryObject ReadBrep(string filename)
-		{
-            // no logger is provided so no tracing is started for this function
-            return _engine.ReadBrep(filename);
-		}
-	}
-
-    public static class LogHelper
-    {
-        public static string CurrentFunctionName([CallerMemberName] string caller = "")
-        {
-            return caller;
-        }
-
-    }
-
-    /// <summary>
-    /// Traces method calls
-    /// </summary>
-    internal class Tracer : IDisposable
-    {
-        private readonly string methodName;
-        private readonly ILogger logger;
-
-        public Tracer(string methodName, ILogger logger)
-        {
-            this.methodName = methodName;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            logger.LogTrace("Entering GeometryEngine {function}", methodName);
-        }
-
-        public Tracer(string methodName, ILogger logger, IPersistEntity entity)
-        {
-            this.methodName = methodName;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            if (logger.IsEnabled(LogLevel.Trace))   // Optimisation to avoid GetType reflection unless Trace enabled
-            {
-                logger.LogTrace("Entering GeometryEngine {function} with #{entity} [{type}]",
-                methodName, entity.EntityLabel, entity.GetType().Name);
-            }
-        }
-
-        public Tracer(string methodName, ILogger logger, IXbimGeometryObject geometryObject)
-        {
-            this.methodName = methodName;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            if (logger.IsEnabled(LogLevel.Trace)) // Optimisation to avoid GetType reflection unless Trace enabled
-            {
-                logger.LogTrace("Entering GeometryEngine {function} with {tag} [{type}]",
-                    methodName, geometryObject.Tag, geometryObject.GetType().Name);
-            }
-        }
-
-        public Tracer(string methodName, ILogger logger, XbimPoint3D point)
-        {
-            this.methodName = methodName;
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            logger.LogTrace("Entering GeometryEngine {function} with point {x},{y},{z}", methodName, point.X, point.Y, point.Z);
-        }
-
-        #region IDisposable Support
-        private bool disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    logger.LogTrace("Exiting GeometryEngine {function}", methodName);
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        ~Tracer()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(false);
-        }
-
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-            GC.SuppressFinalize(this);  // To avoid excessive GC
-        }
-        #endregion
-
-
-
     }
 }

@@ -14,9 +14,9 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <GeomFill_LocationGuide.hxx>
 
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor3d_HSurface.hxx>
 #include <Adaptor3d_Surface.hxx>
 #include <ElCLib.hxx>
 #include <Extrema_ExtCS.hxx>
@@ -27,9 +27,10 @@
 #include <Geom_SurfaceOfRevolution.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomAdaptor.hxx>
-#include <GeomAdaptor_Curve.hxx>
-#include <GeomAdaptor_Surface.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomFill_FunctionGuide.hxx>
+#include <GeomFill_LocationGuide.hxx>
 #include <GeomFill_LocationLaw.hxx>
 #include <GeomFill_SectionLaw.hxx>
 #include <GeomFill_SectionPlacement.hxx>
@@ -62,7 +63,7 @@
 
 IMPLEMENT_STANDARD_RTTIEXT(GeomFill_LocationGuide,GeomFill_LocationLaw)
 
-#ifdef DRAW
+#if DRAW
 static Standard_Integer Affich = 0;
 #include <Approx_Curve3d.hxx>
 #include <DrawTrSurf.hxx>
@@ -78,7 +79,7 @@ static void TraceRevol(const Standard_Real t,
                        const Standard_Real s,
 		       const Handle(GeomFill_TrihedronWithGuide)& Law,
 		       const Handle(GeomFill_SectionLaw)& Section,
-		       const Handle(Adaptor3d_Curve)& Curve,
+		       const Handle(Adaptor3d_HCurve)& Curve,
 		       const gp_Mat& Trans)
 		       
 {
@@ -195,7 +196,7 @@ static void InGoodPeriod(const Standard_Real Prec,
   Trans.SetIdentity();
   WithTrans = Standard_False;
 
-#ifdef DRAW
+#if DRAW
   if (Affich) {
     Approx_Curve3d approx(myGuide, 1.e-4, 
 			  GeomAbs_C1, 
@@ -218,7 +219,7 @@ static void InGoodPeriod(const Standard_Real Prec,
 {
   if (myCurve.IsNull())
     throw Standard_ConstructionError(
-          "GeomFill_LocationGuide::The path is not set !!");
+          "GeomFill_LocationGuide::The path is not setted !!");
 
     //repere fixe
   gp_Ax3 Rep(gp::Origin(), gp::DZ(), gp::DX());
@@ -231,7 +232,7 @@ static void InGoodPeriod(const Standard_Real Prec,
   Standard_Real CurAngle =  PrecAngle, a1/*, a2*/;
   gp_Pnt2d p1,p2;
   Handle(Geom_SurfaceOfRevolution) Revol; // surface de revolution
-  Handle(GeomAdaptor_Surface) Pl; // = Revol
+  Handle(GeomAdaptor_HSurface) Pl; // = Revol
   Handle(Geom_TrimmedCurve) S;
   IntCurveSurface_IntersectionPoint PInt; // intersection guide/Revol
   Handle(TColStd_HArray1OfInteger) Mult;
@@ -341,7 +342,7 @@ static void InGoodPeriod(const Standard_Real Prec,
     Revol = new(Geom_SurfaceOfRevolution) (S, Ax); 
     
     GeomAdaptor_Surface GArevol(Revol);
-    Extrema_ExtCS DistMini(*myGuide, GArevol,
+    Extrema_ExtCS DistMini(myGuide->Curve(), GArevol,
                            Precision::Confusion(), Precision::Confusion());
     Extrema_POnCurv Pc;
     Extrema_POnSurf Ps;
@@ -537,7 +538,7 @@ static void InGoodPeriod(const Standard_Real Prec,
 //Purpose : Calcul des poles sur la surface d'arret (intersection 
 // courbe guide / surface de revolution en myNbPts points)
 //==================================================================
- void GeomFill_LocationGuide::SetCurve(const Handle(Adaptor3d_Curve)& C) 
+ void GeomFill_LocationGuide::SetCurve(const Handle(Adaptor3d_HCurve)& C) 
 {
   Standard_Real LastAngle;
   myCurve = C;
@@ -556,7 +557,7 @@ static void InGoodPeriod(const Standard_Real Prec,
 //Function: GetCurve
 //Purpose : return the trajectoire
 //==================================================================
- const Handle(Adaptor3d_Curve)& GeomFill_LocationGuide::GetCurve() const
+ const Handle(Adaptor3d_HCurve)& GeomFill_LocationGuide::GetCurve() const
 {
   return myCurve;
 }
@@ -1341,7 +1342,7 @@ void GeomFill_LocationGuide::Resolution (const Standard_Integer ,
 //Function : Guide
 //Purpose : 
 //==================================================================
- Handle(Adaptor3d_Curve) GeomFill_LocationGuide::Guide() const
+ Handle(Adaptor3d_HCurve) GeomFill_LocationGuide::Guide() const
 {
   return myGuide;
 }

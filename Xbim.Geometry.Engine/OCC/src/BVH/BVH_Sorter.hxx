@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef BVH_Sorter_HeaderFile
-#define BVH_Sorter_HeaderFile
+#ifndef _BVH_Sorter_Header
+#define _BVH_Sorter_Header
 
 #include <BVH_Set.hxx>
 

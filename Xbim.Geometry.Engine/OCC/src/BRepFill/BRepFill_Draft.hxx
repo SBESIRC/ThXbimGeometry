@@ -30,7 +30,11 @@
 #include <Standard_Boolean.hxx>
 class BRepFill_DraftLaw;
 class BRepFill_SectionLaw;
+class StdFail_NotDone;
+class TopoDS_Shape;
+class gp_Dir;
 class Geom_Surface;
+class TopoDS_Shell;
 class Bnd_Box;
 
 

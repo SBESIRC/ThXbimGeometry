@@ -24,6 +24,8 @@
 #include <Expr_MapOfNamedUnknown.hxx>
 #include <Standard_Integer.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_NoMoreObject;
+class Standard_NoSuchObject;
 class Expr_GeneralRelation;
 class Expr_NamedUnknown;
 

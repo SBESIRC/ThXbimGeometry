@@ -31,6 +31,9 @@
 #include <math_Vector.hxx>
 class FEmTool_ElementaryCriterion;
 class FEmTool_Curve;
+class Standard_NotImplemented;
+class Standard_DomainError;
+class AppDef_MultiLine;
 class math_Matrix;
 
 

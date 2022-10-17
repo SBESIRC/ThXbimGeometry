@@ -25,9 +25,11 @@
 #include <Standard_Real.hxx>
 #include <gp_Pnt2d.hxx>
 class Geom2d_BSplineCurve;
+class StdFail_NotDone;
+class Standard_OutOfRange;
 
 
-//! Checks for the end  tangents : whether or not those
+//! Checks for the end  tangents : wether or not those
 //! are reversed
 class GeomLib_Check2dBSplineCurve 
 {

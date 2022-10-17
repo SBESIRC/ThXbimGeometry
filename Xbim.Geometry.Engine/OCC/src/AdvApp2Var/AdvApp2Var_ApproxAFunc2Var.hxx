@@ -34,6 +34,8 @@
 #include <TColGeom_HArray1OfSurface.hxx>
 #include <AdvApp2Var_EvaluatorFunc2Var.hxx>
 #include <Standard_OStream.hxx>
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 class AdvApprox_Cutting;
 class AdvApp2Var_Criterion;
 class Geom_BSplineSurface;
@@ -49,7 +51,7 @@ class Geom_BSplineSurface;
 //! [FirstInU, LastInU]: The Bounds in U of the Approximation
 //! [FirstInV, LastInV]: The Bounds in V of the Approximation
 //! FavorIso : Give preference to extract u-iso or v-iso on F(U,V)
-//! This can be useful to optimize the <Func> method
+//! This can be usefull to optimize the <Func> methode
 //! ContInU, ContInV : Continuity waiting in u and v
 //! PrecisCode : Precision on approximation's error mesurement
 //! 1 : Fast computation and average precision
@@ -62,7 +64,7 @@ class Geom_BSplineSurface;
 //! where iu (resp. iv) = 0 if ContInU (resp. ContInV)  = GeomAbs_C0,
 //! = 1 if                          = GeomAbs_C1,
 //! = 2 if                          = GeomAbs_C2.
-//! MaxPatch  : Maximum number of Patch waiting
+//! MaxPatch  : Maximun number of Patch waiting
 //! number of Patch is number of u span * number of v span
 //! Func      : The external method to evaluate F(U,V)
 //! Crit      : To (re)defined condition of convergence
@@ -144,7 +146,7 @@ public:
   
   Standard_EXPORT Standard_Real CritError (const Standard_Integer Dimension, const Standard_Integer Index) const;
   
-  //! Prints on the stream 'o' information on the current state
+  //! Prints on the stream o informations on the current state
   //! of the object.
   Standard_EXPORT void Dump (Standard_OStream& o) const;
 

@@ -37,6 +37,8 @@
 #include <TColgp_Array1OfPnt2d.hxx>
 #include <TColgp_Array1OfPnt.hxx>
 #include <Standard_OStream.hxx>
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 class AdvApprox_Cutting;
 
 
@@ -120,7 +122,7 @@ public:
   
   Standard_EXPORT Standard_Real AverageError (const Standard_Integer Dimension, const Standard_Integer Index) const;
   
-  //! display information on approximation.
+  //! diplay information on approximation.
   Standard_EXPORT void Dump (Standard_OStream& o) const;
 
 

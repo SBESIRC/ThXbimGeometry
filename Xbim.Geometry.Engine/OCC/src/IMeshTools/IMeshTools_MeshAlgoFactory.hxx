@@ -30,7 +30,7 @@ class IMeshTools_MeshAlgoFactory : public Standard_Transient
 public:
 
   //! Destructor.
-  virtual ~IMeshTools_MeshAlgoFactory()
+  Standard_EXPORT virtual ~IMeshTools_MeshAlgoFactory()
   {
   }
 
@@ -39,12 +39,12 @@ public:
     const GeomAbs_SurfaceType    theSurfaceType,
     const IMeshTools_Parameters& theParameters) const = 0;
 
-  DEFINE_STANDARD_RTTIEXT(IMeshTools_MeshAlgoFactory, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshTools_MeshAlgoFactory, Standard_Transient)
 
 protected:
 
   //! Constructor.
-  IMeshTools_MeshAlgoFactory()
+  Standard_EXPORT IMeshTools_MeshAlgoFactory()
   {
   }
 };

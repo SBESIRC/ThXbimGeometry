@@ -68,7 +68,7 @@ class math_Matrix;
 //!
 //! Those methods have the following structure :
 //!
-//! - They extract the pole information in a working array.
+//! - They extract the pole informations in a working array.
 //!
 //! -  They      process the  working   array    with   the
 //! multi-dimension  methods. (for example  a  3d  rational
@@ -383,7 +383,7 @@ public:
   //! Used as argument for a flatknots evaluation.
     static TColStd_Array1OfInteger* NoMults();
   
-  //! Stores in LK the useful knots for the BoorSchem
+  //! Stores in LK  the usefull knots  for the BoorSchem
   //! on the span Knots(Index) - Knots(Index+1)
   Standard_EXPORT static void BuildKnots (const Standard_Integer Degree, const Standard_Integer Index, const Standard_Boolean Periodic, const TColStd_Array1OfReal& Knots, const TColStd_Array1OfInteger* Mults, Standard_Real& LK);
   
@@ -524,67 +524,64 @@ public:
   Standard_EXPORT static void IncreaseDegree (const Standard_Integer NewDegree, const TColgp_Array1OfPnt& Poles, const TColStd_Array1OfReal* Weights, TColgp_Array1OfPnt& NewPoles, TColStd_Array1OfReal* NewWeights);
   
   //! Increase the degree of a bspline (or bezier) curve
-  //! of dimension theDimension form theDegree to theNewDegree.
+  //! of   dimension  <Dimension>  form <Degree>      to
+  //! <NewDegree>.
   //!
-  //! The number of poles in the new curve is:
-  //! @code
-  //!   Poles.Length() + (NewDegree - Degree) * Number of spans
-  //! @endcode
-  //! Where the number of spans is:
-  //! @code
-  //!   LastUKnotIndex(Mults) - FirstUKnotIndex(Mults) + 1
-  //! @endcode
-  //! for a non-periodic curve, and
-  //! @code
-  //!   Knots.Length() - 1
-  //! @endcode
-  //! for a periodic curve.
+  //! The number of poles in the new curve is :
   //!
-  //! The multiplicities of all knots are increased by the degree elevation.
+  //! Poles.Length() + (NewDegree - Degree) * Number of spans
   //!
-  //! The new knots are usually the same knots with the
-  //! exception of a non-periodic curve with the first
+  //! Where the number of spans is :
+  //!
+  //! LastUKnotIndex(Mults) - FirstUKnotIndex(Mults) + 1
+  //!
+  //! for a non-periodic curve
+  //!
+  //! And Knots.Length() - 1 for a periodic curve.
+  //!
+  //! The multiplicities of all  knots  are increased by
+  //! the degree elevation.
+  //!
+  //! The new knots are usually  the same knots with the
+  //! exception of  a non-periodic curve with  the first
   //! and last multiplicity not  equal to Degree+1 where
-  //! knots are removed form the start and the bottom
-  //! until the sum of the multiplicities is equal to
-  //! NewDegree+1  at the knots corresponding to the
+  //! knots are removed  form the start  and the  bottom
+  //! untils the sum of the  multiplicities is  equal to
+  //! NewDegree+1  at the  knots   corresponding  to the
   //! first and last parameters of the curve.
   //!
-  //! Example: Suppose a curve of degree 3 starting
-  //! with following knots and multiplicities:
-  //! @code
-  //!   knot : 0.  1.  2.
-  //!   mult : 1   2   1
-  //! @endcode
+  //! Example  :  Suppose a  curve  of degree 3 starting
+  //! with following knots and multiplicities :
   //!
-  //! The FirstUKnot is 2.0 because the sum of multiplicities is
-  //! @code
-  //!   Degree+1 : 1 + 2 + 1 = 4 = 3 + 1
-  //! @endcode
-  //! i.e. the first parameter of the curve is 2.0 and
-  //! will still be 2.0 after degree elevation.
-  //! Let raise this curve to degree 4.
-  //! The multiplicities are increased by 2.
+  //! knot : 0.  1.  2.
+  //! mult : 1   2   1
   //!
-  //! They  become 2 3 2.
-  //! But we need a sum of multiplicities of 5 at knot 2.
-  //! So the first knot is removed and the new knots are:
-  //! @code
-  //!   knot : 1.  2.
-  //!   mult : 3   2
-  //! @endcode
-  //! The multipicity of the first knot may also be reduced if the sum is still to big.
+  //! The  FirstUKnot is  2.     because the   sum    of
+  //! multiplicities is Degree+1 : 1 + 2 + 1 = 4 = 3 + 1
   //!
-  //! In the most common situations (periodic curve or curve with first
-  //! and last multiplicities equals to Degree+1) the knots are knot changes.
+  //! i.e. the first parameter  of the  curve is  2. and
+  //! will still be   2.  after degree  elevation.   Let
+  //! raises this curve to degree 4.  The multiplicities
+  //! are increased by 2.
   //!
-  //! The method IncreaseDegreeCountKnots can be used to compute the new number of knots.
-  Standard_EXPORT static void IncreaseDegree (const Standard_Integer theNewDegree,
-                                              const TColgp_Array1OfPnt2d& thePoles,
-                                              const TColStd_Array1OfReal* theWeights,
-                                              TColgp_Array1OfPnt2d& theNewPoles,
-                                              TColStd_Array1OfReal* theNewWeights);
-
+  //! They   become 2 3  2.   But     we need a   sum of
+  //! multiplicities  of 5 at knot  2. So the first knot
+  //! is removed and the new knots are :
+  //!
+  //! knot : 1.  2.
+  //! mult : 3   2
+  //!
+  //! The multipicity   of the first  knot may   also be
+  //! reduced if the sum is still to big.
+  //!
+  //! In the  most common situations (periodic  curve or
+  //! curve with first and last multiplicities equals to
+  //! Degree+1) the knots are knot changes.
+  //!
+  //! The method IncreaseDegreeCountKnots can be used to
+  //! compute the new number of knots.
+  Standard_EXPORT static void IncreaseDegree (const Standard_Integer NewDegree, const TColgp_Array1OfPnt2d& Poles, const TColStd_Array1OfReal* Weights, TColgp_Array1OfPnt2d& NewPoles, TColStd_Array1OfReal* NewWeights);
+  
   //! Set in <NbKnots> and <NbPolesToAdd> the number of Knots and
   //! Poles   of  the NotPeriodic  Curve   identical  at the
   //! periodic     curve with    a  degree    <Degree>  ,  a
@@ -598,8 +595,8 @@ public:
   Standard_EXPORT static void Unperiodize (const Standard_Integer Degree, const TColStd_Array1OfInteger& Mults, const TColStd_Array1OfReal& Knots, const TColgp_Array1OfPnt2d& Poles, const TColStd_Array1OfReal* Weights, TColStd_Array1OfInteger& NewMults, TColStd_Array1OfReal& NewKnots, TColgp_Array1OfPnt2d& NewPoles, TColStd_Array1OfReal* NewWeights);
   
   //! Set in <NbKnots> and <NbPoles> the number of Knots and
-  //! Poles of the curve resulting from  the trimming of the
-  //! BSplinecurve defined with <degree>, <knots>, <mults>
+  //! Poles of the  curve resulting  of  the trimming of the
+  //! BSplinecurve definded with <degree>, <knots>, <mults>
   Standard_EXPORT static void PrepareTrimming (const Standard_Integer Degree, const Standard_Boolean Periodic, const TColStd_Array1OfReal& Knots, const TColStd_Array1OfInteger& Mults, const Standard_Real U1, const Standard_Real U2, Standard_Integer& NbKnots, Standard_Integer& NbPoles);
   
   Standard_EXPORT static void Trimming (const Standard_Integer Degree, const Standard_Boolean Periodic, const Standard_Integer Dimension, const TColStd_Array1OfReal& Knots, const TColStd_Array1OfInteger& Mults, const TColStd_Array1OfReal& Poles, const Standard_Real U1, const Standard_Real U2, TColStd_Array1OfReal& NewKnots, TColStd_Array1OfInteger& NewMults, TColStd_Array1OfReal& NewPoles);
@@ -666,7 +663,7 @@ public:
   //! * Knots  and multiplicities or "flat knots" without
   //! multiplicities.
   //!
-  //! * The  <Index>  is   the localization  of  the
+  //! * The  <Index>  is   the the  localization  of  the
   //! parameter in the knot sequence.  If <Index> is  out
   //! of range the correct value will be searched.
   //!
@@ -769,12 +766,12 @@ public:
   //! Array[i][p]       for     each  p    in
   //! 1..ArrayDimension. If  HomogeneousFlag ==
   //! 0  the  Poles  are  multiplied by   the
-  //! Weights   upon   Entry   and      once
+  //! Weights   uppon   Entry   and      once
   //! interpolation   is    carried  over the
   //! result of the  poles are divided by the
   //! result of   the   interpolation of  the
   //! weights. Otherwise if HomogenousFlag == 1
-  //! the Poles and Weigths are treated homogeneously
+  //! the Poles and Weigths are treated homogenously
   //! that is that those are interpolated as they
   //! are and result is returned without division
   //! by the interpolated weigths.
@@ -791,12 +788,12 @@ public:
   //! B[i] = Array[i][p] for each p in 1..ArrayDimension
   //! If  HomogeneousFlag ==
   //! 0  the  Poles  are  multiplied by   the
-  //! Weights   upon   Entry   and      once
+  //! Weights   uppon   Entry   and      once
   //! interpolation   is    carried  over the
   //! result of the  poles are divided by the
   //! result of   the   interpolation of  the
   //! weights. Otherwise if HomogenousFlag == 1
-  //! the Poles and Weigths are treated homogeneously
+  //! the Poles and Weigths are treated homogenously
   //! that is that those are interpolated as they
   //! are and result is returned without division
   //! by the interpolated weigths.
@@ -823,7 +820,7 @@ public:
   //! same as the  range of F(t)
   //!
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //!
@@ -850,7 +847,7 @@ public:
   //! same as the  range of F(t)
   //!
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //!
@@ -873,7 +870,7 @@ public:
   //! of BSplineFlatKnots which is the
   //! same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -895,7 +892,7 @@ public:
   //! of BSplineFlatKnots which is the
   //! same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -914,7 +911,7 @@ public:
   //! NewDegree on the knots FlatKnots 2. the range of a(t)
   //! is the same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -933,7 +930,7 @@ public:
   //! NewDegree on the knots FlatKnots 2. the range of a(t)
   //! is the same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -952,7 +949,7 @@ public:
   //! NewDegree on the knots FlatKnots 2. the range of a(t)
   //! is the same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -971,7 +968,7 @@ public:
   //! NewDegree on the knots FlatKnots 2. the range of a(t)
   //! is the same as the  range of F(t)
   //! Warning: it is
-  //! the caller's responsibility to insure that conditions
+  //! the caller's responsability to insure that conditions
   //! 1. and  2. above are  satisfied : no check whatsoever
   //! is made in this method
   //! theStatus will return 0 if OK else it will return the pivot index
@@ -1224,7 +1221,7 @@ public:
   //! the Poles  array  according  to the  requests in
   //! ContactOrderArray    that is      :           if
   //! ContactOrderArray(i) has value  d it means  that
-  //! Poles(i)   contains the dth  derivative of  the
+  //! Poles(i)   containes the dth  derivative of  the
   //! function to be interpolated. The length L of the
   //! following arrays must be the same :
   //! Parameters, ContactOrderArray, Poles,
@@ -1245,7 +1242,7 @@ public:
   //! the Poles  array  according  to the  requests in
   //! ContactOrderArray    that is      :           if
   //! ContactOrderArray(i) has value  d it means  that
-  //! Poles(i)   contains the dth  derivative of  the
+  //! Poles(i)   containes the dth  derivative of  the
   //! function to be interpolated. The length L of the
   //! following arrays must be the same :
   //! Parameters, ContactOrderArray, Poles,
@@ -1267,7 +1264,7 @@ public:
   //! the Poles  array  according  to the  requests in
   //! ContactOrderArray    that is      :           if
   //! ContactOrderArray(i) has value  d it means  that
-  //! Poles(i)   contains the dth  derivative of  the
+  //! Poles(i)   containes the dth  derivative of  the
   //! function to be interpolated. The length L of the
   //! following arrays must be the same :
   //! Parameters, ContactOrderArray, Poles,
@@ -1288,7 +1285,7 @@ public:
   //! the Poles  array  according  to the  requests in
   //! ContactOrderArray    that is      :           if
   //! ContactOrderArray(i) has value  d it means  that
-  //! Poles(i)   contains the dth  derivative of  the
+  //! Poles(i)   containes the dth  derivative of  the
   //! function to be interpolated. The length L of the
   //! following arrays must be the same :
   //! Parameters, ContactOrderArray, Poles,
@@ -1309,7 +1306,7 @@ public:
   //! the Poles  array  according  to the  requests in
   //! ContactOrderArray    that is      :           if
   //! ContactOrderArray(i) has value  d it means  that
-  //! Poles(i)   contains the dth  derivative of  the
+  //! Poles(i)   containes the dth  derivative of  the
   //! function to be interpolated. The length L of the
   //! following arrays must be the same :
   //! Parameters, ContactOrderArray
@@ -1362,7 +1359,7 @@ public:
   //! FlatKnots are the knots of the BSpline  Starting Condition if =
   //! -1 means the starting point of the curve can move
   //! = 0 means the
-  //! starting  point  of the curve  cannot  move but  tangent  starting
+  //! starting  point  of the cuve  cannot  move but  tangen  starting
   //! point of the curve cannot move
   //! = 1 means the starting point and tangents cannot move
   //! = 2 means the starting point tangent and curvature cannot move
@@ -1389,7 +1386,7 @@ public:
   //! FlatKnots are the knots of the BSpline  Starting Condition if =
   //! -1 means the starting point of the curve can move
   //! = 0 means the
-  //! starting  point  of the curve  cannot  move but  tangent  starting
+  //! starting  point  of the cuve  cannot  move but  tangen  starting
   //! point of the curve cannot move
   //! = 1 means the starting point and tangents cannot move
   //! = 2 means the starting point tangent and curvature cannot move
@@ -1416,7 +1413,7 @@ public:
   //! FlatKnots are the knots of the BSpline  Starting Condition if =
   //! -1 means the starting point of the curve can move
   //! = 0 means the
-  //! starting  point  of the curve  cannot  move but  tangent  starting
+  //! starting  point  of the cuve  cannot  move but  tangen  starting
   //! point of the curve cannot move
   //! = 1 means the starting point and tangents cannot move
   //! = 2 means the starting point tangent and curvature cannot move

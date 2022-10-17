@@ -193,7 +193,7 @@ Standard_Integer OSD_DirectoryIterator::Error()const{
 
 #define _FD (  ( PWIN32_FIND_DATAW )myData  )
 
-void _osd_wnt_set_error ( OSD_Error&, Standard_Integer, ... );
+void _osd_wnt_set_error ( OSD_Error&, OSD_WhoAmI, ... );
 
 OSD_DirectoryIterator :: OSD_DirectoryIterator (
                           const OSD_Path&                where,
@@ -318,12 +318,7 @@ Standard_Integer OSD_DirectoryIterator :: Error () const {
 }  // end OSD_DirectoryIterator :: Error
 
 // For compatibility with UNIX version
-OSD_DirectoryIterator::OSD_DirectoryIterator()
-: myFlag(false),
-  myHandle(0),
-  myData(0),
-  myFirstCall(Standard_False)
-{}
+OSD_DirectoryIterator::OSD_DirectoryIterator() {}
 
 void OSD_DirectoryIterator::Initialize(
                              const OSD_Path&,

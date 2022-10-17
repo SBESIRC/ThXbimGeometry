@@ -24,6 +24,7 @@
 #include <GC_Root.hxx>
 #include <Geom_Hyperbola.hxx>
 
+class StdFail_NotDone;
 class gp_Hypr;
 class gp_Ax2;
 class gp_Pnt;

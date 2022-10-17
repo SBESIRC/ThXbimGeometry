@@ -29,7 +29,10 @@
 #include <IntTools_SequenceOfRanges.hxx>
 #include <TopAbs_ShapeEnum.hxx>
 class Geom_Curve;
+class TopoDS_Edge;
+class IntTools_Range;
 class Bnd_Box;
+class BRepAdaptor_Curve;
 
 
 
@@ -43,17 +46,17 @@ public:
 
   
 
-  //! Empty constructor
+  //! Empty contructor
   IntTools_EdgeEdge();
 
   //! Destructor
   ~IntTools_EdgeEdge();
 
-  //! Constructor
+  //! Contructor
   IntTools_EdgeEdge(const TopoDS_Edge& theEdge1, const TopoDS_Edge& theEdge2);
   
 
-  //! Constructor
+  //! Contructor
   IntTools_EdgeEdge(const TopoDS_Edge& theEdge1, const Standard_Real aT11,
       const Standard_Real aT12, const TopoDS_Edge& theEdge2, 
       const Standard_Real aT21, const Standard_Real aT22);

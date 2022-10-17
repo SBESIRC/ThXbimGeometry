@@ -30,9 +30,8 @@
 //purpose  : 
 //=======================================================================
 GeomAPI_ExtremaSurfaceSurface::GeomAPI_ExtremaSurfaceSurface()
-: myIsDone(Standard_False),
-  myIndex(0)
 {
+  myIsDone = Standard_False;
 }
 
 

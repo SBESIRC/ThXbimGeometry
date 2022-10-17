@@ -28,6 +28,9 @@
 #include <math_Vector.hxx>
 #include <Standard_Integer.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_ConstructionError;
+class Geom2dAdaptor_Curve;
+class gp_Circ2d;
 class gp_Pnt2d;
 class gp_Vec2d;
 class math_Matrix;

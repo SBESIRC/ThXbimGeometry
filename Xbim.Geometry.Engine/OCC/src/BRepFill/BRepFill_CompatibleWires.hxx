@@ -26,6 +26,8 @@
 #include <Standard_Boolean.hxx>
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+class Standard_ConstructionError;
+class Standard_NoSuchObject;
 class TopoDS_Edge;
 
 

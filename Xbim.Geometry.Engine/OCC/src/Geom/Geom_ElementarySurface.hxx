@@ -17,8 +17,20 @@
 #ifndef _Geom_ElementarySurface_HeaderFile
 #define _Geom_ElementarySurface_HeaderFile
 
+#include <Standard.hxx>
+#include <Standard_Type.hxx>
+
 #include <gp_Ax3.hxx>
 #include <Geom_Surface.hxx>
+#include <Standard_Real.hxx>
+#include <GeomAbs_Shape.hxx>
+#include <Standard_Boolean.hxx>
+#include <Standard_Integer.hxx>
+class Standard_ConstructionError;
+class gp_Ax1;
+class gp_Pnt;
+class gp_Ax3;
+
 
 class Geom_ElementarySurface;
 DEFINE_STANDARD_HANDLE(Geom_ElementarySurface, Geom_Surface)
@@ -62,30 +74,38 @@ DEFINE_STANDARD_HANDLE(Geom_ElementarySurface, Geom_Surface)
 //! "main Direction" = - "X Direction" ^ "Y Direction"
 class Geom_ElementarySurface : public Geom_Surface
 {
+
 public:
+
+  
 
   //! Changes the main axis (ZAxis) of the elementary surface.
   //!
   //! Raised if the direction of A1 is parallel to the XAxis of the
   //! coordinate system of the surface.
-  void SetAxis (const gp_Ax1& theA1) { pos.SetAxis(theA1); }
+  Standard_EXPORT void SetAxis (const gp_Ax1& A1);
+  
 
   //! Changes the location of the local coordinates system of the
   //! surface.
-  void SetLocation (const gp_Pnt& theLoc) { pos.SetLocation(theLoc); }
+  Standard_EXPORT void SetLocation (const gp_Pnt& Loc);
+  
 
   //! Changes the local coordinates system of the surface.
-  void SetPosition (const gp_Ax3& theAx3) { pos = theAx3; }
+  Standard_EXPORT void SetPosition (const gp_Ax3& A3);
   
+
   //! Returns the main axis of the surface (ZAxis).
-  const gp_Ax1& Axis() const { return pos.Axis(); }
+  Standard_EXPORT gp_Ax1 Axis() const;
+  
 
   //! Returns the location point of the local coordinate system of the
   //! surface.
-  const gp_Pnt& Location() const { return pos.Location(); }
+  Standard_EXPORT gp_Pnt Location() const;
   
   //! Returns the local coordinates system of the surface.
-  const gp_Ax3& Position() const { return pos; }
+  Standard_EXPORT const gp_Ax3& Position() const;
+  
 
   //! Reverses the U parametric direction of the surface.
   Standard_EXPORT virtual void UReverse() Standard_OVERRIDE;
@@ -96,7 +116,8 @@ public:
   //! me->UReversed()->Value(me->UReversedParameter(U),V)
   //! is the same point as
   //! me->Value(U,V)
-  Standard_EXPORT virtual Standard_Real UReversedParameter (const Standard_Real U) const Standard_OVERRIDE = 0;  
+  Standard_EXPORT virtual Standard_Real UReversedParameter (const Standard_Real U) const Standard_OVERRIDE = 0;
+  
 
   //! Reverses the V parametric direction of the surface.
   Standard_EXPORT virtual void VReverse() Standard_OVERRIDE;
@@ -118,13 +139,28 @@ public:
   //! Returns True.
   Standard_EXPORT Standard_Boolean IsCNv (const Standard_Integer N) const Standard_OVERRIDE;
 
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
+
+
 
   DEFINE_STANDARD_RTTIEXT(Geom_ElementarySurface,Geom_Surface)
 
 protected:
+
+
   gp_Ax3 pos;
+
+
+private:
+
+
+
+
 };
+
+
+
+
+
+
 
 #endif // _Geom_ElementarySurface_HeaderFile

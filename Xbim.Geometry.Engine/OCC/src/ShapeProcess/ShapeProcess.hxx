@@ -22,8 +22,6 @@
 
 #include <Standard_Boolean.hxx>
 #include <Standard_CString.hxx>
-#include <Message_ProgressRange.hxx>
-
 class ShapeProcess_Operator;
 class ShapeProcess_Context;
 class ShapeProcess_Context;
@@ -54,10 +52,7 @@ public:
   //! Performs a specified sequence of operators on Context
   //! Resource file and other data should be already loaded
   //! to Context (including description of sequence seq)
-  Standard_EXPORT static Standard_Boolean Perform 
-                   (const Handle(ShapeProcess_Context)& context,
-                    const Standard_CString seq,
-                    const Message_ProgressRange& theProgress = Message_ProgressRange());
+  Standard_EXPORT static Standard_Boolean Perform (const Handle(ShapeProcess_Context)& context, const Standard_CString seq);
 
 
 

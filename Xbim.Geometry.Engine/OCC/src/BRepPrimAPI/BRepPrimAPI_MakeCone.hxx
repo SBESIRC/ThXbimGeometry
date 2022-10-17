@@ -25,7 +25,9 @@
 #include <BRepPrimAPI_MakeOneAxis.hxx>
 #include <Standard_Real.hxx>
 #include <Standard_Address.hxx>
+class Standard_DomainError;
 class gp_Ax2;
+class BRepPrim_Cone;
 
 
 //! Describes functions to build cones or portions of cones.
@@ -39,25 +41,18 @@ public:
 
   DEFINE_STANDARD_ALLOC
 
-
-  //! Make a cone.
-  //! @param R1 [in] cone bottom radius, may be null (z = 0)
-  //! @param R2 [in] cone top radius, may be null (z = H)
-  //! @param H  [in] cone height
+  
+  //! Make a cone of height H radius R1 in the plane z =
+  //! 0, R2 in the plane Z = H. R1 and R2 may be null.
   Standard_EXPORT BRepPrimAPI_MakeCone(const Standard_Real R1, const Standard_Real R2, const Standard_Real H);
-
-  //! Make a cone.
-  //! @param R1    [in] cone bottom radius, may be null (z = 0)
-  //! @param R2    [in] cone top radius, may be null (z = H)
-  //! @param H     [in] cone height
-  //! @param angle [in] angle to create a part cone
+  
+  //! Make a cone of height H radius R1 in the plane z =
+  //! 0, R2 in the plane Z = H. R1 and R2 may be null.
+  //! Take a section of <angle>
   Standard_EXPORT BRepPrimAPI_MakeCone(const Standard_Real R1, const Standard_Real R2, const Standard_Real H, const Standard_Real angle);
-
-  //! Make a cone.
-  //! @param axes [in] coordinate system for the construction of the cone
-  //! @param R1   [in] cone bottom radius, may be null (z = 0)
-  //! @param R2   [in] cone top radius, may be null (z = H)
-  //! @param H    [in] cone height
+  
+  //! Make a cone of height H radius R1 in the plane z =
+  //! 0, R2 in the plane Z = H. R1 and R2 may be null.
   Standard_EXPORT BRepPrimAPI_MakeCone(const gp_Ax2& Axes, const Standard_Real R1, const Standard_Real R2, const Standard_Real H);
   
   //! Make a cone of height H radius R1 in the plane z =

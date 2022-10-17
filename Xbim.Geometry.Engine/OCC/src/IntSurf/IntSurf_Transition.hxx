@@ -24,6 +24,7 @@
 #include <Standard_Boolean.hxx>
 #include <IntSurf_TypeTrans.hxx>
 #include <IntSurf_Situation.hxx>
+class Standard_DomainError;
 
 
 //! Definition of the transition at the intersection

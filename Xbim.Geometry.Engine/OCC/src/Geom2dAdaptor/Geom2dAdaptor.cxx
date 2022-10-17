@@ -16,7 +16,6 @@
 
 
 #include <Adaptor2d_Curve2d.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
 #include <Geom2d_BezierCurve.hxx>
 #include <Geom2d_BSplineCurve.hxx>
 #include <Geom2d_Circle.hxx>
@@ -89,21 +88,7 @@ Handle(Geom2d_Curve) Geom2dAdaptor::MakeCurve
       C2D = HC.BSpline();
     }
     break;
-
-  case GeomAbs_OffsetCurve:
-  {
-    const Geom2dAdaptor_Curve* pGAC = dynamic_cast<const Geom2dAdaptor_Curve*>(&HC);
-    if (pGAC != 0)
-    {
-      C2D = pGAC->Curve();
-    }
-    else
-    {
-      Standard_DomainError::Raise("Geom2dAdaptor::MakeCurve, Not Geom2dAdaptor_Curve");
-    }
-  }
-  break;
-
+    
   default:
     throw Standard_DomainError("Geom2dAdaptor::MakeCurve, OtherCurve");
 
@@ -114,19 +99,8 @@ Handle(Geom2d_Curve) Geom2dAdaptor::MakeCurve
       ((HC.FirstParameter() != C2D->FirstParameter()) ||
       (HC.LastParameter()  != C2D->LastParameter()))) {
 
-    if (C2D->IsPeriodic() ||
-      (HC.FirstParameter() >= C2D->FirstParameter() &&
-      HC.LastParameter() <= C2D->LastParameter()))
-    {
-      C2D = new Geom2d_TrimmedCurve
-        (C2D, HC.FirstParameter(), HC.LastParameter());
-    }
-    else
-    {
-      Standard_Real tf = Max(HC.FirstParameter(), C2D->FirstParameter());
-      Standard_Real tl = Min(HC.LastParameter(), C2D->LastParameter());
-      C2D = new Geom2d_TrimmedCurve(C2D, tf, tl);
-    }
+    C2D = new Geom2d_TrimmedCurve
+      (C2D,HC.FirstParameter(),HC.LastParameter());
   }
 
   return C2D;

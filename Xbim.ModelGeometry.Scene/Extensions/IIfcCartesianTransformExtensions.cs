@@ -16,13 +16,13 @@ namespace Xbim.ModelGeometry.Scene.Extensions
             else if (ct is IIfcCartesianTransformationOperator3D)
                 return ((IIfcCartesianTransformationOperator3D) ct).ToMatrix3D(maps);
             else throw new ArgumentException("ToMatrix3D", "ct");
+            
         }
 
         /// <summary>
         ///   Builds a windows XbimMatrix3D from a CartesianTransformationOperator3D
         /// </summary>
-        /// <param name="ct3D"></param>
-        /// <param name="maps">An optional mapping dictionary</param>
+        /// <param name = "ct3D"></param>
         /// <returns></returns>
         public static XbimMatrix3D ToMatrix3D(this IIfcCartesianTransformationOperator3D ct3D, ConcurrentDictionary<int, Object> maps = null)
         {
@@ -43,6 +43,7 @@ namespace Xbim.ModelGeometry.Scene.Extensions
         private static XbimMatrix3D ConvertCartesianTranformOperator3D(IIfcCartesianTransformationOperator3D ct3D)
         {
             var m3D = ConvertCartesianTransform3D(ct3D);
+
             m3D.Scale(ct3D.Scl);
             return m3D;
         }
@@ -50,8 +51,7 @@ namespace Xbim.ModelGeometry.Scene.Extensions
         /// <summary>
         ///   Builds a windows XbimMatrix3D from a CartesianTransformationOperator3DnonUniform
         /// </summary>
-        /// <param name="ct3D"></param>
-        /// <param name="maps"></param>
+        /// <param name = "ct3D"></param>
         /// <returns></returns>
         public static XbimMatrix3D ToMatrix3D(this IIfcCartesianTransformationOperator3DnonUniform ct3D, ConcurrentDictionary<int, Object> maps = null)
         {

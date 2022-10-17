@@ -23,6 +23,7 @@
 
 #include <GeomFill_FillingStyle.hxx>
 class Geom_BSplineSurface;
+class Standard_ConstructionError;
 class Geom_BSplineCurve;
 
 

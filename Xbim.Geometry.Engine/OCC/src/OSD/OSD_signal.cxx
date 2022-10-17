@@ -18,10 +18,7 @@
 #include <Standard_Overflow.hxx>
 #include <Standard_Assert.hxx>
 
-#include <Standard_WarningDisableFunctionCast.hxx>
-
 static OSD_SignalMode OSD_WasSetSignal = OSD_SignalMode_AsIs;
-static Standard_Integer OSD_SignalStackTraceLength = 0;
 
 //=======================================================================
 //function : SignalMode
@@ -30,24 +27,6 @@ static Standard_Integer OSD_SignalStackTraceLength = 0;
 OSD_SignalMode OSD::SignalMode()
 {
   return OSD_WasSetSignal;
-}
-
-// =======================================================================
-// function : SignalStackTraceLength
-// purpose  :
-// =======================================================================
-Standard_Integer OSD::SignalStackTraceLength()
-{
-  return OSD_SignalStackTraceLength;
-}
-
-// =======================================================================
-// function : SetSignalStackTraceLength
-// purpose  :
-// =======================================================================
-void OSD::SetSignalStackTraceLength (Standard_Integer theLength)
-{
-  OSD_SignalStackTraceLength = theLength;
 }
 
 #ifdef _WIN32
@@ -104,7 +83,7 @@ static Standard_Boolean fMsgBox;
 // used to forbid simultaneous execution of setting / executing handlers
 static Standard_Mutex THE_SIGNAL_MUTEX;
 
-static LONG __fastcall _osd_raise (DWORD theCode, const char* theMsg, const char* theStack);
+static LONG __fastcall _osd_raise ( DWORD, LPSTR );
 static BOOL WINAPI     _osd_ctrl_break_handler ( DWORD );
 
 #if ! defined(OCCT_UWP) && !defined(__MINGW32__) && !defined(__CYGWIN32__)
@@ -115,208 +94,172 @@ static LONG _osd_debug   ( void );
 # define _OSD_FPX ( _EM_INVALID | _EM_DENORMAL | _EM_ZERODIVIDE | _EM_OVERFLOW )
 
 #ifdef OCC_CONVERT_SIGNALS
-#define THROW_OR_JUMP(Type,Message,Stack) Type::NewInstance(Message,Stack)->Jump()
+#define THROW_OR_JUMP(Type,Message) Type::NewInstance(Message)->Jump()
 #else
-#define THROW_OR_JUMP(Type,Message,Stack) throw Type(Message,Stack)
+#define THROW_OR_JUMP(Type,Message) throw Type(Message)
 #endif
 
 //=======================================================================
 //function : CallHandler
 //purpose  :
 //=======================================================================
-static LONG CallHandler (DWORD theExceptionCode,
-                         EXCEPTION_POINTERS* theExcPtr)
+static LONG CallHandler (DWORD dwExceptionCode,
+                         ptrdiff_t ExceptionInformation1,
+                         ptrdiff_t ExceptionInformation0)
 {
-  ptrdiff_t ExceptionInformation1 = 0, ExceptionInformation0 = 0;
-  if (theExcPtr != NULL)
-  {
-    ExceptionInformation1 = theExcPtr->ExceptionRecord->ExceptionInformation[1];
-    ExceptionInformation0 = theExcPtr->ExceptionRecord->ExceptionInformation[0];
-  }
-
   Standard_Mutex::Sentry aSentry (THE_SIGNAL_MUTEX); // lock the mutex to prevent simultaneous handling
-  static char aBuffer[2048];
 
-  bool isFloatErr = false;
-  aBuffer[0] = '\0';
-  switch (theExceptionCode)
-  {
+  static wchar_t         buffer[2048];
+
+  int                  flterr = 0;
+
+  buffer[0] = '\0' ;
+
+// std::cout << "CallHandler " << dwExceptionCode << std::endl ;
+  switch ( dwExceptionCode ) {
     case EXCEPTION_FLT_DENORMAL_OPERAND:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT DENORMAL OPERAND");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_DENORMAL_OPERAND:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT DENORMAL OPERAND");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT DIVIDE BY ZERO");
-      isFloatErr = true;
-      break;
-     }
+//      std::cout << "CallHandler : EXCEPTION_FLT_DIVIDE_BY_ZERO:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT DIVIDE BY ZERO");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_INEXACT_RESULT:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT INEXACT RESULT");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_INEXACT_RESULT:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT INEXACT RESULT");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_INVALID_OPERATION:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT INVALID OPERATION");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_INVALID_OPERATION:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT INVALID OPERATION");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_OVERFLOW:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT OVERFLOW");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_OVERFLOW:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT OVERFLOW");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_STACK_CHECK:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT STACK CHECK");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_STACK_CHECK:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT STACK CHECK");
+      flterr = 1 ;
+      break ;
     case EXCEPTION_FLT_UNDERFLOW:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT UNDERFLOW");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_UNDERFLOW:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT UNDERFLOW");
+      flterr = 1 ;
+      break ;
     case STATUS_FLOAT_MULTIPLE_TRAPS:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT MULTIPLE TRAPS (possible overflow in conversion of double to integer)");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_UNDERFLOW:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT MULTIPLE TRAPS (possible overflow in conversion of double to integer)");
+      flterr = 1 ;
+      break ;
     case STATUS_FLOAT_MULTIPLE_FAULTS:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "FLT MULTIPLE FAULTS");
-      isFloatErr = true;
-      break;
-    }
+//      std::cout << "CallHandler : EXCEPTION_FLT_UNDERFLOW:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"FLT MULTIPLE FAULTS");
+      flterr = 1 ;
+      break ;
     case STATUS_NO_MEMORY:
-    {
-      THROW_OR_JUMP (OSD_Exception_STATUS_NO_MEMORY, "MEMORY ALLOCATION ERROR ( no room in the process heap )", NULL);
+//      std::cout << "CallHandler : STATUS_NO_MEMORY:" << std::endl ;
+      THROW_OR_JUMP (OSD_Exception_STATUS_NO_MEMORY, "MEMORY ALLOCATION ERROR ( no room in the process heap )");
       break;
-    }
     case EXCEPTION_ACCESS_VIOLATION:
-    {
-      _snprintf_s (aBuffer, sizeof(aBuffer), _TRUNCATE, "%s%s%s0x%.8p%s%s%s", "ACCESS VIOLATION",
-                   fMsgBox ? "\n" : " ",
-                   "at address ", (void* )ExceptionInformation1,
-                   " during '", ExceptionInformation0 ? "WRITE" : "READ", "' operation");
+//      std::cout << "CallHandler : EXCEPTION_ACCESS_VIOLATION:" << std::endl ;
+      StringCchPrintfW (buffer, _countof(buffer), L"%s%s%s0x%.8p%s%s%s", L"ACCESS VIOLATION",
+                 fMsgBox ? L"\n" : L" ", L"at address ",
+                 ExceptionInformation1 ,
+                 L" during '",
+                 ExceptionInformation0 ? L"WRITE" : L"READ",
+                 L"' operation");
       break;
-    }
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "ARRAY BOUNDS EXCEEDED");
+//      std::cout << "CallHandler : EXCEPTION_ARRAY_BOUNDS_EXCEEDED:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"ARRAY BOUNDS EXCEEDED");
       break;
-    }
     case EXCEPTION_DATATYPE_MISALIGNMENT:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "DATATYPE MISALIGNMENT");
+//      std::cout << "CallHandler : EXCEPTION_DATATYPE_MISALIGNMENT:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"DATATYPE MISALIGNMENT");
       break;
-    }
+
     case EXCEPTION_ILLEGAL_INSTRUCTION:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "ILLEGAL INSTRUCTION");
+//      std::cout << "CallHandler : EXCEPTION_ILLEGAL_INSTRUCTION:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"ILLEGAL INSTRUCTION");
       break;
-    }
+
     case EXCEPTION_IN_PAGE_ERROR:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "IN_PAGE ERROR");
+//      std::cout << "CallHandler : EXCEPTION_IN_PAGE_ERROR:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"IN_PAGE ERROR");
       break;
-    }
+
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "INTEGER DIVISION BY ZERO");
+//      std::cout << "CallHandler : EXCEPTION_INT_DIVIDE_BY_ZERO:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"INTEGER DIVISION BY ZERO");
       break;
-    }
+
     case EXCEPTION_INT_OVERFLOW:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "INTEGER OVERFLOW");
+//      std::cout << "CallHandler : EXCEPTION_INT_OVERFLOW:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"INTEGER OVERFLOW");
       break;
-    }
+
     case EXCEPTION_INVALID_DISPOSITION:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "INVALID DISPOSITION");
+//      std::cout << "CallHandler : EXCEPTION_INVALID_DISPOSITION:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"INVALID DISPOSITION");
       break;
-    }
+
     case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "NONCONTINUABLE EXCEPTION");
+//      std::cout << "CallHandler : EXCEPTION_NONCONTINUABLE_EXCEPTION:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"NONCONTINUABLE EXCEPTION");
       break;
-    }
+
     case EXCEPTION_PRIV_INSTRUCTION:
-    {
-      strcat_s (aBuffer, sizeof(aBuffer), "PRIVILEGED INSTRUCTION ENCOUNTERED");
+//      std::cout << "CallHandler : EXCEPTION_PRIV_INSTRUCTION:" << std::endl ;
+      StringCchCopyW (buffer, _countof(buffer), L"PRIVELEGED INSTRUCTION ENCOUNTERED");
       break;
-    }
+
     case EXCEPTION_STACK_OVERFLOW:
-    {
+//      std::cout << "CallHandler : EXCEPTION_STACK_OVERFLOW:" << std::endl ;
 #if defined( _MSC_VER ) && ( _MSC_VER >= 1300 ) && !defined(OCCT_UWP)
-      // try recovering from stack overflow: available in MS VC++ 7.0
+    // try recovering from stack overflow: available in MS VC++ 7.0
       if (!_resetstkoflw())
-      {
-        strcat_s (aBuffer, sizeof(aBuffer), "Unrecoverable STACK OVERFLOW");
-      }
+        StringCchCopyW (buffer, _countof(buffer), L"Unrecoverable STACK OVERFLOW");
       else
 #endif
-      {
-        strcat_s (aBuffer, sizeof(aBuffer), "STACK OVERFLOW");
-      }
+      StringCchCopyW (buffer, _countof(buffer), L"STACK OVERFLOW");
       break;
-    }
+
     default:
-    {
-      _snprintf_s (aBuffer, sizeof(aBuffer), _TRUNCATE, "unknown exception code 0x%x, params 0x%p 0x%p",
-                   theExceptionCode, (void* )ExceptionInformation1, (void* )ExceptionInformation0);
-    }
-  }
+      StringCchPrintfW (buffer, _countof(buffer), L"unknown exception code 0x%x, params 0x%p 0x%p",
+                dwExceptionCode, ExceptionInformation1, ExceptionInformation0 );
+
+  }  // end switch
 
   // reset FPE state (before message box, otherwise it may fail to show up)
-  if (isFloatErr)
-  {
+  if ( flterr ) {
     OSD::SetFloatingSignal (Standard_True);
   }
 
-  const int aStackLength = OSD_SignalStackTraceLength;
-  const int aStackBufLen = Max (aStackLength * 200, 2048);
-  char* aStackBuffer = aStackLength != 0 ? (char* )alloca (aStackBufLen) : NULL;
-  if (aStackBuffer != NULL)
-  {
-    memset (aStackBuffer, 0, aStackBufLen);
-    Standard::StackTrace (aStackBuffer, aStackBufLen, aStackLength, theExcPtr->ContextRecord);
-  }
-
-#if !defined(OCCT_UWP) && !defined(__MINGW32__) && !defined(__CYGWIN32__)
-  // provide message to the user with possibility to stop
-  if (aBuffer[0] != '\0'
-   && fMsgBox
-   && theExceptionCode != EXCEPTION_NONCONTINUABLE_EXCEPTION)
-  {
-    MessageBeep (MB_ICONHAND);
-    char aMsgBoxBuffer[2048];
-    strcat_s (aMsgBoxBuffer, sizeof(aMsgBoxBuffer), aBuffer);
-    if (aStackBuffer != NULL)
-    {
-      strcat_s (aMsgBoxBuffer, sizeof(aMsgBoxBuffer), aStackBuffer);
-    }
-    int aChoice = ::MessageBoxA (0, aMsgBoxBuffer, "OCCT Exception Handler", MB_ABORTRETRYIGNORE | MB_ICONSTOP);
+#if ! defined(OCCT_UWP) && !defined(__MINGW32__) && !defined(__CYGWIN32__)
+ // provide message to the user with possibility to stop
+  size_t idx;
+  StringCchLengthW (buffer, _countof(buffer),&idx);
+  if ( idx && fMsgBox && dwExceptionCode != EXCEPTION_NONCONTINUABLE_EXCEPTION ) {
+    MessageBeep ( MB_ICONHAND );
+    int aChoice = ::MessageBoxW (0, buffer, L"OCCT Exception Handler", MB_ABORTRETRYIGNORE | MB_ICONSTOP);
     if (aChoice == IDRETRY)
     {
       _osd_debug();
       DebugBreak();
-    }
-    else if (aChoice == IDABORT)
-    {
-      exit (0xFFFF);
-    }
+    } else if (aChoice == IDABORT)
+      exit(0xFFFF);
   }
 #endif
 
-  return _osd_raise (theExceptionCode, aBuffer, aStackBuffer);
+  char aBufferA[2048];
+  WideCharToMultiByte(CP_UTF8, 0, buffer, -1, aBufferA, sizeof(aBufferA), NULL, NULL);
+  return _osd_raise(dwExceptionCode, aBufferA);
 }
 
 //=======================================================================
@@ -334,38 +277,38 @@ static void SIGWntHandler (int signum, int sub_code)
         std::cout << "signal error" << std::endl ;
       switch( sub_code ) {
         case _FPE_INVALID :
-          CallHandler (EXCEPTION_FLT_INVALID_OPERATION, NULL);
+          CallHandler( EXCEPTION_FLT_INVALID_OPERATION ,0,0) ;
           break ;
         case _FPE_DENORMAL :
-          CallHandler (EXCEPTION_FLT_DENORMAL_OPERAND, NULL);
+          CallHandler( EXCEPTION_FLT_DENORMAL_OPERAND ,0,0) ;
           break ;
         case _FPE_ZERODIVIDE :
-          CallHandler (EXCEPTION_FLT_DIVIDE_BY_ZERO, NULL);
+          CallHandler( EXCEPTION_FLT_DIVIDE_BY_ZERO ,0,0) ;
           break ;
         case _FPE_OVERFLOW :
-          CallHandler (EXCEPTION_FLT_OVERFLOW, NULL);
+          CallHandler( EXCEPTION_FLT_OVERFLOW ,0,0) ;
           break ;
         case _FPE_UNDERFLOW :
-          CallHandler (EXCEPTION_FLT_UNDERFLOW, NULL);
+          CallHandler( EXCEPTION_FLT_UNDERFLOW ,0,0) ;
           break ;
         case _FPE_INEXACT :
-          CallHandler (EXCEPTION_FLT_INEXACT_RESULT, NULL);
+          CallHandler( EXCEPTION_FLT_INEXACT_RESULT ,0,0) ;
           break ;
         default:
           std::cout << "SIGWntHandler(default) -> throw Standard_NumericError(\"Floating Point Error\");" << std::endl;
-          THROW_OR_JUMP (Standard_NumericError, "Floating Point Error", NULL);
+	  THROW_OR_JUMP (Standard_NumericError, "Floating Point Error");
           break ;
       }
       break ;
     case SIGSEGV :
       if ( signal( signum, (void(*)(int))SIGWntHandler ) == SIG_ERR )
         std::cout << "signal error" << std::endl ;
-      CallHandler (EXCEPTION_ACCESS_VIOLATION, NULL);
+      CallHandler( EXCEPTION_ACCESS_VIOLATION ,0,0) ;
       break ;
     case SIGILL :
       if ( signal( signum, (void(*)(int))SIGWntHandler ) == SIG_ERR )
         std::cout << "signal error" << std::endl ;
-      CallHandler (EXCEPTION_ILLEGAL_INSTRUCTION, NULL);
+      CallHandler( EXCEPTION_ILLEGAL_INSTRUCTION ,0,0) ;
       break ;
     default:
       std::cout << "SIGWntHandler unexpected signal : " << signum << std::endl ;
@@ -392,7 +335,12 @@ static void SIGWntHandler (int signum, int sub_code)
 static void TranslateSE( unsigned int theCode, EXCEPTION_POINTERS* theExcPtr )
 {
   Standard_Mutex::Sentry aSentry (THE_SIGNAL_MUTEX); // lock the mutex to prevent simultaneous handling
-  CallHandler (theCode, theExcPtr);
+  ptrdiff_t info1 = 0, info0 = 0;
+  if ( theExcPtr ) {
+    info1 = theExcPtr->ExceptionRecord->ExceptionInformation[1];
+    info0 = theExcPtr->ExceptionRecord->ExceptionInformation[0];
+  }
+  CallHandler(theCode, info1, info0);
 }
 #endif
 
@@ -404,8 +352,11 @@ static void TranslateSE( unsigned int theCode, EXCEPTION_POINTERS* theExcPtr )
 //=======================================================================
 static LONG WINAPI WntHandler (EXCEPTION_POINTERS *lpXP)
 {
-  DWORD dwExceptionCode = lpXP->ExceptionRecord->ExceptionCode;
-  return CallHandler (dwExceptionCode, lpXP);
+  DWORD               dwExceptionCode = lpXP->ExceptionRecord->ExceptionCode;
+
+  return CallHandler (dwExceptionCode,
+                      lpXP->ExceptionRecord->ExceptionInformation[1],
+                      lpXP->ExceptionRecord->ExceptionInformation[0]);
 }
 
 //=======================================================================
@@ -467,13 +418,8 @@ void OSD::SetSignal (OSD_SignalMode theSignalMode,
   TCollection_AsciiString val = env.Value();
   if (!env.Failed())
   {
-    std::cout << "Environment variable CSF_DEBUG_MODE set.\n";
+    std::cout << "Environment variable CSF_DEBUG_MODE setted.\n";
     fMsgBox = Standard_True;
-    if (OSD_SignalStackTraceLength == 0)
-    {
-      // enable stack trace if CSF_DEBUG_MODE is set
-      OSD_SignalStackTraceLength = 10;
-    }
   }
   else
   {
@@ -560,71 +506,67 @@ static BOOL WINAPI _osd_ctrl_break_handler ( DWORD dwCode ) {
 //============================================================================
 //==== _osd_raise
 //============================================================================
-static LONG __fastcall _osd_raise (DWORD theCode, const char* theMsg, const char* theStack)
+static LONG __fastcall _osd_raise ( DWORD dwCode, LPSTR msg )
 {
-  const char* aMsg = theMsg;
-  if (aMsg[0] == '\x03')
-  {
-    ++aMsg;
-  }
+  if (msg[0] == '\x03') ++msg;
 
-  switch (theCode)
+  switch (dwCode)
   {
     case EXCEPTION_ACCESS_VIOLATION:
-      THROW_OR_JUMP (OSD_Exception_ACCESS_VIOLATION, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_ACCESS_VIOLATION, msg);
       break;
     case EXCEPTION_ARRAY_BOUNDS_EXCEEDED:
-      THROW_OR_JUMP (OSD_Exception_ARRAY_BOUNDS_EXCEEDED, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_ARRAY_BOUNDS_EXCEEDED, msg);
       break;
     case EXCEPTION_DATATYPE_MISALIGNMENT:
-      THROW_OR_JUMP (Standard_ProgramError, aMsg, theStack);
+      THROW_OR_JUMP (Standard_ProgramError, msg);
       break;
     case EXCEPTION_ILLEGAL_INSTRUCTION:
-      THROW_OR_JUMP (OSD_Exception_ILLEGAL_INSTRUCTION, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_ILLEGAL_INSTRUCTION, msg);
       break;
     case EXCEPTION_IN_PAGE_ERROR:
-      THROW_OR_JUMP (OSD_Exception_IN_PAGE_ERROR, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_IN_PAGE_ERROR, msg);
       break;
     case EXCEPTION_INT_DIVIDE_BY_ZERO:
-      THROW_OR_JUMP (Standard_DivideByZero, aMsg, theStack);
+      THROW_OR_JUMP (Standard_DivideByZero, msg);
       break;
     case EXCEPTION_INT_OVERFLOW:
-      THROW_OR_JUMP (OSD_Exception_INT_OVERFLOW, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_INT_OVERFLOW, msg);
       break;
     case EXCEPTION_INVALID_DISPOSITION:
-      THROW_OR_JUMP (OSD_Exception_INVALID_DISPOSITION, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_INVALID_DISPOSITION, msg);
       break;
     case EXCEPTION_NONCONTINUABLE_EXCEPTION:
-      THROW_OR_JUMP (OSD_Exception_NONCONTINUABLE_EXCEPTION, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_NONCONTINUABLE_EXCEPTION, msg);
       break;
     case EXCEPTION_PRIV_INSTRUCTION:
-      THROW_OR_JUMP (OSD_Exception_PRIV_INSTRUCTION, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_PRIV_INSTRUCTION, msg);
       break;
     case EXCEPTION_STACK_OVERFLOW:
-      THROW_OR_JUMP (OSD_Exception_STACK_OVERFLOW, aMsg, theStack);
+      THROW_OR_JUMP (OSD_Exception_STACK_OVERFLOW, msg);
       break;
     case EXCEPTION_FLT_DIVIDE_BY_ZERO:
-      THROW_OR_JUMP (Standard_DivideByZero, aMsg, theStack);
+      THROW_OR_JUMP (Standard_DivideByZero, msg);
       break;
     case EXCEPTION_FLT_STACK_CHECK:
     case EXCEPTION_FLT_OVERFLOW:
-      THROW_OR_JUMP (Standard_Overflow, aMsg, theStack);
+      THROW_OR_JUMP (Standard_Overflow, msg);
       break;
     case EXCEPTION_FLT_UNDERFLOW:
-      THROW_OR_JUMP (Standard_Underflow, aMsg, theStack);
+      THROW_OR_JUMP (Standard_Underflow, msg);
       break;
     case EXCEPTION_FLT_INVALID_OPERATION:
     case EXCEPTION_FLT_DENORMAL_OPERAND:
     case EXCEPTION_FLT_INEXACT_RESULT:
     case STATUS_FLOAT_MULTIPLE_TRAPS:
     case STATUS_FLOAT_MULTIPLE_FAULTS:
-      THROW_OR_JUMP (Standard_NumericError, aMsg, theStack);
+      THROW_OR_JUMP (Standard_NumericError, msg);
       break;
     default:
       break;
-  }
+  }  // end switch
   return EXCEPTION_EXECUTE_HANDLER;
-}
+}  // end _osd_raise
 
 #if ! defined(OCCT_UWP) && !defined(__MINGW32__) && !defined(__CYGWIN32__)
 //============================================================================
@@ -761,7 +703,7 @@ typedef void (* SIG_PFV) (int);
 
 #include <signal.h>
 
-#if !defined(__ANDROID__) && !defined(__QNX__) && !defined(__EMSCRIPTEN__)
+#if !defined(__ANDROID__) && !defined(__QNX__)
   #include <sys/signal.h>
 #endif
 
@@ -769,7 +711,7 @@ typedef void (* SIG_PFV) (int);
 
 //============================================================================
 //==== Handler
-//====     Catch the different signals:
+//====     Catche the differents signals:
 //====          1- The Fatal signals, which cause the end of process:
 //====          2- The exceptions which are "signaled" by Raise.
 //====     The Fatal Signals:
@@ -802,7 +744,7 @@ static void Handler (const int theSignal)
     perror ("sigaction");
   }
 
-  // std::cout << "OSD::Handler: signal " << (int) theSignal << " occurred inside a try block " <<  std::endl ;
+  // std::cout << "OSD::Handler: signal " << (int) theSignal << " occured inside a try block " <<  std::endl ;
   if ( ADR_ACT_SIGIO_HANDLER != NULL )
     (*ADR_ACT_SIGIO_HANDLER)() ;
 
@@ -905,41 +847,32 @@ static void Handler (const int theSignal)
 #ifdef SA_SIGINFO
 
 static void SegvHandler(const int theSignal,
-                        siginfo_t* theSigInfo,
+                        siginfo_t *ip,
                         const Standard_Address theContext)
 {
-  (void)theSignal;
+  (void)theSignal; // silence GCC warnings
   (void)theContext;
-  if (theSigInfo != NULL)
-  {
-    sigset_t set;
-    sigemptyset (&set);
-    sigaddset (&set, SIGSEGV);
-    sigprocmask (SIG_UNBLOCK, &set, NULL);
-    void* anAddress = theSigInfo->si_addr;
-    {
-      char aMsg[100];
-      sprintf (aMsg, "SIGSEGV 'segmentation violation' detected. Address %lx.", (long )anAddress);
 
-      const int aStackLength = OSD_SignalStackTraceLength;
-      const int aStackBufLen = Max (aStackLength * 200, 2048);
-      char* aStackBuffer = aStackLength != 0 ? (char* )alloca (aStackBufLen) : NULL;
-      if (aStackBuffer != NULL)
-      {
-        memset (aStackBuffer, 0, aStackBufLen);
-        Standard::StackTrace (aStackBuffer, aStackBufLen, aStackLength);
-      }
-
-      OSD_SIGSEGV::NewInstance (aMsg, aStackBuffer)->Jump();
-    }
+//  std::cout << "OSD::SegvHandler activated(SA_SIGINFO)" << std::endl ;
+  if ( ip != NULL ) {
+     sigset_t set;
+     sigemptyset(&set);
+     sigaddset(&set, SIGSEGV);
+     sigprocmask (SIG_UNBLOCK, &set, NULL) ;
+     void *address = ip->si_addr ;
+     {
+       char Msg[100];
+       sprintf(Msg,"SIGSEGV 'segmentation violation' detected. Address %lx",
+         (long ) address ) ;
+       OSD_SIGSEGV::NewInstance(Msg)->Jump();
+     }
   }
 #ifdef OCCT_DEBUG
-  else
-  {
-    std::cout << "Wrong undefined address." << std::endl;
+  else {
+    std::cout << "Wrong undefined address." << std::endl ;
   }
 #endif
-  exit (SIGSEGV);
+  exit(SIGSEGV);
 }
 
 #elif defined (_hpux) || defined(HPUX)
@@ -947,26 +880,30 @@ static void SegvHandler(const int theSignal,
 // pour version 09.07
 
 static void SegvHandler(const int theSignal,
-                        siginfo_t* theSigInfo,
+                        siginfo_t *ip,
                         const Standard_Address theContext)
 {
-  if (theContext != NULL)
-  {
-    unsigned long aSpace   = ((struct sigcontext *)theContext)->sc_sl.sl_ss.ss_cr20;
-    unsigned long anOffset = ((struct sigcontext *)theContext)->sc_sl.sl_ss.ss_cr21;
+  unsigned long Space  ;
+  unsigned long Offset ;
+  char Msg[100] ;
+
+  if ( theContext != NULL ) {
+    Space = ((struct sigcontext *)theContext)->sc_sl.sl_ss.ss_cr20 ;
+    Offset = ((struct sigcontext *)theContext)->sc_sl.sl_ss.ss_cr21 ;
+//    std::cout << "Wrong address = " << hex(Offset) << std::endl ;
     {
-      char aMsg[100];
-      sprintf (aMsg, "SIGSEGV 'segmentation violation' detected. Address %lx", anOffset);
-      OSD_SIGSEGV::NewInstance (aMsg)->Jump();
+      sprintf(Msg,"SIGSEGV 'segmentation violation' detected. Address %lx",Offset) ;
+      OSD_SIGSEGV::Jump(Msg);
+//    scp->sc_pcoq_head = scp->sc_pcoq_tail ;       Permettrait de continuer a
+//    scp->sc_pcoq_tail = scp->sc_pcoq_tail + 0x4 ; l'intruction suivant le segv.
     }
   }
 #ifdef OCCT_DEBUG
-  else
-  {
-    std::cout << "Wrong undefined address." << std::endl;
+  else {
+    std::cout << "Wrong undefined address." << std::endl ;
   }
 #endif
-  exit (SIGSEGV);
+  exit(SIGSEGV);
 }
 
 #endif
@@ -1029,7 +966,7 @@ void OSD::SetThreadLocalSignal (OSD_SignalMode /*theSignalMode*/,
 
 //============================================================================
 //==== SetSignal
-//====     Set the different signals:
+//====     Set the differents signals:
 //============================================================================
 
 void OSD::SetSignal (OSD_SignalMode theSignalMode,
@@ -1088,9 +1025,7 @@ void OSD::SetSignal (OSD_SignalMode theSignalMode,
     }
     if (theSignalMode == OSD_SignalMode_SetUnhandled && retcode == 0 && anActOld.sa_handler != SIG_DFL)
     {
-      struct sigaction anActOld2;
-      sigemptyset(&anActOld2.sa_mask);
-      retcode = sigaction (aSignalTypes[i], &anActOld, &anActOld2);
+      retcode = sigaction (aSignalTypes[i], &anActOld, &anActOld);
     }
     Standard_ASSERT(retcode == 0, "sigaction() failed", std::cout << "OSD::SetSignal(): sigaction() failed for " << aSignalTypes[i] << std::endl);
   }

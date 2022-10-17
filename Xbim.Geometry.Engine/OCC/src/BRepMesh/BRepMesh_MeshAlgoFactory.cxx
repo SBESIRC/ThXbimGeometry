@@ -25,8 +25,6 @@
 #include <BRepMesh_DelaunayDeflectionControlMeshAlgo.hxx>
 #include <BRepMesh_BoundaryParamsRangeSplitter.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_MeshAlgoFactory, IMeshTools_MeshAlgoFactory)
-
 namespace
 {
   struct BaseMeshAlgo

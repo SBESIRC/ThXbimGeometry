@@ -26,9 +26,11 @@
 #include <BRepSweep_Trsf.hxx>
 #include <Standard_Boolean.hxx>
 #include <TopAbs_Orientation.hxx>
+class Standard_ConstructionError;
 class TopoDS_Shape;
 class Sweep_NumShape;
 class TopLoc_Location;
+class gp_Ax1;
 
 
 //! Provides   an  algorithm   to   build  object   by
@@ -110,16 +112,16 @@ public:
   Standard_EXPORT Standard_Boolean GDDShapeIsToAdd (const TopoDS_Shape& aNewShape, const TopoDS_Shape& aNewSubShape, const TopoDS_Shape& aGenS, const Sweep_NumShape& aDirS, const Sweep_NumShape& aSubDirS) const Standard_OVERRIDE;
   
   //! In   some  particular  cases  the  topology  of  a
-  //! generated  face  must  be  composed of independent
+  //! generated  face  must  be  composed of independant
   //! closed wires, in  this  case this function returns
-  //! true.   The  only  case in which the function may
+  //! true.   The  only  case in whitch the function may
   //! return true is a planar face in a closed revol.
   Standard_EXPORT Standard_Boolean SeparatedWires (const TopoDS_Shape& aNewShape, const TopoDS_Shape& aNewSubShape, const TopoDS_Shape& aGenS, const TopoDS_Shape& aSubGenS, const Sweep_NumShape& aDirS) const Standard_OVERRIDE;
   
   //! In  some  particular  cases  the   topology  of  a
-  //! generated  Shell must be  composed  of  independent
+  //! generated  Shell must be  composed  of  independant
   //! closed Shells,  in this case  this function returns
-  //! a Compound of independent Shells.
+  //! a Compound of independant Shells.
   Standard_EXPORT virtual TopoDS_Shape SplitShell (const TopoDS_Shape& aNewShape) const Standard_OVERRIDE;
   
   //! Returns true   if aDirS   and aGenS  addresses   a

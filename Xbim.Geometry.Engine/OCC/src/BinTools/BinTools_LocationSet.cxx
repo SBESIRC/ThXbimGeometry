@@ -57,7 +57,7 @@ static Standard_IStream& operator >>(Standard_IStream& IS, gp_Trsf& T)
 //function : operator << (gp_Trsf& T)
 //purpose  : 
 //=======================================================================
-Standard_OStream& operator <<(Standard_OStream& OS,const gp_Trsf& T)
+static Standard_OStream& operator <<(Standard_OStream& OS,const gp_Trsf& T)
 {
   gp_XYZ V = T.TranslationPart();
   gp_Mat M = T.VectorialPart();

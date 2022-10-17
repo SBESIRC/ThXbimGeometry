@@ -36,14 +36,16 @@ public:
 
   DEFINE_STANDARD_ALLOC
 
-  //! Empty constructor
-  BOPDS_ShapeInfo();
+  
 
-  virtual ~BOPDS_ShapeInfo();
+  //! Empty contructor
+    BOPDS_ShapeInfo();
+virtual ~BOPDS_ShapeInfo();
+  
 
-  //! Constructor
-  //! @param theAllocator the allocator to manage the memory
-  BOPDS_ShapeInfo(const Handle(NCollection_BaseAllocator)& theAllocator);
+  //! Contructor
+  //! theAllocator - the allocator to manage the memory
+    BOPDS_ShapeInfo(const Handle(NCollection_BaseAllocator)& theAllocator);
   
 
   //! Modifier
@@ -128,7 +130,7 @@ public:
 
   //! Query
   //! Returns true if there is flag.
-  //! Returns the flag theFlag
+  //! Returns the the  flag theFlag
     Standard_Boolean HasFlag (Standard_Integer& theFlag) const;
   
 

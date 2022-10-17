@@ -21,6 +21,7 @@
 #include <Geom_Curve.hxx>
 #include <Geom_Geometry.hxx>
 #include <Geom_Line.hxx>
+#include <GeomAbs_UVSense.hxx>
 #include <gp.hxx>
 #include <gp_Ax2d.hxx>
 #include <gp_Ax3.hxx>
@@ -432,16 +433,3 @@ const
   return T2;
 }
 
-//=======================================================================
-//function : DumpJson
-//purpose  : 
-//=======================================================================
-void Geom_ConicalSurface::DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth) const
-{
-  OCCT_DUMP_TRANSIENT_CLASS_BEGIN (theOStream)
-
-  OCCT_DUMP_BASE_CLASS (theOStream, theDepth, Geom_ElementarySurface)
-
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, radius)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, semiAngle)
-}

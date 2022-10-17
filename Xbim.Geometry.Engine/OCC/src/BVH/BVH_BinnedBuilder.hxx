@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef BVH_BinnedBuilder_HeaderFile
-#define BVH_BinnedBuilder_HeaderFile
+#ifndef _BVH_BinnedBuilder_Header
+#define _BVH_BinnedBuilder_Header
 
 #include <BVH_QueueBuilder.hxx>
 

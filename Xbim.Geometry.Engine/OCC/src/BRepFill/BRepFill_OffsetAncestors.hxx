@@ -23,6 +23,7 @@
 
 #include <Standard_Boolean.hxx>
 #include <TopTools_DataMapOfShapeShape.hxx>
+class StdFail_NotDone;
 class BRepFill_OffsetWire;
 class TopoDS_Edge;
 class TopoDS_Shape;

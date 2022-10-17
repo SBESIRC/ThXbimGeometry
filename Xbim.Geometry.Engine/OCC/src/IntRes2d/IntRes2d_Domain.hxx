@@ -25,6 +25,8 @@
 #include <Standard_Real.hxx>
 #include <gp_Pnt2d.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_DomainError;
+class gp_Pnt2d;
 
 
 //! Definition of the domain of parameter on a 2d-curve.

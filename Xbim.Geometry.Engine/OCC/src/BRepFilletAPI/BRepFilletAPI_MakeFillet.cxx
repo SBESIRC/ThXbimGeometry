@@ -528,7 +528,7 @@ Handle(TopOpeBRepBuild_HBuilder) BRepFilletAPI_MakeFillet::Builder()const
 //purpose  : 
 //=======================================================================
 
-void BRepFilletAPI_MakeFillet::Build(const Message_ProgressRange& /*theRange*/)
+void BRepFilletAPI_MakeFillet::Build()
 {
   myBuilder.Compute();
   if(myBuilder.IsDone()) {

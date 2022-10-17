@@ -20,7 +20,7 @@
 #include <BRep_Builder.hxx>
 #include <BRep_TFace.hxx>
 #include <BRep_Tool.hxx>
-#include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepCheck.hxx>
 #include <BRepCheck_Face.hxx>
 #include <BRepCheck_ListIteratorOfListOfStatus.hxx>
@@ -82,9 +82,6 @@ static Standard_Boolean CheckThin(const TopoDS_Shape& w,
 //=======================================================================
 
 BRepCheck_Face::BRepCheck_Face (const TopoDS_Face& F)
-: myIntres(BRepCheck_NoError),
-  myImbres(BRepCheck_NoError),
-  myOrires(BRepCheck_NoError)
 {
   Init(F);
   myIntdone = Standard_False;
@@ -100,10 +97,10 @@ BRepCheck_Face::BRepCheck_Face (const TopoDS_Face& F)
 
 void BRepCheck_Face::Minimum()
 {
-  if (!myMin)
-  {
-    Handle(BRepCheck_HListOfStatus) aNewList = new BRepCheck_HListOfStatus();
-    BRepCheck_ListOfStatus& lst = **myMap.Bound (myShape, aNewList);
+  if (!myMin) {
+    BRepCheck_ListOfStatus thelist;
+    myMap.Bind(myShape, thelist);
+    BRepCheck_ListOfStatus& lst = myMap(myShape);
 
     Handle(BRep_TFace)& TF = *((Handle(BRep_TFace)*) &myShape.TShape());
     if (TF->Surface().IsNull()) {
@@ -127,19 +124,14 @@ void BRepCheck_Face::Minimum()
 
 void BRepCheck_Face::InContext(const TopoDS_Shape& S)
 {
-  Handle(BRepCheck_HListOfStatus) aHList;
-  {
-    Standard_Mutex::Sentry aLock(myMutex.get());
-    if (myMap.IsBound (S))
-    {
-      return;
-    }
-
-    Handle(BRepCheck_HListOfStatus) aNewList = new BRepCheck_HListOfStatus();
-    aHList = *myMap.Bound (S, aNewList);
+  if (myMap.IsBound(S)) {
+    return;
   }
-  BRepCheck_ListOfStatus& lst = *aHList;
+  BRepCheck_ListOfStatus thelist;
+  myMap.Bind(S, thelist);
 
+  BRepCheck_ListOfStatus& lst = myMap(S);
+  
   TopExp_Explorer exp(S,TopAbs_FACE);
   for (; exp.More(); exp.Next()) {
     if (exp.Current().IsSame(myShape)) {
@@ -178,18 +170,9 @@ void BRepCheck_Face::Blind()
 
 BRepCheck_Status BRepCheck_Face::IntersectWires(const Standard_Boolean Update)
 {
-  Handle(BRepCheck_HListOfStatus) aHList;
-  {
-    Standard_Mutex::Sentry aLock(myMutex.get());
-    aHList = myMap (myShape);
-  }
-
-  BRepCheck_ListOfStatus& aStatusList = *aHList;
-  if (myIntdone)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myIntres);
+  if (myIntdone) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myIntres);
     }
     return myIntres;
   }
@@ -210,9 +193,8 @@ BRepCheck_Status BRepCheck_Face::IntersectWires(const Standard_Boolean Update)
     }
     else { // the same wire is met twice...
       myIntres = BRepCheck_RedundantWire;
-      if (Update)
-      {
-        BRepCheck::Add (aStatusList, myIntres);
+      if (Update) {
+	BRepCheck::Add(myMap(myShape),myIntres);
       }
       return myIntres;
     }
@@ -231,7 +213,7 @@ BRepCheck_Status BRepCheck_Face::IntersectWires(const Standard_Boolean Update)
     {
       const TopoDS_Edge& anEdge = TopoDS::Edge (exp2.Current());
       aC.Load (BRep_Tool::CurveOnSurface (anEdge, TopoDS::Face (myShape), aFirst, aLast));
-      // To avoid exception in Segment if C1 is BSpline
+      // To avoid exeption in Segment if C1 is BSpline
       if (aC.FirstParameter() > aFirst)
       {
         aFirst = aC.FirstParameter();
@@ -278,21 +260,18 @@ BRepCheck_Status BRepCheck_Face::IntersectWires(const Standard_Boolean Update)
       {
         continue;
       }
-      if (Intersect(wir1,wir2,TopoDS::Face(myShape), aMapShapeBox2d))
-      {
-        myIntres = BRepCheck_IntersectingWires;
-        if (Update)
-        {
-          BRepCheck::Add (aStatusList, myIntres);
-        }
-        return myIntres;
+      if (Intersect(wir1,wir2,TopoDS::Face(myShape), aMapShapeBox2d)) {
+	myIntres = BRepCheck_IntersectingWires;
+	if (Update) {
+	  BRepCheck::Add(myMap(myShape),myIntres);
+	}
+	return myIntres;
       }
     }
     Index++;
   }
-  if (Update)
-  {
-    BRepCheck::Add(aStatusList, myIntres);
+  if (Update) {
+    BRepCheck::Add(myMap(myShape),myIntres);
   }
   return myIntres;
 }
@@ -305,41 +284,27 @@ BRepCheck_Status BRepCheck_Face::IntersectWires(const Standard_Boolean Update)
 
 BRepCheck_Status BRepCheck_Face::ClassifyWires(const Standard_Boolean Update)
 {
-  Handle(BRepCheck_HListOfStatus) aHList;
-  {
-    Standard_Mutex::Sentry aLock(myMutex.get());
-    aHList = myMap (myShape);
-  }
-
-  BRepCheck_ListOfStatus& aStatusList = *aHList;
-
   // It is assumed that each wire does not intersect any other one.
-  if (myImbdone)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myImbres);
+  if (myImbdone) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myImbres);
     }
     return myImbres;
   }
 
   myImbdone = Standard_True;
   myImbres = IntersectWires();
-  if (myImbres != BRepCheck_NoError)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myImbres);
+  if (myImbres != BRepCheck_NoError) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myImbres);
     }
     return myImbres;
   }
 
   Standard_Integer Nbwire = myMapImb.Extent();
-  if (Nbwire < 1)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myImbres);
+  if (Nbwire < 1) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myImbres);
     }
     return myImbres;
   }
@@ -390,72 +355,60 @@ BRepCheck_Status BRepCheck_Face::ClassifyWires(const Standard_Boolean Update)
       if (Wext.IsNull()) {
 	Wext = TopoDS::Wire(itm.Key());
       }
-      else
-      {
-        myImbres = BRepCheck_InvalidImbricationOfWires;
-        if (Update)
-        {
-          BRepCheck::Add (aStatusList, myImbres);
-        }
-        return myImbres;
+      else {
+	myImbres = BRepCheck_InvalidImbricationOfWires;
+	if (Update) {
+	  BRepCheck::Add(myMap(myShape),myImbres);
+	}
+	return myImbres;
       }
     }
   }
 
-  if (!Wext.IsNull())
-  {
+  if (!Wext.IsNull()) {
     // verifies that the list contains nbwire-1 elements
     if (myMapImb(Wext).Extent() != Nbwire-1) {
       myImbres = BRepCheck_InvalidImbricationOfWires;
-      if (Update)
-      {
-        BRepCheck::Add (aStatusList, myImbres);
+      if (Update) {
+	BRepCheck::Add(myMap(myShape),myImbres);
       }
       return myImbres;
     }
   }
-
   // quit without errors
-  if (Update)
-  {
-    BRepCheck::Add (aStatusList, myImbres);
+  if (Update) {
+    BRepCheck::Add(myMap(myShape),myImbres);
   }
-
   return myImbres;
+  
 }
 
 
 //=======================================================================
 //function : OrientationOfWires
-//purpose  :
+//purpose  : 
 //=======================================================================
-BRepCheck_Status BRepCheck_Face::OrientationOfWires (const Standard_Boolean Update)
-{
-  Handle(BRepCheck_HListOfStatus) aHList;
-  {
-    Standard_Mutex::Sentry aLock(myMutex.get());
-    aHList = myMap (myShape);
-  }
 
-  BRepCheck_ListOfStatus& aStatusList = *aHList;
+BRepCheck_Status BRepCheck_Face::OrientationOfWires
+   (const Standard_Boolean Update)
+{
   // WARNING : it is assumed that the edges of a wire are correctly oriented
+
+
   Standard_Boolean Infinite = myShape.Infinite();
-  if (myOridone)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myOrires);
+
+  if (myOridone) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myOrires);
     }
     return myOrires;
   }
 
   myOridone = Standard_True;
   myOrires = ClassifyWires();
-  if (myOrires != BRepCheck_NoError)
-  {
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myOrires);
+  if (myOrires != BRepCheck_NoError) {
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myOrires);
     }
     return myOrires;
   }
@@ -476,86 +429,73 @@ BRepCheck_Status BRepCheck_Face::OrientationOfWires (const Standard_Boolean Upda
     }
   }
 
-  if (Wext.IsNull() && !Infinite)
-  {
+  if (Wext.IsNull() && !Infinite) {
     if (Nbwire>0) myOrires = BRepCheck_InvalidImbricationOfWires;
-    if (Update)
-    {
-      BRepCheck::Add (aStatusList, myOrires);
+    if (Update) {
+      BRepCheck::Add(myMap(myShape),myOrires);
     }
     return myOrires;
   }
 
   // BRep_Builder B;
   TopExp_Explorer exp(myShape.Oriented(TopAbs_FORWARD),TopAbs_WIRE);
-  for (; exp.More(); exp.Next())
-  {
+  for (; exp.More(); exp.Next()) {
     const TopoDS_Wire& wir = TopoDS::Wire(exp.Current());
-    if (!Wext.IsNull() && wir.IsSame(Wext))
-    {
-      if (wir.Orientation() != Wext.Orientation())
-      {
-        //the exterior wire defines a hole
-        if (CheckThin(wir,myShape.Oriented (TopAbs_FORWARD)))
-        {
-          return myOrires;
-        }
-        myOrires = BRepCheck_BadOrientationOfSubshape;
-        if (Update)
-        {
-          BRepCheck::Add (aStatusList, myOrires);
-        }
-        return myOrires;
+    if (!Wext.IsNull() && wir.IsSame(Wext)) {
+      if (wir.Orientation() != Wext.Orientation()) {
+	//the exterior wire defines a hole 
+	if( CheckThin(wir,myShape.Oriented(TopAbs_FORWARD)) )
+	  return myOrires;
+	myOrires = BRepCheck_BadOrientationOfSubshape;
+	if (Update) {
+	  BRepCheck::Add(myMap(myShape),myOrires);
+	}
+	return myOrires;
       }
     }
-    else
-    {
-      for (itm.Reset(); itm.More(); itm.Next())
-      {
-	if (itm.Key().IsSame(wir))
-        {
+    else {
+      for (itm.Reset(); itm.More(); itm.Next()) {
+	if (itm.Key().IsSame(wir)) {
 	  break;
 	}
       }
       // No control on More()
-      if (itm.Key().Orientation() == wir.Orientation())
-      {
-        // the given wire does not define a hole
-        myOrires = BRepCheck_BadOrientationOfSubshape;
-        if (Update)
-        {
-          BRepCheck::Add (aStatusList, myOrires);
-        }
-        return myOrires;
+      if (itm.Key().Orientation() == wir.Orientation()) {
+	// the given wire does not define a hole
+	myOrires = BRepCheck_BadOrientationOfSubshape;
+	if (Update) {
+	  BRepCheck::Add(myMap(myShape),myOrires);
+	}
+	return myOrires;
       }
     }
   }
-  // quit without error
-  if (Update)
-  {
-    BRepCheck::Add (aStatusList, myOrires);
+  // quit withour error
+  if (Update) {
+    BRepCheck::Add(myMap(myShape),myOrires);
   }
   return myOrires;
 }
 
+
 //=======================================================================
 //function : SetUnorientable
-//purpose  :
+//purpose  : 
 //=======================================================================
+
 void BRepCheck_Face::SetUnorientable()
 {
-  Standard_Mutex::Sentry aLock(myMutex.get());
-  BRepCheck::Add (*myMap (myShape), BRepCheck_UnorientableShape);
+  BRepCheck::Add(myMap(myShape),BRepCheck_UnorientableShape);
 }
 
 //=======================================================================
-//function : SetStatus
-//purpose  :
+//function :   SetStatus
+//purpose  : 
 //=======================================================================
+
 void BRepCheck_Face::SetStatus(const BRepCheck_Status theStatus)
 {
-  Standard_Mutex::Sentry aLock(myMutex.get());
-  BRepCheck::Add (*myMap (myShape), theStatus);
+    BRepCheck::Add(myMap(myShape),theStatus);
 }
 
 //=======================================================================
@@ -568,7 +508,7 @@ Standard_Boolean BRepCheck_Face::IsUnorientable() const
   if (myOridone) {
     return (myOrires != BRepCheck_NoError);
   }
-  for (BRepCheck_ListIteratorOfListOfStatus itl(*myMap(myShape));
+  for (BRepCheck_ListIteratorOfListOfStatus itl(myMap(myShape));
        itl.More();
        itl.Next()) {
     if (itl.Value() == BRepCheck_UnorientableShape) {
@@ -659,7 +599,7 @@ static Standard_Boolean Intersect(const TopoDS_Wire& wir1,
       const TopoDS_Edge& edg1 = TopoDS::Edge(exp1.Current());
       //    cur1.Initialize(edg1,F);
       C1.Load( BRep_Tool::CurveOnSurface(edg1,F,first1,last1) );
-      // To avoid exception in Segment if C1 is BSpline - IFV
+      // To avoid exeption in Segment if C1 is BSpline - IFV
       if(C1.FirstParameter() > first1) first1 = C1.FirstParameter();
       if(C1.LastParameter()  < last1 ) last1  = C1.LastParameter();
 
@@ -679,7 +619,7 @@ static Standard_Boolean Intersect(const TopoDS_Wire& wir1,
 	    {
 	      //cur2.Initialize(edg2,F);
 	      C2.Load( BRep_Tool::CurveOnSurface(edg2,F,first2,last2) );
-	      // To avoid exception in Segment if C2 is BSpline - IFV
+	      // To avoid exeption in Segment if C2 is BSpline - IFV
 	      if(C2.FirstParameter() > first2) first2 = C2.FirstParameter();
 	      if(C2.LastParameter()  < last2 ) last2  = C2.LastParameter();
 

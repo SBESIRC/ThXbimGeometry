@@ -16,11 +16,15 @@
 #ifndef _IntTools_SurfaceRangeSampleMapHasher_HeaderFile
 #define _IntTools_SurfaceRangeSampleMapHasher_HeaderFile
 
-#include <IntTools_SurfaceRangeSample.hxx>
 #include <Standard.hxx>
 #include <Standard_DefineAlloc.hxx>
 #include <Standard_Handle.hxx>
+
 #include <Standard_Integer.hxx>
+#include <Standard_Boolean.hxx>
+class IntTools_SurfaceRangeSample;
+
+
 
 class IntTools_SurfaceRangeSampleMapHasher 
 {
@@ -32,19 +36,35 @@ public:
   //! @param theKey the key which hash code is to be computed
   //! @param theUpperBound the upper bound of the range a computing hash code must be within
   //! @return a computed hash code, in the range [1, theUpperBound]
-  static Standard_Integer HashCode (const IntTools_SurfaceRangeSample& theKey, Standard_Integer theUpperBound)
-  {
-    return ::HashCode (theKey.GetIndexU() * theKey.GetIndexV(), theUpperBound);
-  }
+  static Standard_Integer HashCode (const IntTools_SurfaceRangeSample& theKey, Standard_Integer theUpperBound);
 
   //! Returns True  when the two  keys are the same. Two
   //! same  keys  must   have  the  same  hashcode,  the
   //! contrary is not necessary.
-  static Standard_Boolean IsEqual (const IntTools_SurfaceRangeSample& S1, const IntTools_SurfaceRangeSample& S2)
-  {
-    return S1.IsEqual(S2);
-  }
+    static Standard_Boolean IsEqual (const IntTools_SurfaceRangeSample& S1, const IntTools_SurfaceRangeSample& S2);
+
+
+
+
+protected:
+
+
+
+
+
+private:
+
+
+
+
 
 };
+
+
+#include <IntTools_SurfaceRangeSampleMapHasher.lxx>
+
+
+
+
 
 #endif // _IntTools_SurfaceRangeSampleMapHasher_HeaderFile

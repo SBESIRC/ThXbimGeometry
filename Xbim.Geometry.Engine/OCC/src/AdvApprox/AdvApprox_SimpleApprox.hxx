@@ -33,6 +33,8 @@
 #include <Standard_Real.hxx>
 #include <Standard_OStream.hxx>
 class PLib_JacobiPolynomial;
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 
 
 //! Approximate  a function on   an intervall [First,Last]

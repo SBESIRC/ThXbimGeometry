@@ -27,11 +27,15 @@
 #include <gp_Pnt.hxx>
 #include <gp_Dir.hxx>
 #include <Standard_Real.hxx>
+class StdFail_NotDone;
+class Standard_DomainError;
+class Standard_OutOfRange;
 class gp_Pln;
 class gp_Cylinder;
 class gp_Sphere;
 class gp_Cone;
 class gp_Torus;
+class gp_Pnt;
 class gp_Lin;
 class gp_Circ;
 class gp_Elips;
@@ -148,43 +152,43 @@ public:
   //! Intersects a two spheres.
   Standard_EXPORT void Perform (const gp_Sphere& Sph1, const gp_Sphere& Sph2, const Standard_Real Tol);
   
-  //! Creates the intersection between a Sphere and a Cone.
+  //! Creates the intersection beween a Sphere and a Cone.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Sphere& Sph, const gp_Cone& Con, const Standard_Real Tol);
   
   //! Intersects a sphere and a cone.
   Standard_EXPORT void Perform (const gp_Sphere& Sph, const gp_Cone& Con, const Standard_Real Tol);
   
-  //! Creates the intersection between two cones.
+  //! Creates the intersection beween two cones.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Cone& Con1, const gp_Cone& Con2, const Standard_Real Tol);
   
   //! Intersects two cones.
   Standard_EXPORT void Perform (const gp_Cone& Con1, const gp_Cone& Con2, const Standard_Real Tol);
   
-  //! Creates the intersection between plane and torus.
+  //! Creates the intersection beween plane and torus.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Pln& Pln, const gp_Torus& Tor, const Standard_Real Tol);
   
   //! Intersects plane and torus.
   Standard_EXPORT void Perform (const gp_Pln& Pln, const gp_Torus& Tor, const Standard_Real Tol);
   
-  //! Creates the intersection between cylinder and torus.
+  //! Creates the intersection beween cylinder and torus.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Cylinder& Cyl, const gp_Torus& Tor, const Standard_Real Tol);
   
   //! Intersects cylinder and torus.
   Standard_EXPORT void Perform (const gp_Cylinder& Cyl, const gp_Torus& Tor, const Standard_Real Tol);
   
-  //! Creates the intersection between cone and torus.
+  //! Creates the intersection beween cone and torus.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Cone& Con, const gp_Torus& Tor, const Standard_Real Tol);
   
   //! Intersects cone and torus.
   Standard_EXPORT void Perform (const gp_Cone& Con, const gp_Torus& Tor, const Standard_Real Tol);
   
-  //! Creates the intersection between sphere and torus.
+  //! Creates the intersection beween sphere and torus.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Sphere& Sph, const gp_Torus& Tor, const Standard_Real Tol);
   
   //! Intersects sphere and torus.
   Standard_EXPORT void Perform (const gp_Sphere& Sph, const gp_Torus& Tor, const Standard_Real Tol);
   
-  //! Creates the intersection between two toruses.
+  //! Creates the intersection beween two toruses.
   Standard_EXPORT IntAna_QuadQuadGeo(const gp_Torus& Tor1, const gp_Torus& Tor2, const Standard_Real Tol);
   
   //! Intersects two toruses.
@@ -196,7 +200,7 @@ public:
   //! Returns the type of intersection.
     IntAna_ResultType TypeInter() const;
   
-  //! Returns the number of intersections.
+  //! Returns the number of interesections.
   //! The possible intersections are :
   //! - 1 point
   //! - 1 or 2 line(s)

@@ -309,7 +309,7 @@ Standard_Boolean FairCurve_Batten::Compute(const gp_Vec2d& DeltaP1,
  Angle1 =  Ox.Angle(P1P2) + Alph1;
  Angle2 = -Ox.Angle(P1P2) + Alph2;
 
-// Calculation of the length of sliding (imposed or initial);
+// Calculation of the length of sliding (imposed or intial);
  
  if (!NewFreeSliding) {
     SlidingLength = NewSlidingFactor * LReference;

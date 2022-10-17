@@ -44,10 +44,7 @@ IMPLEMENT_STANDARD_RTTIEXT(ShapeUpgrade_SplitSurface,Standard_Transient)
 //function : ShapeUpgrade_SplitSurface
 //purpose  : 
 //=======================================================================
-ShapeUpgrade_SplitSurface::ShapeUpgrade_SplitSurface()
-: myNbResultingRow(0),
-  myNbResultingCol(0),
-  myStatus(0)
+ShapeUpgrade_SplitSurface::ShapeUpgrade_SplitSurface() : myStatus(0)
 {
 }
 

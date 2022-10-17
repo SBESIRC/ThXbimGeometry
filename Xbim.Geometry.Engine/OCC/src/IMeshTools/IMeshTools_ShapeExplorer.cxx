@@ -25,8 +25,6 @@
 #include <TopTools_MapOfShape.hxx>
 #include <Geom_Surface.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(IMeshTools_ShapeExplorer, IMeshData_Shape)
-
 namespace
 {
   //=======================================================================
@@ -36,7 +34,6 @@ namespace
   //=======================================================================
   void visitEdges (const Handle (IMeshTools_ShapeVisitor)& theVisitor,
                    const TopoDS_Shape&                     theShape,
-                   const Standard_Boolean                  isResetLocation,
                    const TopAbs_ShapeEnum                  theToFind,
                    const TopAbs_ShapeEnum                  theToAvoid = TopAbs_SHAPE)
   {
@@ -49,9 +46,7 @@ namespace
         continue;
       }
 
-      theVisitor->Visit (isResetLocation ?
-        TopoDS::Edge (aEdge.Located (TopLoc_Location ())) :
-        aEdge);
+      theVisitor->Visit (aEdge);
     }
   }
 }
@@ -82,7 +77,7 @@ void IMeshTools_ShapeExplorer::Accept (
   const Handle (IMeshTools_ShapeVisitor)& theVisitor)
 {
   // Explore all free edges in shape.
-  visitEdges (theVisitor, GetShape (), Standard_True, TopAbs_EDGE, TopAbs_FACE);
+  visitEdges (theVisitor, GetShape (), TopAbs_EDGE, TopAbs_FACE);
 
   // Explore all related to some face edges in shape.
   // make array of faces suitable for processing (excluding faces without surface)
@@ -90,6 +85,7 @@ void IMeshTools_ShapeExplorer::Accept (
   BRepLib::ReverseSortFaces (GetShape (), aFaceList);
   TopTools_MapOfShape aFaceMap;
 
+  TopLoc_Location aDummyLoc;
   const TopLoc_Location aEmptyLoc;
   TopTools_ListIteratorOfListOfShape aFaceIter (aFaceList);
   for (; aFaceIter.More (); aFaceIter.Next ())
@@ -102,13 +98,14 @@ void IMeshTools_ShapeExplorer::Accept (
     }
 
     const TopoDS_Face& aFace = TopoDS::Face (aFaceIter.Value ());
-    if (!BRep_Tool::IsGeometric (aFace))
+    const Handle (Geom_Surface)& aSurf = BRep_Tool::Surface (aFace, aDummyLoc);
+    if (aSurf.IsNull())
     {
       continue;
     }
 
     // Explore all edges in face.
-    visitEdges (theVisitor, aFace, Standard_False, TopAbs_EDGE);
+    visitEdges (theVisitor, aFace, TopAbs_EDGE);
 
     // Store only forward faces in order to prevent inverse issue.
     theVisitor->Visit (TopoDS::Face (aFace.Oriented (TopAbs_FORWARD)));

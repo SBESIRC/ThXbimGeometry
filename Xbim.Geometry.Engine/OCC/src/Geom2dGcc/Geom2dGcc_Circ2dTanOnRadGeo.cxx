@@ -27,7 +27,7 @@
 #include <GccEnt_QualifiedCirc.hxx>
 #include <GccEnt_QualifiedLin.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
 #include <Geom2dGcc_Circ2dTanOnRadGeo.hxx>
 #include <Geom2dGcc_CurveTool.hxx>
 #include <Geom2dGcc_QCurve.hxx>
@@ -43,8 +43,6 @@
 #include <Standard_OutOfRange.hxx>
 #include <StdFail_NotDone.hxx>
 #include <TColStd_Array1OfReal.hxx>
-
-static const Standard_Integer aNbSolMAX = 8;
 
 //=========================================================================
 //  Cercle tangent  :  a un cercle Qualified1 (C1).                       +
@@ -72,14 +70,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const Geom2dGcc_QCurve& Qualified1,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -124,9 +122,8 @@ parcen3(1,aNbSolMAX)
     IntRes2d_Domain D1;
     Geom2dInt_TheIntConicCurveOfGInter Intp;
     for (Standard_Integer jcote1 = 1 ; jcote1 <= nbrcote1 ; jcote1++) {
-      Handle(Geom2dAdaptor_Curve) HCu1 = new Geom2dAdaptor_Curve(Cu1);
-      //Adaptor2d_OffsetCurve C2(HCu1,Coef(jcote1));
-      Adaptor2d_OffsetCurve C2(HCu1, -Coef(jcote1));
+      Handle(Geom2dAdaptor_HCurve) HCu1 = new Geom2dAdaptor_HCurve(Cu1);
+      Adaptor2d_OffsetCurve C2(HCu1,Coef(jcote1));
       firstparam = Max(C2.FirstParameter(),thefirst);
       lastparam  = Min(C2.LastParameter(),thelast);
       IntRes2d_Domain D2(C2.Value(firstparam), firstparam, Tol,
@@ -134,7 +131,7 @@ parcen3(1,aNbSolMAX)
       Intp.Perform(OnLine,D1,C2,D2,Tol,Tol);
       if (Intp.IsDone()) {
         if (!Intp.IsEmpty()) {
-          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
             NbrSol++;
             gp_Pnt2d Center(Intp.Point(i).Value());
             cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);
@@ -182,14 +179,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const Geom2dGcc_QCurve& Qualified1,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -238,9 +235,8 @@ parcen3(1,aNbSolMAX)
     D1.SetEquivalentParameters(0.,2.*M_PI);
     Geom2dInt_TheIntConicCurveOfGInter Intp;
     for (Standard_Integer jcote1 = 1 ; jcote1 <= nbrcote1 ; jcote1++) {
-      Handle(Geom2dAdaptor_Curve) HCu1 = new Geom2dAdaptor_Curve(Cu1);
-      //Adaptor2d_OffsetCurve C2(HCu1,cote1(jcote1));
-      Adaptor2d_OffsetCurve C2(HCu1, -cote1(jcote1));
+      Handle(Geom2dAdaptor_HCurve) HCu1 = new Geom2dAdaptor_HCurve(Cu1);
+      Adaptor2d_OffsetCurve C2(HCu1,cote1(jcote1));
       firstparam = Max(C2.FirstParameter(),thefirst);
       lastparam  = Min(C2.LastParameter(),thelast);
       IntRes2d_Domain D2(C2.Value(firstparam),firstparam,Tol,
@@ -248,7 +244,7 @@ parcen3(1,aNbSolMAX)
       Intp.Perform(OnCirc,D1,C2,D2,Tol,Tol);
       if (Intp.IsDone()) {
         if (!Intp.IsEmpty()) {
-          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
             NbrSol++;
             gp_Pnt2d Center(Intp.Point(i).Value());
             cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);
@@ -296,14 +292,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const GccEnt_QualifiedCirc& Qualified1,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -362,7 +358,7 @@ parcen3(1,aNbSolMAX)
       Intp.Perform(Circ,D1,OnCurv,D2,Tol,Tol);
       if (Intp.IsDone()) {
         if (!Intp.IsEmpty()) {
-          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
             NbrSol++;
             gp_Pnt2d Center(Intp.Point(i).Value());
             cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);
@@ -420,14 +416,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const GccEnt_QualifiedLin& Qualified1,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -486,7 +482,7 @@ parcen3(1,aNbSolMAX)
       Intp.Perform(Line,D1,OnCurv,D2,Tol,Tol);
       if (Intp.IsDone()) {
         if (!Intp.IsEmpty()) {
-          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
             NbrSol++;
             gp_Pnt2d Center(Intp.Point(i).Value());
             cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);
@@ -541,14 +537,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const Geom2dGcc_QCurve& Qualified1,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -594,14 +590,13 @@ parcen3(1,aNbSolMAX)
     }
     Geom2dInt_GInter Intp;
     for (Standard_Integer jcote1 = 1 ; jcote1 <= nbrcote1 ; jcote1++) {
-      Handle(Geom2dAdaptor_Curve) HCu1 = new Geom2dAdaptor_Curve(Cu1);
-      //Adaptor2d_OffsetCurve C1(HCu1,cote1(jcote1));
-      Adaptor2d_OffsetCurve C1(HCu1, -cote1(jcote1));
+      Handle(Geom2dAdaptor_HCurve) HCu1 = new Geom2dAdaptor_HCurve(Cu1);
+      Adaptor2d_OffsetCurve C1(HCu1,cote1(jcote1));
       firstparam = Max(C1.FirstParameter(),thefirst);
       lastparam  = Min(C1.LastParameter(),thelast);
       IntRes2d_Domain D1(C1.Value(firstparam), firstparam, Tol,
                          C1.Value(lastparam), lastparam, Tol);
-      Handle(Geom2dAdaptor_Curve) HOnCurv = new Geom2dAdaptor_Curve(OnCurv);
+      Handle(Geom2dAdaptor_HCurve) HOnCurv = new Geom2dAdaptor_HCurve(OnCurv);
       Adaptor2d_OffsetCurve C2(HOnCurv);
       firstparam = Max(C2.FirstParameter(),thefirst);
       lastparam  = Min(C2.LastParameter(),thelast);
@@ -610,7 +605,7 @@ parcen3(1,aNbSolMAX)
       Intp.Perform(C1,D1,C2,D2,Tol,Tol);
       if (Intp.IsDone()) {
         if (!Intp.IsEmpty()) {
-          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+          for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
             NbrSol++;
             gp_Pnt2d Center(Intp.Point(i).Value());
             cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);
@@ -658,14 +653,14 @@ Geom2dGcc_Circ2dTanOnRadGeo (const gp_Pnt2d&     Point1    ,
 // Initialisation des champs.                                             +
 //=========================================================================
 
-cirsol(1,aNbSolMAX)     ,
-qualifier1(1,aNbSolMAX) ,
-TheSame1(1,aNbSolMAX)   ,
-pnttg1sol(1,aNbSolMAX)  ,
-pntcen3(1,aNbSolMAX)    ,
-par1sol(1,aNbSolMAX)    ,
-pararg1(1,aNbSolMAX)    ,
-parcen3(1,aNbSolMAX)    
+cirsol(1,8)     ,
+qualifier1(1,8) ,
+TheSame1(1,8)   ,
+pnttg1sol(1,8)  ,
+pntcen3(1,8)    ,
+par1sol(1,8)    ,
+pararg1(1,8)    ,
+parcen3(1,8)    
 {
 
   //=========================================================================
@@ -697,7 +692,7 @@ parcen3(1,aNbSolMAX)
     Geom2dInt_TheIntConicCurveOfGInter Intp(Circ,D1,OnCurv,D2,Tol,Tol);
     if (Intp.IsDone()) {
       if (!Intp.IsEmpty()) {
-        for (Standard_Integer i = 1 ; i <= Intp.NbPoints() && NbrSol < aNbSolMAX; i++) {
+        for (Standard_Integer i = 1 ; i <= Intp.NbPoints() ; i++) {
           NbrSol++;
           gp_Pnt2d Center(Intp.Point(i).Value());
           cirsol(NbrSol) = gp_Circ2d(gp_Ax2d(Center,dirx),Radius);

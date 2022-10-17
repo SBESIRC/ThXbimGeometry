@@ -17,11 +17,15 @@
 #include <Extrema_ExtSS.hxx>
 #include <TColStd_SequenceOfReal.hxx>
 #include <Extrema_SequenceOfPOnSurf.hxx>
-#include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <Extrema_POnSurf.hxx>
 #include <Standard_DefineAlloc.hxx>
 
+class BRepAdaptor_HSurface;
 class TopoDS_Face;
+class gp_Pnt;
+
+
 
 class BRepExtrema_ExtFF
 {
@@ -86,7 +90,7 @@ class BRepExtrema_ExtFF
   TColStd_SequenceOfReal mySqDist;
   Extrema_SequenceOfPOnSurf myPointsOnS1;
   Extrema_SequenceOfPOnSurf myPointsOnS2;
-  Handle(BRepAdaptor_Surface) myHS;
+  Handle(BRepAdaptor_HSurface) myHS;
 };
 
 #endif

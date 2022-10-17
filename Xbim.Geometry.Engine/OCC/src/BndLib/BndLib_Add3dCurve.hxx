@@ -25,6 +25,8 @@
 //
 class Adaptor3d_Curve;
 class Bnd_Box;
+class gp_Circ;
+class gp_Elips;
 
 
 //! Computes the bounding box for a curve in 3d.

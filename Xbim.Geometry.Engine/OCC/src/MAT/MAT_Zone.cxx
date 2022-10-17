@@ -29,9 +29,7 @@ IMPLEMENT_STANDARD_RTTIEXT(MAT_Zone,Standard_Transient)
 // purpose :
 //========================================================================
 MAT_Zone::MAT_Zone ()
-: limited(Standard_True)
-{
-}
+{}
 
 //========================================================================
 // function:

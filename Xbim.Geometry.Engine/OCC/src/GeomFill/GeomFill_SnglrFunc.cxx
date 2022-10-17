@@ -15,7 +15,7 @@
 // commercial license or contractual agreement.
 
 
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
 #include <GeomFill_SnglrFunc.hxx>
 #include <gp_Pnt.hxx>
 #include <gp_Vec.hxx>
@@ -24,21 +24,9 @@
 #include <Standard_NotImplemented.hxx>
 #include <Standard_OutOfRange.hxx>
 
-GeomFill_SnglrFunc::GeomFill_SnglrFunc(const Handle(Adaptor3d_Curve)& HC) : 
+GeomFill_SnglrFunc::GeomFill_SnglrFunc(const Handle(Adaptor3d_HCurve)& HC) : 
        myHCurve(HC), ratio(1)
 {
-}
-
-//=======================================================================
-//function : ShallowCopy
-//purpose  : 
-//=======================================================================
-
-Handle(Adaptor3d_Curve) GeomFill_SnglrFunc::ShallowCopy() const
-{
-  Handle(GeomFill_SnglrFunc) aCopy = new GeomFill_SnglrFunc(myHCurve->ShallowCopy());
-  aCopy->ratio = ratio;
-  return aCopy;
 }
 
 void GeomFill_SnglrFunc::SetRatio(const Standard_Real Ratio)

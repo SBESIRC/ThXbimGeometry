@@ -16,7 +16,7 @@
 
 #include <IntPatch_ALineToWLine.hxx>
 
-#include <Adaptor3d_Surface.hxx>
+#include <Adaptor3d_HSurface.hxx>
 #include <ElSLib.hxx>
 #include <IntPatch_ALine.hxx>
 #include <IntPatch_Point.hxx>
@@ -67,8 +67,8 @@ static void AddVertexPoint(Handle(IntSurf_LineOn2S)& theLine,
 //           theSingularSurfaceID contains the ID of surface with
 //            special point (0 - none, 1 - theS1, 2 - theS2)
 //=======================================================================
-static IntPatch_SpecPntType IsPoleOrSeam(const Handle(Adaptor3d_Surface)& theS1,
-                                         const Handle(Adaptor3d_Surface)& theS2,
+static IntPatch_SpecPntType IsPoleOrSeam(const Handle(Adaptor3d_HSurface)& theS1,
+                                         const Handle(Adaptor3d_HSurface)& theS2,
                                          const IntSurf_PntOn2S& thePIsoRef,
                                          Handle(IntSurf_LineOn2S)& theLine,
                                          IntPatch_Point &theVertex,
@@ -138,8 +138,8 @@ static IntPatch_SpecPntType IsPoleOrSeam(const Handle(Adaptor3d_Surface)& theS1,
 //function : IntPatch_ALineToWLine
 //purpose  : 
 //=======================================================================
-IntPatch_ALineToWLine::IntPatch_ALineToWLine(const Handle(Adaptor3d_Surface)& theS1,
-                                             const Handle(Adaptor3d_Surface)& theS2,
+IntPatch_ALineToWLine::IntPatch_ALineToWLine(const Handle(Adaptor3d_HSurface)& theS1,
+                                             const Handle(Adaptor3d_HSurface)& theS2,
                                              const Standard_Integer theNbPoints) :
   myS1(theS1),
   myS2(theS2),
@@ -676,11 +676,7 @@ void IntPatch_ALineToWLine::MakeWLine(const Handle(IntPatch_ALine)& theALine,
             IntPatch_Point aLVtx = theALine->Vertex(i);
             aLVtx.SetValue(aVertP2S);
             aLVtx.SetTolerance(aVertToler);
-            Standard_Real aParam = aLVtx.ParameterOnLine();
-            if (Abs(aParam - theLPar) <= Precision::PConfusion()) //in the case of closed curve,
-              aLVtx.SetParameter(-1); //we don't know yet the number of points in the curve
-            else
-              aLVtx.SetParameter(aNewVertexParam);
+            aLVtx.SetParameter(aNewVertexParam);
             aSeqVertex(++aNewVertID) = aLVtx;
             hasVertexBeenChecked(i) = Standard_True;
             isFound = Standard_True;
@@ -752,9 +748,7 @@ void IntPatch_ALineToWLine::MakeWLine(const Handle(IntPatch_ALine)& theALine,
 
     for(Standard_Integer i = aSeqVertex.Lower(); i <= aNewVertID; i++)
     {
-      IntPatch_Point aVtx = aSeqVertex(i);
-      if (aVtx.ParameterOnLine() == -1) //in the case of closed curve,
-        aVtx.SetParameter (aWLine->NbPnts()); //we set the last parameter
+      const IntPatch_Point& aVtx = aSeqVertex(i);
       aWLine->AddVertex(aVtx);
     }
 
@@ -762,7 +756,7 @@ void IntPatch_ALineToWLine::MakeWLine(const Handle(IntPatch_ALine)& theALine,
 
     //the method ComputeVertexParameters can reduce the number of points in <aWLine>
     aWLine->ComputeVertexParameters(myTol3D);
-    
+
     if (aWLine->NbPnts() > 1)
     {
       aWLine->EnablePurging(Standard_False);

@@ -118,7 +118,7 @@ static void UpdateCurves(BRep_ListOfCurveRepresentation& lcr,
       if (GC->IsCurve3D()) {
 //      if (!C.IsNull()) { //xpu031198, edge degeneree
 
-        // xpu151298 : parameters can be set for null curves
+        // xpu151298 : parameters can be setted for null curves
         //             see lbo & flo, to determine whether range is defined
         //             compare first and last parameters with default values.
         GC->Range(f, l);
@@ -185,7 +185,7 @@ static void UpdateCurves(BRep_ListOfCurveRepresentation& lcr,
       if (GC->IsCurve3D()) {
 //      if (!C.IsNull()) { //xpu031198, edge degeneree
 
-        // xpu151298 : parameters can be set for null curves
+        // xpu151298 : parameters can be setted for null curves
         //             see lbo & flo, to determine whether range is defined
         //             compare first and last parameters with default values.
         GC->Range(f, l);
@@ -469,34 +469,19 @@ void  BRep_Builder::MakeFace(TopoDS_Face& F,
 //function : MakeFace
 //purpose  : 
 //=======================================================================
-void  BRep_Builder::MakeFace(TopoDS_Face& theFace,
-                             const Handle(Poly_Triangulation)& theTriangulation) const
+
+void  BRep_Builder::MakeFace(TopoDS_Face&                      F,
+                             const Handle(Poly_Triangulation)& T) const
 {
-  Handle(BRep_TFace) aTFace = new BRep_TFace();
-  if(!theFace.IsNull() && theFace.Locked())
+  Handle(BRep_TFace) TF = new BRep_TFace();
+  if(!F.IsNull() && F.Locked())
   {
     throw TopoDS_LockedShape("BRep_Builder::MakeFace");
   }
-  aTFace->Triangulation (theTriangulation);
-  MakeShape (theFace, aTFace);
+  TF->Triangulation(T);
+  MakeShape(F, TF);
 }
 
-//=======================================================================
-//function : MakeFace
-//purpose  :
-//=======================================================================
-void BRep_Builder::MakeFace (TopoDS_Face& theFace,
-                             const Poly_ListOfTriangulation& theTriangulations,
-                             const Handle(Poly_Triangulation)& theActiveTriangulation) const
-{
-  Handle(BRep_TFace) aTFace = new BRep_TFace();
-  if(!theFace.IsNull() && theFace.Locked())
-  {
-    throw TopoDS_LockedShape ("BRep_Builder::MakeFace");
-  }
-  aTFace->Triangulations (theTriangulations, theActiveTriangulation);
-  MakeShape (theFace, aTFace);
-}
 
 //=======================================================================
 //function : MakeFace
@@ -546,18 +531,19 @@ void  BRep_Builder::UpdateFace(const TopoDS_Face& F,
 //function : UpdateFace
 //purpose  : 
 //=======================================================================
-void BRep_Builder::UpdateFace (const TopoDS_Face& theFace,
-                               const Handle(Poly_Triangulation)& theTriangulation,
-                               const Standard_Boolean theToReset) const
+
+void  BRep_Builder::UpdateFace(const TopoDS_Face& F,
+                               const Handle(Poly_Triangulation)& T) const
 {
-  const Handle(BRep_TFace)& aTFace = *((Handle(BRep_TFace)*) &theFace.TShape());
-  if(aTFace->Locked())
+  const Handle(BRep_TFace)& TF = *((Handle(BRep_TFace)*) &F.TShape());
+  if(TF->Locked())
   {
     throw TopoDS_LockedShape("BRep_Builder::UpdateFace");
   }
-  aTFace->Triangulation (theTriangulation, theToReset);
-  theFace.TShape()->Modified (Standard_True);
+  TF->Triangulation(T);
+  F.TShape()->Modified(Standard_True);
 }
+
 
 //=======================================================================
 //function : UpdateFace
@@ -1188,9 +1174,13 @@ void  BRep_Builder::Transfert(const TopoDS_Edge& Ein,
                               const TopoDS_Edge& Eout) const
 {
   const Handle(BRep_TEdge)& TE = *((Handle(BRep_TEdge)*) &Ein.TShape());
+  if(TE->Locked())
+  {
+    throw TopoDS_LockedShape("BRep_Builder::Transfert");
+  }
   const Standard_Real tol = TE->Tolerance();
 
-  const BRep_ListOfCurveRepresentation& lcr = TE->Curves();
+  BRep_ListOfCurveRepresentation& lcr = TE->ChangeCurves();
   BRep_ListIteratorOfListOfCurveRepresentation itcr(lcr);
   
   while (itcr.More()) {

@@ -124,6 +124,3 @@ Unable to glue the shapes
 
 .BOPAlgo_AlertShapeIsNotPeriodic
 The shape is not periodic
-
-.BOPAlgo_AlertUnableToMakeClosedEdgeOnFace
-Unable to make closed edge on face.

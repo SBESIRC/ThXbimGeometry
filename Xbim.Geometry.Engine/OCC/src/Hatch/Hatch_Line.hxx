@@ -27,6 +27,8 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 #include <Standard_Integer.hxx>
+class Hatch_Hatcher;
+class gp_Lin2d;
 
 
 //! Stores a Line in the Hatcher. Represented by :

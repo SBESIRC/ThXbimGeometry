@@ -28,6 +28,8 @@
 #include <BRepFill_ListOfOffsetWire.hxx>
 #include <BRepBuilderAPI_MakeShape.hxx>
 #include <Standard_Real.hxx>
+class StdFail_NotDone;
+class TopoDS_Face;
 class TopoDS_Wire;
 class TopoDS_Shape;
 
@@ -64,7 +66,7 @@ public:
   
   Standard_EXPORT BRepOffsetAPI_MakeOffset(const TopoDS_Wire& Spine, const GeomAbs_JoinType Join = GeomAbs_Arc, const Standard_Boolean IsOpenResult = Standard_False);
   
-  //! Initialize the evaluation of Offsetting.
+  //! Initialize the evaluation of Offseting.
   Standard_EXPORT void Init (const GeomAbs_JoinType Join = GeomAbs_Arc, const Standard_Boolean IsOpenResult = Standard_False);
   
   //! Initializes the algorithm to construct parallels to the wire Spine.
@@ -77,7 +79,7 @@ public:
   Standard_EXPORT void Perform (const Standard_Real Offset, const Standard_Real Alt = 0.0);
   
   //! Builds the resulting shape (redefined from MakeShape).
-  Standard_EXPORT virtual void Build(const Message_ProgressRange& theRange = Message_ProgressRange()) Standard_OVERRIDE;
+  Standard_EXPORT virtual void Build() Standard_OVERRIDE;
   
   //! returns a list of the created shapes
   //! from the shape <S>.

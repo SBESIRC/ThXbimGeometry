@@ -24,6 +24,7 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 class Geom_Plane;
+class Standard_NoSuchObject;
 class TopoDS_Shape;
 
 

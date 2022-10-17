@@ -142,7 +142,7 @@ ShapeConstruct_MakeTriangulation::ShapeConstruct_MakeTriangulation (const TopoDS
 //purpose  : 
 //=======================================================================
 
- void ShapeConstruct_MakeTriangulation::Build(const Message_ProgressRange& /*theRange*/)
+ void ShapeConstruct_MakeTriangulation::Build()
 {
   if (myShape.IsNull()) {
     // Triangulate polygonal wire

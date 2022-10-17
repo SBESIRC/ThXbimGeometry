@@ -54,12 +54,12 @@
 #include <GeomAbs_CurveType.hxx>
 #include <Adaptor3d_Surface.hxx>
 #include <Adaptor3d_Curve.hxx>
-#include <Adaptor3d_Surface.hxx>
-#include <Adaptor3d_Curve.hxx>
-#include <Adaptor2d_Curve2d.hxx>
+#include <Adaptor3d_HSurface.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor2d_HCurve2d.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
-#include <GeomAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
 #include <GeomAdaptor.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <TColgp_SequenceOfPnt.hxx>
@@ -84,17 +84,9 @@
 
 struct aFuncStruct
 {
-  aFuncStruct() // Empty constructor.
-  : mySqProjOrtTol(0.0),
-    myTolU(0.0),
-    myTolV(0.0)
-  {
-    memset(myPeriod, 0, sizeof (myPeriod));
-  }
-
-  Handle(Adaptor3d_Surface) mySurf; // Surface where to project.
-  Handle(Adaptor3d_Curve)   myCurve; // Curve to project.
-  Handle(Adaptor2d_Curve2d) myInitCurve2d; // Initial 2dcurve projection.
+  Handle(Adaptor3d_HSurface) mySurf; // Surface where to project.
+  Handle(Adaptor3d_HCurve)   myCurve; // Curve to project.
+  Handle(Adaptor2d_HCurve2d) myInitCurve2d; // Initial 2dcurve projection.
   Standard_Real mySqProjOrtTol; // Used to filter non-orthogonal projected point.
   Standard_Real myTolU;
   Standard_Real myTolV;
@@ -105,7 +97,7 @@ struct aFuncStruct
 //function : computePeriodicity
 //purpose  : Compute period information on adaptor.
 //=======================================================================
-static void computePeriodicity(const Handle(Adaptor3d_Surface)& theSurf,
+static void computePeriodicity(const Handle(Adaptor3d_HSurface)& theSurf,
                                Standard_Real &theUPeriod,
                                Standard_Real &theVPeriod)
 {
@@ -116,7 +108,7 @@ static void computePeriodicity(const Handle(Adaptor3d_Surface)& theSurf,
   // Param space may be reduced in case of rectangular trimmed surface,
   // in this case really trimmed bounds should be set as unperiodic.
   Standard_Real aTrimF, aTrimL, aBaseF, aBaseL, aDummyF, aDummyL;
-  Handle(Geom_Surface) aS = GeomAdaptor::MakeSurface (*theSurf, Standard_False); // Not trim.
+  Handle(Geom_Surface) aS = GeomAdaptor::MakeSurface(theSurf->Surface(), Standard_False); // Not trim.
   // U param space.
   if (theSurf->IsUPeriodic())
   {
@@ -165,7 +157,7 @@ static void computePeriodicity(const Handle(Adaptor3d_Surface)& theSurf,
 //purpose  : compute functional value in (theU,theV) point
 //=======================================================================
 static Standard_Real anOrthogSqValue(const gp_Pnt& aBasePnt,
-                                     const Handle(Adaptor3d_Surface)& Surf,
+                                     const Handle(Adaptor3d_HSurface)& Surf,
                                      const Standard_Real theU,
                                      const Standard_Real theV)
 {
@@ -204,10 +196,10 @@ static gp_Pnt2d Function_Value(const Standard_Real theU,
   Standard_Real aSurfPntDist = aSurfPnt.SquareDistance(p);
 
   Standard_Real Uinf, Usup, Vinf, Vsup;
-  Uinf = theData.mySurf->FirstUParameter();
-  Usup = theData.mySurf->LastUParameter();
-  Vinf = theData.mySurf->FirstVParameter();
-  Vsup = theData.mySurf->LastVParameter();
+  Uinf = theData.mySurf->Surface().FirstUParameter();
+  Usup = theData.mySurf->Surface().LastUParameter();
+  Vinf = theData.mySurf->Surface().FirstVParameter();
+  Vsup = theData.mySurf->Surface().LastVParameter();
 
   // Check case when curve is close to co-parametrized isoline on surf.
   if (Abs (p2d.X() - Uinf) < Precision::PConfusion() ||
@@ -356,17 +348,17 @@ static gp_Pnt2d Function_Value(const Standard_Real theU,
   GeomAdaptor_Surface SurfLittle;
   if (Type == GeomAbs_BSplineSurface)
   {
-    Handle(Geom_Surface) GBSS(theData.mySurf->BSpline());
+    Handle(Geom_Surface) GBSS(theData.mySurf->Surface().BSpline());
     SurfLittle.Load(GBSS, uInfLi, uSupLi, vInfLi, vSupLi);
   }
   else if (Type == GeomAbs_BezierSurface)
   {
-    Handle(Geom_Surface) GS(theData.mySurf->Bezier());
+    Handle(Geom_Surface) GS(theData.mySurf->Surface().Bezier());
     SurfLittle.Load(GS, uInfLi, uSupLi, vInfLi, vSupLi);
   }
   else if (Type == GeomAbs_OffsetSurface)
   {
-    Handle(Geom_Surface) GS = GeomAdaptor::MakeSurface (*theData.mySurf);
+    Handle(Geom_Surface) GS = GeomAdaptor::MakeSurface(theData.mySurf->Surface());
     SurfLittle.Load(GS, uInfLi, uSupLi, vInfLi, vSupLi);
   }
   else
@@ -429,9 +421,9 @@ class ProjLib_PolarFunction : public AppCont_Function
 
   public :
 
-  ProjLib_PolarFunction(const Handle(Adaptor3d_Curve) & C, 
-                        const Handle(Adaptor3d_Surface)& Surf,
-                        const Handle(Adaptor2d_Curve2d)& InitialCurve2d,
+  ProjLib_PolarFunction(const Handle(Adaptor3d_HCurve) & C, 
+                        const Handle(Adaptor3d_HSurface)& Surf,
+                        const Handle(Adaptor2d_HCurve2d)& InitialCurve2d,
                         const Standard_Real Tol3d)
   {
     myNbPnt = 0;
@@ -501,9 +493,9 @@ ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface()
 //=======================================================================
 
 ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
-                    (const Handle(Adaptor2d_Curve2d)& theInitialCurve2d,
-                     const Handle(Adaptor3d_Curve)&   theCurve,
-                     const Handle(Adaptor3d_Surface)& theSurface,
+                    (const Handle(Adaptor2d_HCurve2d)& theInitialCurve2d,
+                     const Handle(Adaptor3d_HCurve)&   theCurve,
+                     const Handle(Adaptor3d_HSurface)& theSurface,
                      const Standard_Real               theTolerance3D)
 : myProjIsDone(Standard_False),
   myTolerance(theTolerance3D),
@@ -523,8 +515,8 @@ ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
 //=======================================================================
 
 ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
-                      (const Handle(Adaptor3d_Curve)&   theCurve,
-                       const Handle(Adaptor3d_Surface)& theSurface,
+                      (const Handle(Adaptor3d_HCurve)&   theCurve,
+                       const Handle(Adaptor3d_HSurface)& theSurface,
                        const Standard_Real               theTolerance3D)
 : myProjIsDone(Standard_False),
   myTolerance(theTolerance3D),
@@ -535,7 +527,7 @@ ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
   myBndPnt(AppParCurves_TangencyPoint),
   myDist(0.)
 {
-  const Handle(Adaptor2d_Curve2d) anInitCurve2d;
+  const Handle(Adaptor2d_HCurve2d) anInitCurve2d;
   myBSpline = Perform(anInitCurve2d, theCurve, theSurface);  
 } 
 
@@ -545,10 +537,10 @@ ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
 //=======================================================================
 
 ProjLib_ComputeApproxOnPolarSurface::ProjLib_ComputeApproxOnPolarSurface
-                (const Handle(Adaptor2d_Curve2d)& theInitialCurve2d,
-                 const Handle(Adaptor2d_Curve2d)& theInitialCurve2dBis,
-                 const Handle(Adaptor3d_Curve)&   theCurve,
-                 const Handle(Adaptor3d_Surface)& theSurface,
+                (const Handle(Adaptor2d_HCurve2d)& theInitialCurve2d,
+                 const Handle(Adaptor2d_HCurve2d)& theInitialCurve2dBis,
+                 const Handle(Adaptor3d_HCurve)&   theCurve,
+                 const Handle(Adaptor3d_HSurface)& theSurface,
                  const Standard_Real               theTolerance3D)
 : myProjIsDone(Standard_False),
   myTolerance(theTolerance3D),
@@ -667,9 +659,9 @@ static Handle(Geom2d_BSplineCurve) Concat(Handle(Geom2d_BSplineCurve) C1,
 //=======================================================================
 
 void ProjLib_ComputeApproxOnPolarSurface::Perform
-(const Handle(Adaptor3d_Curve)& Curve, const Handle(Adaptor3d_Surface)& S)
+(const Handle(Adaptor3d_HCurve)& Curve, const Handle(Adaptor3d_HSurface)& S)
 {
-  const Handle(Adaptor2d_Curve2d) anInitCurve2d;
+  const Handle(Adaptor2d_HCurve2d) anInitCurve2d;
   myBSpline = Perform(anInitCurve2d, Curve, S);  
 }
 
@@ -679,16 +671,16 @@ void ProjLib_ComputeApproxOnPolarSurface::Perform
 //=======================================================================
 
 Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
-(const Handle(Adaptor2d_Curve2d)& InitialCurve2d,
- const Handle(Adaptor3d_Curve)& Curve,
- const Handle(Adaptor3d_Surface)& S)
+(const Handle(Adaptor2d_HCurve2d)& InitialCurve2d,
+ const Handle(Adaptor3d_HCurve)& Curve,
+ const Handle(Adaptor3d_HSurface)& S)
 {
   //OCC217
   Standard_Real Tol3d = myTolerance; 
   Standard_Real ParamTol = Precision::PApproximation();
 
-  Handle(Adaptor2d_Curve2d) AHC2d = InitialCurve2d;
-  Handle(Adaptor3d_Curve) AHC = Curve;
+  Handle(Adaptor2d_HCurve2d) AHC2d = InitialCurve2d;
+  Handle(Adaptor3d_HCurve) AHC = Curve;
   
 // if the curve 3d is a BSpline with degree C0, it is cut into sections with degree C1
 // -> bug cts18237
@@ -706,12 +698,12 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
       Standard_Real firstinter = Inter.Value(1), secondinter = Inter.Value(2);
       // initialization 3d
       GTC = new Geom_TrimmedCurve(BSC, firstinter, secondinter);
-      AHC = new GeomAdaptor_Curve(GTC);
+      AHC = new GeomAdaptor_HCurve(GTC);
       
       // if there is an initialization curve: 
       // - either this is a BSpline C0, with discontinuity at the same parameters of nodes
       // and the sections C1 are taken
-      // - or this is a curve C1 and the sections of interest are taken otherwise the curve is created.
+      // - or this is a curve C1 and the sections of intrest are taken otherwise the curve is created.
       
       // initialization 2d
       Standard_Integer nbInter2d;
@@ -787,7 +779,7 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
 	//   (lps.IsEqual(lpc, myTolerance))) {
 	  G2dTC = new Geom2d_TrimmedCurve(G2dC, firstinter, secondinter);
 	  Geom2dAdaptor_Curve G2dAC(G2dTC);
-	  AHC2d = new Geom2dAdaptor_Curve(G2dAC);
+	  AHC2d = new Geom2dAdaptor_HCurve(G2dAC);
 	  myProjIsDone = Standard_True;
 	}
 	else {
@@ -808,15 +800,18 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
 	return Handle(Geom2d_BSplineCurve)();
       }
       
-      Standard_Integer nbK2d = BSC2d->NbKnots();
-      Standard_Integer deg = BSC2d->Degree();
+
+
+      Standard_Real iinter, ip1inter;
+      Standard_Integer nbK2d, deg;
+      nbK2d = BSC2d->NbKnots(); deg = BSC2d->Degree();
 
       for(i = 2;i <= nbInter;i++) {
-	Standard_Real iinter = Inter.Value(i);
-	Standard_Real ip1inter = Inter.Value(i+1);
+	iinter = Inter.Value(i);
+	ip1inter = Inter.Value(i+1);
 	// general case 3d
 	GTC->SetTrim(iinter, ip1inter);
-	AHC = new GeomAdaptor_Curve(GTC);
+	AHC = new GeomAdaptor_HCurve(GTC);
 	
 	// general case 2d
 	if(C2dIsToCompute) {
@@ -836,7 +831,7 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
 	  //   (lps.IsEqual(lpc, myTolerance))) {
 	    G2dTC->SetTrim(iinter, ip1inter);
 	    Geom2dAdaptor_Curve G2dAC(G2dTC);
-	    AHC2d = new Geom2dAdaptor_Curve(G2dAC);
+	    AHC2d = new Geom2dAdaptor_HCurve(G2dAC);
 	    myProjIsDone = Standard_True;
 	  }
 	  else {
@@ -849,8 +844,6 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
 	    return Handle(Geom2d_BSplineCurve)();
 	  }
 	  LOfBSpline2d.Append(BSC2d);
-
-	  (void )nbK2d; // unused but set for debug
 	  nbK2d += BSC2d->NbKnots() - 1;
 	  deg = Max(deg, BSC2d->Degree());
 	}
@@ -910,10 +903,10 @@ Handle(Geom2d_BSplineCurve) ProjLib_ComputeApproxOnPolarSurface::Perform
 //purpose  : 
 //=======================================================================
 
-Handle(Adaptor2d_Curve2d) 
+Handle(Adaptor2d_HCurve2d) 
      ProjLib_ComputeApproxOnPolarSurface::
-     BuildInitialCurve2d(const Handle(Adaptor3d_Curve)&   Curve,
-			 const Handle(Adaptor3d_Surface)& Surf)
+     BuildInitialCurve2d(const Handle(Adaptor3d_HCurve)&   Curve,
+			 const Handle(Adaptor3d_HSurface)& Surf)
 {
   //  discretize the Curve with quasiuniform deflection
   //  density at least NbOfPnts points
@@ -936,7 +929,7 @@ Handle(Adaptor2d_Curve2d)
   //Standard_Real Tol3d = 100*myTolerance; // At random Balthazar.
 
   Standard_Integer NbOfPnts = 61; 
-  GCPnts_QuasiUniformAbscissa QUA (*Curve,NbOfPnts);
+  GCPnts_QuasiUniformAbscissa QUA(Curve->GetCurve(),NbOfPnts);
   NbOfPnts = QUA.NbPoints();
   TColgp_Array1OfPnt Pts(1,NbOfPnts);
   TColStd_Array1OfReal Param(1,NbOfPnts);
@@ -952,10 +945,10 @@ Handle(Adaptor2d_Curve2d)
   Mult(1) = Mult(NbOfPnts) = 2;
   
   Standard_Real Uinf, Usup, Vinf, Vsup;
-  Uinf = Surf->FirstUParameter();
-  Usup = Surf->LastUParameter();
-  Vinf = Surf->FirstVParameter();
-  Vsup = Surf->LastVParameter();
+  Uinf = Surf->Surface().FirstUParameter();
+  Usup = Surf->Surface().LastUParameter();
+  Vinf = Surf->Surface().FirstVParameter();
+  Vsup = Surf->Surface().LastVParameter();
   GeomAbs_SurfaceType Type = Surf->GetType();
   if((Type != GeomAbs_BSplineSurface) && (Type != GeomAbs_BezierSurface) &&
      (Type != GeomAbs_OffsetSurface)) {
@@ -1096,8 +1089,8 @@ Handle(Adaptor2d_Curve2d)
     TColgp_SequenceOfPnt2d Sols;
     Standard_Boolean areManyZeros = Standard_False;
     
-    pntproj = Pts(1);
-    Extrema_ExtPS  aExtPS(pntproj, *Surf, TolU, TolV) ;
+    Curve->D0(Param.Value(1), pntproj) ;
+    Extrema_ExtPS  aExtPS(pntproj, Surf->Surface(), TolU, TolV) ;
     Standard_Real aMinSqDist = RealLast();
     if (aExtPS.IsDone())
     {
@@ -1112,9 +1105,9 @@ Handle(Adaptor2d_Curve2d)
     {
       TolU = Min(TolU, Precision::PConfusion());
       TolV = Min(TolV, Precision::PConfusion());
-      aExtPS.Initialize(*Surf,
-                        Surf->FirstUParameter(), Surf->LastUParameter(), 
-                        Surf->FirstVParameter(), Surf->LastVParameter(),
+      aExtPS.Initialize(Surf->Surface(),
+                        Surf->Surface().FirstUParameter(), Surf->Surface().LastUParameter(), 
+                        Surf->Surface().FirstVParameter(), Surf->Surface().LastVParameter(),
                         TolU, TolV);
       aExtPS.Perform(pntproj);
     }
@@ -1163,16 +1156,16 @@ Handle(Adaptor2d_Curve2d)
 	      if( aDist2 > Dist2Max ) Dist2Max = aDist2;
 	    }
 	  }
-          Standard_Real aMaxT2 = Max(TolU,TolV);
-          aMaxT2 *= aMaxT2;
+      Standard_Real aMaxT2 = Max(TolU,TolV);
+      aMaxT2 *= aMaxT2;
 	  if( Dist2Max > aMaxT2 ) {
 	    Standard_Integer tPp = 0;
 	    for( i = 1; i <= 5; i++ ) {
 	      Standard_Integer nbExtOk = 0;
 	      Standard_Integer indExt = 0;
 	      Standard_Integer iT = 1 + (NbOfPnts - 1)/5*i;
-              pntproj = Pts(iT);
-	      Extrema_ExtPS aTPS( pntproj, *Surf, TolU, TolV );
+	      Curve->D0( Param.Value(iT), pntproj );
+	      Extrema_ExtPS aTPS( pntproj, Surf->Surface(), TolU, TolV );
 	      Dist2Min = 1.e+200;
 	      if( aTPS.IsDone() && aTPS.NbExt() >= 1 ) {
 		for( j = 1 ; j <= aTPS.NbExt() ; j++ ) {
@@ -1198,8 +1191,8 @@ Handle(Adaptor2d_Curve2d)
 	      Standard_Boolean isFound = Standard_False;
               for (j = tPp + 1; j <= NbOfPnts; ++j)
               {
-                pntproj = Pts(j);
-		Extrema_ExtPS aTPS( pntproj, *Surf, TolU, TolV );
+		Curve->D0( Param.Value(j), pntproj );
+		Extrema_ExtPS aTPS( pntproj, Surf->Surface(), TolU, TolV );
 		Dist2Min = RealLast();
 		if( aTPS.IsDone() && aTPS.NbExt() >= 1 ) {
 		  Standard_Integer indExt = 0;
@@ -1219,16 +1212,14 @@ Handle(Adaptor2d_Curve2d)
 	      }
 
 	      if( isFound ) {
-		gp_Dir2d atV(gp_Vec2d(aPp,aPn));
+		gp_Vec2d atV(aPp,aPn);
 		Standard_Boolean isChosen = Standard_False;
 		for( i = 1; i <= nbSols; i++ ) {
 		  const gp_Pnt2d& aP1 = Sols.Value(i);
-		  gp_Dir2d asV(gp_Vec2d(aP1,aPp));
+		  gp_Vec2d asV(aP1,aPp);
 		  if( asV.Dot(atV) > 0. ) {
 		    isChosen = Standard_True;
-                    u = aP1.X();
-                    v = aP1.Y();
-		    Pts2d(1).SetCoord(u, v);
+		    Pts2d(1).SetCoord(aP1.X(),aP1.Y());
 		    myProjIsDone = Standard_True;
 		    break;
 		  }
@@ -1272,8 +1263,8 @@ Handle(Adaptor2d_Curve2d)
 	if(myProjIsDone) {
 	  myProjIsDone = Standard_False;
 	  Dist2Min = RealLast();
-          pntproj = Pts(i);
-          Extrema_GenLocateExtPS  aLocateExtPS (*Surf, TolU, TolV);
+	  Curve->D0(Param.Value(i), pntproj);
+          Extrema_GenLocateExtPS  aLocateExtPS(Surf->Surface(), TolU, TolV);
           aLocateExtPS.Perform(pntproj, U0, V0);
 
 	  if (aLocateExtPS.IsDone())
@@ -1293,7 +1284,7 @@ Handle(Adaptor2d_Curve2d)
 	    }
             else
             {
-              Extrema_ExtPS aGlobalExtr(pntproj, *Surf, TolU, TolV);
+              Extrema_ExtPS aGlobalExtr(pntproj, Surf->Surface(), TolU, TolV);
               if (aGlobalExtr.IsDone())
               {
                 Standard_Real LocalMinSqDist = RealLast();
@@ -1372,14 +1363,14 @@ Handle(Adaptor2d_Curve2d)
           }
 	  if(!myProjIsDone && uperiod) {
 	    Standard_Real aUinf, aUsup, Uaux;
-	    aUinf = Surf->FirstUParameter();
-	    aUsup = Surf->LastUParameter();
+	    aUinf = Surf->Surface().FirstUParameter();
+	    aUsup = Surf->Surface().LastUParameter();
 	    if((aUsup - U0) > (U0 - aUinf)) 
 	      Uaux = 2*aUinf - U0 + uperiod;
 	    else 
 	      Uaux = 2*aUsup - U0 - uperiod;
 
-            Extrema_GenLocateExtPS  locext (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  locext(Surf->Surface(), TolU, TolV);
             locext.Perform(pntproj, Uaux, V0);
 
 	    if (locext.IsDone())
@@ -1403,14 +1394,14 @@ Handle(Adaptor2d_Curve2d)
 	  }
 	  if(!myProjIsDone && vperiod) {
 	    Standard_Real aVinf, aVsup, Vaux;
-	    aVinf = Surf->FirstVParameter();
-	    aVsup = Surf->LastVParameter();
+	    aVinf = Surf->Surface().FirstVParameter();
+	    aVsup = Surf->Surface().LastVParameter();
 	    if((aVsup - V0) > (V0 - aVinf)) 
 	      Vaux = 2*aVinf - V0 + vperiod;
 	    else 
 	      Vaux = 2*aVsup - V0 - vperiod;
 
-            Extrema_GenLocateExtPS  locext (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  locext(Surf->Surface(), TolU, TolV);
             locext.Perform(pntproj, U0, Vaux);
 
 	    if (locext.IsDone())
@@ -1443,7 +1434,7 @@ Handle(Adaptor2d_Curve2d)
 	    else 
 	      Vaux = 2*Vsup - V0 - vperiod;
 
-            Extrema_GenLocateExtPS  locext (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  locext(Surf->Surface(), TolU, TolV);
             locext.Perform(pntproj, Uaux, Vaux);
 
 	    if (locext.IsDone())
@@ -1470,7 +1461,7 @@ Handle(Adaptor2d_Curve2d)
 	      }
 	  }
 	  if(!myProjIsDone) {
-	    Extrema_ExtPS ext(pntproj, *Surf, TolU, TolV) ;
+	    Extrema_ExtPS ext(pntproj, Surf->Surface(), TolU, TolV) ;
 	    if (ext.IsDone()) {
 	      Dist2Min = ext.SquareDistance(1);
 	      Standard_Integer aGoodValue = 1;
@@ -1548,7 +1539,7 @@ Handle(Adaptor2d_Curve2d)
       myBSpline->Translate(Offset);
     //////////////////////////////////////////
     Geom2dAdaptor_Curve GAC(myBSpline);
-    Handle(Adaptor2d_Curve2d) IC2d = new Geom2dAdaptor_Curve(GAC);
+    Handle(Adaptor2d_HCurve2d) IC2d = new Geom2dAdaptor_HCurve(GAC);
 #ifdef OCCT_DEBUG
 //    char name [100];
 //    sprintf(name,"%s_%d","build",compteur++);
@@ -1560,7 +1551,7 @@ Handle(Adaptor2d_Curve2d)
 //  Modified by Sergey KHROMOV - Thu Apr 18 10:57:50 2002 Begin
 //     Standard_NoSuchObject_Raise_if(1,"ProjLib_Compu: build echec");
 //  Modified by Sergey KHROMOV - Thu Apr 18 10:57:51 2002 End
-    return Handle(Adaptor2d_Curve2d)();
+    return Handle(Adaptor2d_HCurve2d)();
   }
 //  myProjIsDone = Standard_False;
 //  Modified by Sergey KHROMOV - Thu Apr 18 10:58:01 2002 Begin
@@ -1574,9 +1565,9 @@ Handle(Adaptor2d_Curve2d)
 //=======================================================================
 Handle(Geom2d_BSplineCurve) 
      ProjLib_ComputeApproxOnPolarSurface::
-     ProjectUsingInitialCurve2d(const Handle(Adaptor3d_Curve)& Curve,
-				const Handle(Adaptor3d_Surface)& Surf,
-				const Handle(Adaptor2d_Curve2d)& InitCurve2d)
+     ProjectUsingInitialCurve2d(const Handle(Adaptor3d_HCurve)& Curve,
+				const Handle(Adaptor3d_HSurface)& Surf,
+				const Handle(Adaptor2d_HCurve2d)& InitCurve2d)
 {  
   //OCC217
   Standard_Real Tol3d = myTolerance;
@@ -1662,7 +1653,7 @@ Handle(Geom2d_BSplineCurve)
 	    myProjIsDone = Standard_False;
 	    Dist2Min = IntegerLast();
 
-            Extrema_GenLocateExtPS  extrloc (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  extrloc(Surf->Surface(), TolU, TolV);
             extrloc.Perform(BSC->Pole(i), (p11.X()+p22.X())/2, (p11.Y()+p22.Y())/2);
 
 	    if (extrloc.IsDone()) {
@@ -1702,7 +1693,7 @@ Handle(Geom2d_BSplineCurve)
 	  for(i = 1;i <= Curve->NbPoles();i++) {
 	    Dist2Min = IntegerLast();
 
-            Extrema_GenLocateExtPS  extrloc (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  extrloc(Surf->Surface(), TolU, TolV);
             extrloc.Perform(BC->Pole(i), 0.5, 0.5);
 
 	    if (extrloc.IsDone()) {
@@ -1762,7 +1753,7 @@ Handle(Geom2d_BSplineCurve)
 	    myProjIsDone = Standard_False;
 	    Dist2Min = IntegerLast();
 
-            Extrema_GenLocateExtPS  extrloc (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  extrloc(Surf->Surface(), TolU, TolV);
             extrloc.Perform(BSC->Pole(i), (p11.X()+p22.X())/2, (p11.Y()+p22.Y())/2);
 
 	    if (extrloc.IsDone()) {
@@ -1802,7 +1793,7 @@ Handle(Geom2d_BSplineCurve)
 	  for(i = 1;i <= Curve->NbPoles();i++) {
 	    Dist2Min = IntegerLast();
 
-            Extrema_GenLocateExtPS  extrloc (*Surf, TolU, TolV);
+            Extrema_GenLocateExtPS  extrloc(Surf->Surface(), TolU, TolV);
             extrloc.Perform(BC->Pole(i), 0.5, 0.5);
 
 	    if (extrloc.IsDone()) {
@@ -1867,8 +1858,8 @@ Handle(Geom2d_BSplineCurve)
   DrawTrSurf::Set(Temp,DummyC2d);
 #endif
 //  DrawTrSurf::Set((Standard_CString ) "bs2d",DummyC2d);
-  Handle(Geom2dAdaptor_Curve) DDD = 
-    Handle(Geom2dAdaptor_Curve)::DownCast(InitCurve2d);
+  Handle(Geom2dAdaptor_HCurve) DDD = 
+    Handle(Geom2dAdaptor_HCurve)::DownCast(InitCurve2d);
   
 #ifdef DRAW
   Temp = "initc2d";

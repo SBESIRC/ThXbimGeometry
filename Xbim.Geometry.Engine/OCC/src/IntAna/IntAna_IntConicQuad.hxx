@@ -25,6 +25,9 @@
 #include <Standard_Integer.hxx>
 #include <gp_Pnt.hxx>
 #include <Standard_Real.hxx>
+class StdFail_NotDone;
+class Standard_OutOfRange;
+class Standard_DomainError;
 class gp_Lin;
 class IntAna_Quadric;
 class gp_Circ;
@@ -32,6 +35,7 @@ class gp_Elips;
 class gp_Parab;
 class gp_Hypr;
 class gp_Pln;
+class gp_Pnt;
 
 
 //! This class provides the analytic intersection between

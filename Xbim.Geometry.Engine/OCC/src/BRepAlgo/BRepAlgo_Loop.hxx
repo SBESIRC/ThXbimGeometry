@@ -25,8 +25,7 @@
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <TopTools_DataMapOfShapeShape.hxx>
-#include <TopTools_IndexedDataMapOfShapeListOfShape.hxx>
-#include <BRepAlgo_Image.hxx>
+class TopoDS_Face;
 class TopoDS_Edge;
 
 
@@ -54,14 +53,8 @@ public:
   //! Add <LE> as a set of const edges.
   Standard_EXPORT void AddConstEdges (const TopTools_ListOfShape& LE);
   
-  //! Sets the Image Vertex - Vertex
-  Standard_EXPORT void SetImageVV (const BRepAlgo_Image& theImageVV);
-  
   //! Make loops.
   Standard_EXPORT void Perform();
-  
-  //! Update VE map according to Image Vertex - Vertex
-  Standard_EXPORT void UpdateVEmap (TopTools_IndexedDataMapOfShapeListOfShape& theVEmap);
   
   //! Cut the  edge <E>  in  several edges  <NE> on the
   //! vertices<VonE>.
@@ -109,7 +102,6 @@ private:
   TopTools_ListOfShape myNewFaces;
   TopTools_DataMapOfShapeListOfShape myCutEdges;
   TopTools_DataMapOfShapeShape myVerticesForSubstitute;
-  BRepAlgo_Image myImageVV;
 
 
 };

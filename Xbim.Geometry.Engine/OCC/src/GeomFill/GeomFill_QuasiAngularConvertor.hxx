@@ -28,6 +28,7 @@
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TColgp_Array1OfVec.hxx>
+class StdFail_NotDone;
 class gp_Pnt;
 class gp_Vec;
 

@@ -17,11 +17,17 @@
 #ifndef _BlendFunc_CSCircular_HeaderFile
 #define _BlendFunc_CSCircular_HeaderFile
 
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
 #include <gp_Pnt.hxx>
 #include <gp_Pnt2d.hxx>
+#include <Standard_Real.hxx>
+#include <Standard_Boolean.hxx>
 #include <gp_Vec.hxx>
 #include <gp_Vec2d.hxx>
+#include <Standard_Integer.hxx>
 #include <BlendFunc_SectionShape.hxx>
 #include <Convert_ParameterisationType.hxx>
 #include <Blend_CSFunction.hxx>
@@ -33,11 +39,18 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <GeomAbs_Shape.hxx>
 #include <TColStd_Array1OfInteger.hxx>
-
+class Adaptor3d_HSurface;
+class Adaptor3d_HCurve;
 class Law_Function;
 class math_Matrix;
+class gp_Pnt;
+class gp_Pnt2d;
+class gp_Vec;
+class gp_Vec2d;
 class gp_Circ;
 class Blend_Point;
+
+
 
 class BlendFunc_CSCircular  : public Blend_CSFunction
 {
@@ -55,7 +68,7 @@ public:
   //! below :
   //! t is the current parameter on the guide line.
   //! Pguide = C(L(t)); Nguide = CGuide'(t)/||CGuide'(t)||
-  Standard_EXPORT BlendFunc_CSCircular(const Handle(Adaptor3d_Surface)& S, const Handle(Adaptor3d_Curve)& C, const Handle(Adaptor3d_Curve)& CGuide, const Handle(Law_Function)& L);
+  Standard_EXPORT BlendFunc_CSCircular(const Handle(Adaptor3d_HSurface)& S, const Handle(Adaptor3d_HCurve)& C, const Handle(Adaptor3d_HCurve)& CGuide, const Handle(Law_Function)& L);
   
   Standard_EXPORT virtual Standard_Integer NbVariables() const Standard_OVERRIDE;
   
@@ -146,7 +159,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   //! raises
   //! OutOfRange from Standard
@@ -185,9 +198,9 @@ private:
 
 
 
-  Handle(Adaptor3d_Surface) surf;
-  Handle(Adaptor3d_Curve) curv;
-  Handle(Adaptor3d_Curve) guide;
+  Handle(Adaptor3d_HSurface) surf;
+  Handle(Adaptor3d_HCurve) curv;
+  Handle(Adaptor3d_HCurve) guide;
   Handle(Law_Function) law;
   gp_Pnt pts;
   gp_Pnt ptc;

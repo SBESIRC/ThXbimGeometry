@@ -26,34 +26,34 @@ class IMeshData_TessellatedShape : public IMeshData_Shape
 public:
 
   //! Destructor.
-  virtual ~IMeshData_TessellatedShape()
+  Standard_EXPORT virtual ~IMeshData_TessellatedShape()
   {
   }
 
   //! Gets deflection value for the discrete model.
-  Standard_Real GetDeflection () const
+  inline Standard_Real GetDeflection () const
   {
     return myDeflection;
   }
 
   //! Sets deflection value for the discrete model.
-  void SetDeflection (const Standard_Real theValue)
+  inline void SetDeflection (const Standard_Real theValue)
   {
     myDeflection = theValue;
   }
 
-  DEFINE_STANDARD_RTTIEXT(IMeshData_TessellatedShape, IMeshData_Shape)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshData_TessellatedShape, IMeshData_Shape)
 
 protected:
 
   //! Constructor.
-  IMeshData_TessellatedShape ()
+  Standard_EXPORT IMeshData_TessellatedShape ()
     : myDeflection(RealLast())
   {
   }
 
   //! Constructor.
-  IMeshData_TessellatedShape (const TopoDS_Shape& theShape)
+  Standard_EXPORT IMeshData_TessellatedShape (const TopoDS_Shape& theShape)
     : IMeshData_Shape(theShape),
       myDeflection(RealLast())
   {

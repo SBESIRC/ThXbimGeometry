@@ -134,27 +134,6 @@ static void BRepPrim_Wedge_Init(Standard_Boolean& S,
     F[i] = Standard_False;
 }
 
-BRepPrim_GWedge::BRepPrim_GWedge() :
-       XMin (0),
-       XMax (0),
-       YMin (0),
-       YMax (0),
-       ZMin (0),
-       ZMax (0),
-       Z2Min (0),
-       Z2Max (0),
-       X2Min (0),
-       X2Max (0)
-{
-  for (Standard_Integer i = 0; i < NBFACES; i++)
-  {
-    myInfinite[i]=Standard_False;
-  }
-
-  BRepPrim_Wedge_Init (ShellBuilt,VerticesBuilt,EdgesBuilt,
-                       WiresBuilt,FacesBuilt);
-}
-
 //=======================================================================
 //function : BRepPrim_GWedge
 //purpose  : build a box
@@ -179,7 +158,10 @@ BRepPrim_GWedge::BRepPrim_GWedge (const BRepPrim_Builder& B,
        X2Max(dx)
 {
   for (Standard_Integer i = 0; i < NBFACES; i++) { myInfinite[i]=Standard_False; }
-
+  if ( ( dx <= Precision::Confusion() ) ||
+       ( dy <= Precision::Confusion() ) ||
+       ( dz <= Precision::Confusion() ) )
+    throw Standard_DomainError();
   BRepPrim_Wedge_Init(ShellBuilt,VerticesBuilt,EdgesBuilt,
 			WiresBuilt,FacesBuilt);
 }
@@ -209,7 +191,11 @@ BRepPrim_GWedge::BRepPrim_GWedge (const BRepPrim_Builder& B,
        X2Max(ltx)
 {
   for (Standard_Integer i = 0; i < NBFACES; i++) { myInfinite[i]=Standard_False; }
-
+  if ( ( dx <= Precision::Confusion() ) ||
+       ( dy <= Precision::Confusion() ) ||
+       ( dz <= Precision::Confusion() ) ||
+       ( ltx < 0 ) )
+    throw Standard_DomainError();
   BRepPrim_Wedge_Init(ShellBuilt,VerticesBuilt,EdgesBuilt,
 			WiresBuilt,FacesBuilt);
 }
@@ -245,7 +231,12 @@ BRepPrim_GWedge::BRepPrim_GWedge (const BRepPrim_Builder& B,
        X2Max(x2max)
 {
   for (Standard_Integer i = 0; i < NBFACES; i++) { myInfinite[i]=Standard_False; }
-
+  if ( ( XMax-XMin <= Precision::Confusion() ) ||
+       ( YMax-YMin <= Precision::Confusion() ) ||
+       ( ZMax-ZMin <= Precision::Confusion() ) ||
+       ( Z2Max-Z2Min < 0 ) ||
+       ( X2Max-X2Min < 0 ) )
+    throw Standard_DomainError();
   BRepPrim_Wedge_Init(ShellBuilt,VerticesBuilt,EdgesBuilt,
 			WiresBuilt,FacesBuilt);
 }
@@ -305,9 +296,6 @@ Standard_Boolean BRepPrim_GWedge::IsInfinite (const BRepPrim_Direction d1) const
 //=======================================================================
 
 const TopoDS_Shell& BRepPrim_GWedge::Shell() {
-  if (IsDegeneratedShape())
-    throw Standard_DomainError();
-
   if (!ShellBuilt) {
     myBuilder.MakeShell(myShell);
 
@@ -1030,21 +1018,5 @@ const TopoDS_Vertex& BRepPrim_GWedge::Vertex
 
   return myVertices[i];
 
-}
-
-//=======================================================================
-//function : IsDegeneratedShape
-//purpose  :
-//=======================================================================
-Standard_Boolean BRepPrim_GWedge::IsDegeneratedShape()
-{
-  if ( ( XMax-XMin <= Precision::Confusion() ) ||
-     ( YMax-YMin <= Precision::Confusion() ) ||
-     ( ZMax-ZMin <= Precision::Confusion() ) ||
-     ( Z2Max-Z2Min < 0 ) ||
-     ( X2Max-X2Min < 0 ) )
-    return Standard_True;
-  else
-    return Standard_False;
 }
 

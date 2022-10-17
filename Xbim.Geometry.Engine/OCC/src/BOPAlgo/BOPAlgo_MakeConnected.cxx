@@ -75,7 +75,7 @@ void BOPAlgo_MakeConnected::CheckData()
 
   TopTools_ListIteratorOfListOfShape itLA(myArguments);
   for (; itLA.More(); itLA.Next())
-    BOPTools_AlgoTools::TreatCompound(itLA.Value(), aLA, &aMFence);
+    BOPAlgo_Tools::TreatCompound(itLA.Value(), aMFence, aLA);
 
   if (aLA.IsEmpty())
   {
@@ -197,7 +197,7 @@ void BOPAlgo_MakeConnected::AssociateMaterials()
   // Extract all non-compound shapes from the result
   TopTools_ListOfShape aLShapes;
   TopTools_MapOfShape aMFence;
-  BOPTools_AlgoTools::TreatCompound(myShape, aLShapes, &aMFence);
+  BOPAlgo_Tools::TreatCompound(myShape, aMFence, aLShapes);
 
   if (aLShapes.IsEmpty())
     return;

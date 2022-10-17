@@ -26,9 +26,7 @@
 //=======================================================================
 Sweep_NumShapeIterator::Sweep_NumShapeIterator():
        myNumShape(0,TopAbs_SHAPE),
-       myCurrentNumShape(0,TopAbs_SHAPE),
-       myCurrentRange(0),
-       myMore(Standard_False)
+       myCurrentNumShape(0,TopAbs_SHAPE)
 {
 }
 

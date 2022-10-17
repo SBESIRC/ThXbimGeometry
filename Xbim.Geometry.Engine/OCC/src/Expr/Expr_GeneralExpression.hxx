@@ -26,6 +26,10 @@
 #include <Standard_Real.hxx>
 #include <Expr_Array1OfNamedUnknown.hxx>
 #include <TColStd_Array1OfReal.hxx>
+class Standard_OutOfRange;
+class Standard_NumericError;
+class Expr_NotEvaluable;
+class Expr_InvalidOperand;
 class Expr_NamedUnknown;
 class TCollection_AsciiString;
 
@@ -90,7 +94,7 @@ public:
   //! Raise OutOfRange if N <= 0
   Standard_EXPORT virtual Handle(Expr_GeneralExpression) NDerivative (const Handle(Expr_NamedUnknown)& X, const Standard_Integer N) const;
   
-  //! Replaces all occurrences of <var> with copies of <with>
+  //! Replaces all occurences of <var> with copies of <with>
   //! in <me>. Copies of <with> are made with the Copy() method.
   //! Raises InvalidOperand if <with> contains <me>.
   Standard_EXPORT virtual void Replace (const Handle(Expr_NamedUnknown)& var, const Handle(Expr_GeneralExpression)& with) = 0;

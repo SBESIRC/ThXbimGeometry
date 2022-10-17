@@ -31,6 +31,7 @@
 class TopoDS_Face;
 class TopoDS_Wire;
 class Geom2d_Curve;
+class TopoDS_Shape;
 
 
 //! Construct an explorer from wires, face, set of curves
@@ -95,7 +96,7 @@ protected:
 private:
 
   
-  //! Construction from a set of curves from Geom2d.
+  //! Construction from a set of cuves from Geom2d.
   //! Assume  the   orientation  of  the  closed   lines are
   //! compatible. (ie if A is in B, the orientation of A and B
   //! has to be different.

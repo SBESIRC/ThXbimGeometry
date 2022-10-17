@@ -24,6 +24,7 @@
 #include <GC_Root.hxx>
 #include <Geom_TrimmedCurve.hxx>
 
+class StdFail_NotDone;
 class gp_Pnt;
 class gp_Lin;
 

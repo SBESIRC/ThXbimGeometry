@@ -36,6 +36,13 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColStd_Array2OfReal.hxx>
 #include <TColgp_Array1OfPnt.hxx>
+class Standard_ConstructionError;
+class Standard_DimensionError;
+class Standard_DomainError;
+class Standard_OutOfRange;
+class Standard_NoSuchObject;
+class Standard_RangeError;
+class Geom_UndefinedDerivative;
 class gp_Pnt;
 class gp_Vec;
 class Geom_Curve;
@@ -172,7 +179,7 @@ public:
   //! 1 <= UMults(i) <= UDegree
   //! On a   non  uperiodic   surface    the  first and    last
   //! umultiplicities  may  be     UDegree+1  (this   is   even
-  //! recommended if you want the curve  to start and finish on
+  //! recommanded if you want the curve  to start and finish on
   //! the first and last pole).
   //! On a uperiodic     surface  the first    and   the   last
   //! umultiplicities must be the same.
@@ -197,7 +204,7 @@ public:
   //!
   //! On a   non  uperiodic   surface    the  first and    last
   //! umultiplicities  may  be     UDegree+1  (this   is   even
-  //! recommended if you want the curve  to start and finish on
+  //! recommanded if you want the curve  to start and finish on
   //! the first and last pole).
   //!
   //! On a uperiodic     surface  the first    and   the   last
@@ -542,7 +549,7 @@ public:
   //! The control points are modified, the first and the last point
   //! are not the same.
   //!
-  //! Parameters theUTolerance, theVTolerance define the possible proximity along the corresponding
+  //! Parameters theUTolerance, theVTolerance define the possible proximity along the correponding
   //! direction of the segment boundaries and B-spline knots to treat them as equal.
   //!
   //! Warnings :
@@ -567,7 +574,7 @@ public:
   //! For example, if <me> is periodic in V, it will be always periodic
   //! in V after the segmentation if the bounds in V are unchanged
   //!
-  //! Parameters theUTolerance, theVTolerance define the possible proximity along the corresponding
+  //! Parameters theUTolerance, theVTolerance define the possible proximity along the correponding
   //! direction of the segment boundaries and B-spline knots to treat them as equal.
   //!
   //! Warnings :
@@ -851,7 +858,7 @@ public:
   //! C3 : continuity of the third derivative all along the Surface,
   //! CN : the order of continuity is infinite.
   //! A B-spline surface is infinitely continuously differentiable
-  //! for the couple of parameters U, V such that U != UKnots(i)
+  //! for the couple of parameters U, V such thats U != UKnots(i)
   //! and V != VKnots(i). The continuity of the surface at a knot
   //! value depends on the multiplicity of this knot.
   //! Example :
@@ -1181,9 +1188,6 @@ public:
   
   //! Creates a new object which is a copy of this BSpline surface.
   Standard_EXPORT Handle(Geom_Geometry) Copy() const Standard_OVERRIDE;
-
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
 
 
 

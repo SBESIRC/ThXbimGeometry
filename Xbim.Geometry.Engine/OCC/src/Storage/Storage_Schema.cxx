@@ -205,9 +205,6 @@ void Storage_BucketOfPersistent::Append(const Handle(Standard_Persistent)& sp)
 
 Storage_BucketIterator::Storage_BucketIterator
                          (Storage_BucketOfPersistent* aBucketManager)
-: myBucket(0), myCurrentBucket(0),
-  myCurrentBucketIndex(0), myCurrentIndex(0),
-  myBucketNumber(0), myMoreObject(Standard_False)
 {
   if (aBucketManager) {
     myBucket             = aBucketManager;
@@ -217,6 +214,7 @@ Storage_BucketIterator::Storage_BucketIterator
     myCurrentIndex       = 0;
     myMoreObject         = Standard_True;
   }
+  else myMoreObject         = Standard_False;
 }
 
 //=======================================================================
@@ -340,8 +338,9 @@ TCollection_AsciiString Storage_Schema::Name() const
 //           VSReadWrite
 //=======================================================================
 
-void Storage_Schema::Write (const Handle(Storage_BaseDriver)& theDriver,
-                            const Handle(Storage_Data)& aData) const
+void Storage_Schema::Write
+                         (Storage_BaseDriver& f,
+                          const Handle(Storage_Data)& aData) const
 {
  if (aData.IsNull()) return;
 
@@ -383,42 +382,42 @@ void Storage_Schema::Write (const Handle(Storage_BaseDriver)& theDriver,
  aData->HeaderData()->SetSchemaName(myName);
  aData->HeaderData()->SetSchemaVersion(myVersion);
 
-  if ((theDriver->OpenMode() == Storage_VSWrite) || (theDriver->OpenMode() == Storage_VSReadWrite)) {
+  if ((f.OpenMode() == Storage_VSWrite) || (f.OpenMode() == Storage_VSReadWrite)) {
     try {
       OCC_CATCH_SIGNALS
       errorContext = "BeginWriteInfoSection";
-      theDriver->BeginWriteInfoSection();
+      f.BeginWriteInfoSection();
       errorContext = "WriteInfo";
-      theDriver->WriteInfo(aData->NumberOfObjects(),
-                           aData->StorageVersion(),
-                           aData->CreationDate(),
-                           aData->SchemaName(),
-                           aData->SchemaVersion(),
-                           aData->ApplicationName(),
-                           aData->ApplicationVersion(),
-                           aData->DataType(),
-                           aData->UserInfo());
+      f.WriteInfo(aData->NumberOfObjects(),
+                  aData->StorageVersion(),
+                  aData->CreationDate(),
+                  aData->SchemaName(),
+                  aData->SchemaVersion(),
+                  aData->ApplicationName(),
+                  aData->ApplicationVersion(),
+                  aData->DataType(),
+                  aData->UserInfo());
       errorContext = "EndWriteInfoSection";
-      theDriver->EndWriteInfoSection();
+      f.EndWriteInfoSection();
 
       errorContext = "BeginWriteCommentSection";
-      theDriver->BeginWriteCommentSection();
+      f.BeginWriteCommentSection();
       errorContext = "WriteComment";
-      theDriver->WriteComment(aData->Comments());
+      f.WriteComment(aData->Comments());
       errorContext = "EndWriteCommentSection";
-      theDriver->EndWriteCommentSection();
+      f.EndWriteCommentSection();
 
       Handle(TColStd_HSequenceOfAsciiString) tlist;
 
       tlist = aData->Types();
 
       errorContext = "BeginWriteTypeSection";
-      theDriver->BeginWriteTypeSection();
+      f.BeginWriteTypeSection();
       len = aData->NumberOfTypes();
 
       Handle(Storage_HArrayOfCallBack) WFunc = new Storage_HArrayOfCallBack(1,len);
 
-      theDriver->SetTypeSectionSize(len);
+      f.SetTypeSectionSize(len);
 
       Storage_DataMapIteratorOfMapOfCallBack cbit(iData->myTypeBinding);
       Handle(Storage_TypedCallBack) atcallBack;
@@ -430,42 +429,42 @@ void Storage_Schema::Write (const Handle(Storage_BaseDriver)& theDriver,
 
       errorContext = "WriteTypeInformations";
       for (i = 1; i <= len; i++) {
-        theDriver->WriteTypeInformations(i,tlist->Value(i).ToCString());
+        f.WriteTypeInformations(i,tlist->Value(i).ToCString());
       }
 
       errorContext = "EndWriteTypeSection";
-      theDriver->EndWriteTypeSection();
+      f.EndWriteTypeSection();
 
       errorContext = "BeginWriteRootSection";
-      theDriver->BeginWriteRootSection();
-      theDriver->SetRootSectionSize(plist->Length());
+      f.BeginWriteRootSection();
+      f.SetRootSectionSize(plist->Length());
 
       errorContext = "WriteRoot";
       for (i = 1; i <= plist->Length(); i++) {
-        theDriver->WriteRoot(plist->Value(i)->Name(),i,"PDocStd_Document");
+        f.WriteRoot(plist->Value(i)->Name(),i,"PDocStd_Document");
       }
 
       errorContext = "EndWriteRootSection";
-      theDriver->EndWriteRootSection();
+      f.EndWriteRootSection();
 
       errorContext = "BeginWriteRefSection";
-      theDriver->BeginWriteRefSection();
-      theDriver->SetRefSectionSize(iData->myObjId - 1);
+      f.BeginWriteRefSection();
+      f.SetRefSectionSize(iData->myObjId - 1);
       errorContext = "WriteReferenceType";
 
       Storage_BucketIterator bit(&iData->myPtoA);
 
       while(bit.More()) {
         p = bit.Value();
-        if (!p.IsNull()) theDriver->WriteReferenceType(p->_refnum,p->_typenum);
+        if (!p.IsNull()) f.WriteReferenceType(p->_refnum,p->_typenum);
         bit.Next();
       }
 
       errorContext = "EndWriteRefSection";
-      theDriver->EndWriteRefSection();
+      f.EndWriteRefSection();
 
       errorContext = "BeginWriteDataSection";
-      theDriver->BeginWriteDataSection();
+      f.BeginWriteDataSection();
 
       Handle(Storage_Schema) me = this;
 
@@ -476,14 +475,14 @@ void Storage_Schema::Write (const Handle(Storage_BaseDriver)& theDriver,
       while(bit.More()) {
         p = bit.Value();
         if (!p.IsNull()) {
-          WFunc->Value(p->_typenum)->Write(p, theDriver, me);
+          WFunc->Value(p->_typenum)->Write(p,f,me);
           p->_typenum = 0;
         }
         bit.Next();
       }
 
       errorContext = "EndWriteDataSection";
-      theDriver->EndWriteDataSection();
+      f.EndWriteDataSection();
     }
     catch(Storage_StreamWriteError const&) {
       aData->SetErrorStatus(Storage_VSWriteError);
@@ -773,26 +772,17 @@ Standard_Boolean Storage_Schema::CheckTypeMigration(
       }
       else
       {
-        // hard-code migration table for known types	
-	aDMap.Bind("TDataStd_Shape",          "TDataXtd_Shape");
-	aDMap.Bind("TDataStd_Constraint",     "TDataXtd_Constraint");
+        // hard-code migration table for known types
+        aDMap.Bind("TDataStd_Shape",          "TDataXtd_Shape");
+        aDMap.Bind("TDataStd_Constraint",     "TDataXtd_Constraint");
         aDMap.Bind("TDataStd_Geometry",       "TDataXtd_Geometry");
-	aDMap.Bind("TDataStd_Axis",           "TDataXtd_Axis");
-	aDMap.Bind("TDataStd_Point",          "TDataXtd_Point");
-	aDMap.Bind("TDataStd_Plane",          "TDataXtd_Plane");
-	aDMap.Bind("TDataStd_Position",       "TDataXtd_Position");
-	aDMap.Bind("TDataStd_Placement",      "TDataXtd_Placement");
-	aDMap.Bind("TDataStd_PatternStd",     "TDataXtd_PatternStd");
-	aDMap.Bind("TPrsStd_AISPresentation", "TDataXtd_Presentation");
-        aDMap.Bind("PDataStd_Shape",          "PDataXtd_Shape");
-        aDMap.Bind("PDataStd_Constraint",     "PDataXtd_Constraint");
-        aDMap.Bind("PDataStd_Geometry",       "PDataXtd_Geometry");
-        aDMap.Bind("PDataStd_Axis",           "PDataXtd_Axis");
-        aDMap.Bind("PDataStd_Point",          "PDataXtd_Point");
-        aDMap.Bind("PDataStd_Plane",          "PDataXtd_Plane");
-        aDMap.Bind("PDataStd_Position",       "PDataXtd_Position");
-        aDMap.Bind("PDataStd_Placement",      "PDataXtd_Placement");
-        aDMap.Bind("PDataStd_PatternStd",     "PDataXtd_PatternStd");
+        aDMap.Bind("TDataStd_Axis",           "TDataXtd_Axis");
+        aDMap.Bind("TDataStd_Point",          "TDataXtd_Point");
+        aDMap.Bind("TDataStd_Plane",          "TDataXtd_Plane");
+        aDMap.Bind("TDataStd_Position",       "TDataXtd_Position");
+        aDMap.Bind("TDataStd_Placement",      "TDataXtd_Placement");
+        aDMap.Bind("TDataStd_PatternStd",     "TDataXtd_PatternStd");
+        aDMap.Bind("TPrsStd_AISPresentation", "TDataXtd_Presentation");
       }
 #ifdef OCCT_DEBUG
       std::cout << "Storage_Sheme:: aDataMap.Size = " << aDMap.Extent() << std::endl;

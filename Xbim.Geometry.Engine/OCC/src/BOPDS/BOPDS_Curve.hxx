@@ -41,15 +41,14 @@ public:
 
   
 
-  //! Empty constructor
-  BOPDS_Curve();
-
-  virtual ~BOPDS_Curve();
+  //! Empty contructor
+    BOPDS_Curve();
+virtual ~BOPDS_Curve();
   
 
-  //! Constructor
-  //! @param theAllocator the allocator to manage the memory
-  BOPDS_Curve(const Handle(NCollection_BaseAllocator)& theAllocator);
+  //! Contructor
+  //! <theAllocator> - the allocator to manage the memory
+    BOPDS_Curve(const Handle(NCollection_BaseAllocator)& theAllocator);
   
 
   //! Modifier

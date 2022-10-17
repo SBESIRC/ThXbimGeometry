@@ -269,7 +269,7 @@ void OSD_ThreadPool::Launcher::wait()
   }
 
   aFailures = TCollection_AsciiString("Multiple exceptions:\n") + aFailures;
-  throw Standard_ProgramError (aFailures.ToCString(), NULL);
+  throw Standard_ProgramError (aFailures.ToCString());
 }
 
 // =======================================================================
@@ -289,17 +289,17 @@ void OSD_ThreadPool::performJob (Handle(Standard_Failure)& theFailure,
   {
     TCollection_AsciiString aMsg = TCollection_AsciiString (aFailure.DynamicType()->Name())
                                  + ": " + aFailure.GetMessageString();
-    theFailure = new Standard_ProgramError (aMsg.ToCString(), aFailure.GetStackString());
+    theFailure = new Standard_ProgramError (aMsg.ToCString());
   }
   catch (std::exception& anStdException)
   {
     TCollection_AsciiString aMsg = TCollection_AsciiString (typeid(anStdException).name())
                                  + ": " + anStdException.what();
-    theFailure = new Standard_ProgramError (aMsg.ToCString(), NULL);
+    theFailure = new Standard_ProgramError (aMsg.ToCString());
   }
   catch (...)
   {
-    theFailure = new Standard_ProgramError ("Error: Unknown exception", NULL);
+    theFailure = new Standard_ProgramError ("Error: Unknown exception");
   }
 }
 

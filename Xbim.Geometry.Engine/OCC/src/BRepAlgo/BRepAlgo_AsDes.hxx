@@ -24,6 +24,7 @@
 #include <Standard_Transient.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_ConstructionError;
 class TopoDS_Shape;
 
 
@@ -36,6 +37,7 @@ class BRepAlgo_AsDes : public Standard_Transient
 
 public:
 
+  
   //! Creates an empty AsDes.
   Standard_EXPORT BRepAlgo_AsDes();
   
@@ -59,34 +61,45 @@ public:
   
   //! Returns futur subhapes of <S>.
   Standard_EXPORT TopTools_ListOfShape& ChangeDescendant (const TopoDS_Shape& S);
-
-  //! Replace theOldS by theNewS.
-  //! theOldS disappear from this.
-  Standard_EXPORT void Replace (const TopoDS_Shape& theOldS, const TopoDS_Shape& theNewS);
-
-  //! Remove theS from me.
-  Standard_EXPORT void Remove (const TopoDS_Shape& theS);
-
+  
+  //! Replace <OldS> by <NewS>.
+  //! <OldS> disapear from <me>.
+  Standard_EXPORT void Replace (const TopoDS_Shape& OldS, const TopoDS_Shape& NewS);
+  
+  //! Remove <S> from me.
+  Standard_EXPORT void Remove (const TopoDS_Shape& S);
+  
   //! Returns  True if (S1> and <S2>  has  common
   //! Descendants.  Stores in <LC> the Commons Descendants.
   Standard_EXPORT Standard_Boolean HasCommonDescendant (const TopoDS_Shape& S1, const TopoDS_Shape& S2, TopTools_ListOfShape& LC) const;
 
+
+
+
   DEFINE_STANDARD_RTTIEXT(BRepAlgo_AsDes,Standard_Transient)
 
-private:
+protected:
 
-  //! Replace theOldS by theNewS.
-  //! theOldS disappear from this.
-  Standard_EXPORT void BackReplace (const TopoDS_Shape& theOldS,
-                                    const TopoDS_Shape& theNewS,
-                                    const TopTools_ListOfShape& theL,
-                                    const Standard_Boolean theInUp);
+
+
 
 private:
+
+  
+  //! Replace <OldS> by <NewS>.
+  //! <OldS> disapear from <me>.
+  Standard_EXPORT void BackReplace (const TopoDS_Shape& OldS, const TopoDS_Shape& NewS, const TopTools_ListOfShape& L, const Standard_Boolean InUp);
 
   TopTools_DataMapOfShapeListOfShape up;
   TopTools_DataMapOfShapeListOfShape down;
 
+
 };
+
+
+
+
+
+
 
 #endif // _BRepAlgo_AsDes_HeaderFile

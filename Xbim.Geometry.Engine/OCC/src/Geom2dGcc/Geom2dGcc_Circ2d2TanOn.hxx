@@ -30,6 +30,9 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <Standard_Real.hxx>
 #include <GccEnt_Position.hxx>
+class StdFail_NotDone;
+class GccEnt_BadQualifier;
+class Standard_OutOfRange;
 class Geom2dGcc_QualifiedCurve;
 class Geom2dAdaptor_Curve;
 class Geom2d_Point;
@@ -97,8 +100,8 @@ public:
   
   //! Returns the solution number Index and raises OutOfRange
   //! exception if Index is greater than the number of solutions.
-  //! Be careful: the Index is only a way to get all the
-  //! solutions, but is not associated to these outside the context
+  //! Be carefull: the Index is only a way to get all the
+  //! solutions, but is not associated to theses outside the context
   //! of the algorithm-object.
   //! Exceptions
   //! Standard_OutOfRange if Index is less than or equal
@@ -107,7 +110,7 @@ public:
   //! StdFail_NotDone if the construction fails.
   Standard_EXPORT gp_Circ2d ThisSolution (const Standard_Integer Index) const;
   
-  //! It returns the information about the qualifiers of
+  //! It returns the informations about the qualifiers of
   //! the tangency
   //! arguments concerning the solution number Index.
   //! It returns the real qualifiers (the qualifiers given to the
@@ -119,13 +122,13 @@ public:
   //! StdFail_NotDone if the construction fails.
   Standard_EXPORT void WhichQualifier (const Standard_Integer Index, GccEnt_Position& Qualif1, GccEnt_Position& Qualif2) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol on the solution curv.
   //! ParArg is the intrinsic parameter of the point PntSol on the argument curv.
   Standard_EXPORT void Tangency1 (const Standard_Integer Index, Standard_Real& ParSol, Standard_Real& ParArg, gp_Pnt2d& PntSol) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result and the second argument.
   //! ParSol is the intrinsic parameter of the point PntSol on the solution curv.
   //! ParArg is the intrinsic parameter of the point PntSol on the argument curv.

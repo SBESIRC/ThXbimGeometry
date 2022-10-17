@@ -13,12 +13,12 @@
 // commercial license or contractual agreement.
 
 
-#include <Adaptor2d_Curve2d.hxx>
-#include <Adaptor3d_Surface.hxx>
+#include <Adaptor2d_HCurve2d.hxx>
+#include <Adaptor3d_HSurface.hxx>
 #include <Adaptor3d_HVertex.hxx>
 #include <BRep_Tool.hxx>
-#include <BRepAdaptor_Curve2d.hxx>
-#include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HCurve2d.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepClass_FaceExplorer.hxx>
 #include <BRepTopAdaptor_FClass2d.hxx>
@@ -48,12 +48,7 @@ static
 //function : BRepTopAdaptor_TopolTool
 //purpose  : 
 //=======================================================================
-  BRepTopAdaptor_TopolTool::BRepTopAdaptor_TopolTool ()
-  : myFClass2d(NULL),
-    myU0(0.0),
-    myV0(0.0),
-    myDU(0.0),
-    myDV(0.0)
+  BRepTopAdaptor_TopolTool::BRepTopAdaptor_TopolTool () : myFClass2d(NULL)
 {
   myNbSamplesU=-1;
 }
@@ -62,7 +57,7 @@ static
 //function : BRepTopAdaptor_TopolTool
 //purpose  : 
 //=======================================================================
-  BRepTopAdaptor_TopolTool::BRepTopAdaptor_TopolTool(const Handle(Adaptor3d_Surface)& S) 
+  BRepTopAdaptor_TopolTool::BRepTopAdaptor_TopolTool(const Handle(Adaptor3d_HSurface)& S) 
 : myFClass2d(NULL)
 {
   Initialize(S);
@@ -80,12 +75,12 @@ static
 //function : Initialize
 //purpose  : 
 //=======================================================================
-  void BRepTopAdaptor_TopolTool::Initialize(const Handle(Adaptor3d_Surface)& S)
+  void BRepTopAdaptor_TopolTool::Initialize(const Handle(Adaptor3d_HSurface)& S)
 {
-  Handle(BRepAdaptor_Surface) brhs = 
-    Handle(BRepAdaptor_Surface)::DownCast(S);
+  Handle(BRepAdaptor_HSurface) brhs = 
+    Handle(BRepAdaptor_HSurface)::DownCast(S);
   if (brhs.IsNull()) {throw Standard_ConstructionError();}
-  TopoDS_Shape s_wnt = brhs->Face();
+  TopoDS_Shape s_wnt = ((BRepAdaptor_Surface *)&(brhs->Surface()))->Face();
   s_wnt.Orientation(TopAbs_FORWARD);
   myFace = TopoDS::Face(s_wnt);
   if(myFClass2d != NULL) { 
@@ -97,7 +92,7 @@ static
   myCurves.Clear();
   TopExp_Explorer ex(myFace,TopAbs_EDGE);
   for (; ex.More(); ex.Next()) {
-    Handle(BRepAdaptor_Curve2d) aCurve = new BRepAdaptor_Curve2d
+    Handle(BRepAdaptor_HCurve2d) aCurve = new BRepAdaptor_HCurve2d
       (BRepAdaptor_Curve2d(TopoDS::Edge(ex.Current()),myFace));
     myCurves.Append(aCurve);
   }
@@ -107,9 +102,9 @@ static
 //function : Initialize
 //purpose  : 
 //=======================================================================
-  void BRepTopAdaptor_TopolTool::Initialize(const Handle(Adaptor2d_Curve2d)& C)
+  void BRepTopAdaptor_TopolTool::Initialize(const Handle(Adaptor2d_HCurve2d)& C)
 {
-  myCurve = Handle(BRepAdaptor_Curve2d)::DownCast(C);
+  myCurve = Handle(BRepAdaptor_HCurve2d)::DownCast(C);
   if (myCurve.IsNull()) {throw Standard_ConstructionError();}
 }
 //=======================================================================
@@ -140,9 +135,9 @@ static
 //function : Value
 //purpose  : 
 //=======================================================================
-  Handle(Adaptor2d_Curve2d) BRepTopAdaptor_TopolTool::Value ()
+  Handle(Adaptor2d_HCurve2d) BRepTopAdaptor_TopolTool::Value ()
 {
-  return Handle(Adaptor2d_Curve2d)::DownCast(myCIterator.Value());
+  return Handle(Adaptor2d_HCurve2d)::DownCast(myCIterator.Value());
 }
 //modified by NIZNHY-PKV Tue Mar 27 14:23:40 2001 f
 //=======================================================================
@@ -151,8 +146,10 @@ static
 //=======================================================================
   Standard_Address BRepTopAdaptor_TopolTool::Edge () const
 {
-  Handle(BRepAdaptor_Curve2d) aHCurve = Handle(BRepAdaptor_Curve2d)::DownCast(myCIterator.Value());
-  return Standard_Address (&aHCurve->Edge());
+  Handle(BRepAdaptor_HCurve2d) aHCurve =
+    Handle(BRepAdaptor_HCurve2d)::DownCast(myCIterator.Value());
+  const BRepAdaptor_Curve2d& aCurve = (const BRepAdaptor_Curve2d&)aHCurve->Curve2d();
+  return Standard_Address (& aCurve.Edge());
 }
 
 //modified by NIZNHY-PKV Tue Mar 27 14:23:43 2001 t
@@ -162,7 +159,7 @@ static
 //=======================================================================
   void BRepTopAdaptor_TopolTool::InitVertexIterator ()
 {
-  myVIterator.Init (myCurve->Edge(), TopAbs_VERTEX);
+  myVIterator.Init(((BRepAdaptor_Curve2d *)&(myCurve->Curve2d()))->Edge(),TopAbs_VERTEX);
 }
 //=======================================================================
 //function : NextVertex
@@ -232,10 +229,11 @@ static
 //function : Orientation
 //purpose  : 
 //=======================================================================
-  TopAbs_Orientation BRepTopAdaptor_TopolTool::Orientation  (const Handle(Adaptor2d_Curve2d)& C)
+  TopAbs_Orientation BRepTopAdaptor_TopolTool::Orientation  (const Handle(Adaptor2d_HCurve2d)& C)
 {
-  Handle(BRepAdaptor_Curve2d) brhc = Handle(BRepAdaptor_Curve2d)::DownCast(C);
-  return brhc->Edge().Orientation(); 
+  Handle(BRepAdaptor_HCurve2d) brhc =
+    Handle(BRepAdaptor_HCurve2d)::DownCast(C);
+  return ((BRepAdaptor_Curve2d *)&(brhc->Curve2d()))->Edge().Orientation(); 
 }
 //=======================================================================
 //function : Orientation
@@ -504,15 +502,13 @@ Standard_Boolean BRepTopAdaptor_TopolTool::Has3d() const
 //purpose  : 
 //=======================================================================
 
-Standard_Real BRepTopAdaptor_TopolTool::Tol3d(const Handle(Adaptor2d_Curve2d)& C) const
+Standard_Real BRepTopAdaptor_TopolTool::Tol3d(const Handle(Adaptor2d_HCurve2d)& C) const
 {
-  Handle(BRepAdaptor_Curve2d) brhc = Handle(BRepAdaptor_Curve2d)::DownCast(C);
+  Handle(BRepAdaptor_HCurve2d) brhc = Handle(BRepAdaptor_HCurve2d)::DownCast(C);
   if (brhc.IsNull())
-  {
     throw Standard_DomainError("BRepTopAdaptor_TopolTool: arc has no 3d representation");
-  }
-
-  const TopoDS_Edge& edge = brhc->Edge();
+  const BRepAdaptor_Curve2d& brc = (const BRepAdaptor_Curve2d &)brhc->Curve2d();
+  const TopoDS_Edge& edge = brc.Edge();
   if (edge.IsNull())
     throw Standard_DomainError("BRepTopAdaptor_TopolTool: arc has no 3d representation");
   return BRep_Tool::Tolerance(edge);

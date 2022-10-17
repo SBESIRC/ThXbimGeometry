@@ -22,8 +22,6 @@
 #include <IMeshData_Wire.hxx>
 #include <IMeshTools_MeshBuilder.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_IncrementalMesh, BRepMesh_DiscretRoot)
-
 namespace
 {
   //! Default flag to control parallelization for BRepMesh_IncrementalMesh
@@ -68,12 +66,11 @@ BRepMesh_IncrementalMesh::BRepMesh_IncrementalMesh( const TopoDS_Shape&    theSh
 //=======================================================================
 BRepMesh_IncrementalMesh::BRepMesh_IncrementalMesh(
   const TopoDS_Shape&          theShape,
-  const IMeshTools_Parameters& theParameters,
-  const Message_ProgressRange& theRange)
+  const IMeshTools_Parameters& theParameters)
   : myParameters(theParameters)
 {
   myShape = theShape;
-  Perform(theRange);
+  Perform();
 }
 
 //=======================================================================
@@ -88,17 +85,17 @@ BRepMesh_IncrementalMesh::~BRepMesh_IncrementalMesh()
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BRepMesh_IncrementalMesh::Perform(const Message_ProgressRange& theRange)
+void BRepMesh_IncrementalMesh::Perform()
 {
-  Handle(BRepMesh_Context) aContext = new BRepMesh_Context (myParameters.MeshAlgo);
-  Perform (aContext, theRange);
+  Handle(BRepMesh_Context) aContext = new BRepMesh_Context;
+  Perform (aContext);
 }
 
 //=======================================================================
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BRepMesh_IncrementalMesh::Perform(const Handle(IMeshTools_Context)& theContext, const Message_ProgressRange& theRange)
+void BRepMesh_IncrementalMesh::Perform(const Handle(IMeshTools_Context)& theContext)
 {
   initParameters();
 
@@ -106,31 +103,23 @@ void BRepMesh_IncrementalMesh::Perform(const Handle(IMeshTools_Context)& theCont
   theContext->ChangeParameters()            = myParameters;
   theContext->ChangeParameters().CleanModel = Standard_False;
 
-  Message_ProgressScope aPS(theRange, "Perform incmesh", 10);
   IMeshTools_MeshBuilder aIncMesh(theContext);
-  aIncMesh.Perform(aPS.Next(9));
-  if (!aPS.More())
-  {
-    myStatus = IMeshData_UserBreak;
-    return;
-  }
+  aIncMesh.Perform();
+
   myStatus = IMeshData_NoError;
   const Handle(IMeshData_Model)& aModel = theContext->GetModel();
-  if (!aModel.IsNull())
+  for (Standard_Integer aFaceIt = 0; aFaceIt < aModel->FacesNb(); ++aFaceIt)
   {
-    for (Standard_Integer aFaceIt = 0; aFaceIt < aModel->FacesNb(); ++aFaceIt)
-    {
-      const IMeshData::IFaceHandle& aDFace = aModel->GetFace(aFaceIt);
-      myStatus |= aDFace->GetStatusMask();
+    const IMeshData::IFaceHandle& aDFace = aModel->GetFace(aFaceIt);
+    myStatus |= aDFace->GetStatusMask();
 
-      for (Standard_Integer aWireIt = 0; aWireIt < aDFace->WiresNb(); ++aWireIt)
-      {
-        const IMeshData::IWireHandle& aDWire = aDFace->GetWire(aWireIt);
-        myStatus |= aDWire->GetStatusMask();
-      }
+    for (Standard_Integer aWireIt = 0; aWireIt < aDFace->WiresNb(); ++aWireIt)
+    {
+      const IMeshData::IWireHandle& aDWire = aDFace->GetWire(aWireIt);
+      myStatus |= aDWire->GetStatusMask();
     }
   }
-  aPS.Next(1);
+
   setDone();
 }
 

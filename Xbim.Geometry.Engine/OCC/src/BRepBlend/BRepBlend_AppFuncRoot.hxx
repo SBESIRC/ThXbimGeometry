@@ -36,7 +36,10 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <GeomAbs_Shape.hxx>
 class BRepBlend_Line;
+class Standard_OutOfRange;
 class Blend_AppFunction;
+class gp_Pnt;
+class Blend_Point;
 
 
 class BRepBlend_AppFuncRoot;
@@ -82,7 +85,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   Standard_EXPORT virtual void Intervals (TColStd_Array1OfReal& T, const GeomAbs_Shape S) const Standard_OVERRIDE;
   
@@ -109,18 +112,18 @@ public:
   Standard_EXPORT virtual void SetTolerance (const Standard_Real Tol3d, const Standard_Real Tol2d) Standard_OVERRIDE;
   
   //! Get    the   barycentre of   Surface.   An   very  poor
-  //! estimation is sufficient. This information is useful
-  //! to perform well conditioned rational approximation.
+  //! estimation is sufficent. This information is usefull
+  //! to perform well conditionned rational approximation.
   Standard_EXPORT virtual gp_Pnt BarycentreOfSurf() const Standard_OVERRIDE;
   
   //! Returns the   length of the maximum section. This
-  //! information is useful to perform well conditioned rational
+  //! information is usefull to perform well conditionned rational
   //! approximation.
   Standard_EXPORT virtual Standard_Real MaximalSection() const Standard_OVERRIDE;
   
   //! Compute the minimal value of weight for each poles
-  //! of all  sections.  This information is  useful to
-  //! perform well conditioned rational approximation.
+  //! of all  sections.  This information is  usefull to
+  //! perform well conditionned rational approximation.
   Standard_EXPORT virtual void GetMinimalWeight (TColStd_Array1OfReal& Weigths) const Standard_OVERRIDE;
   
   Standard_EXPORT virtual void Point (const Blend_AppFunction& Func, const Standard_Real Param, const math_Vector& Sol, Blend_Point& Pnt) const = 0;

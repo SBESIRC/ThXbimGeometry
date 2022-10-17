@@ -17,7 +17,7 @@
 #include <BinTools.hxx>
 #include <BinTools_ShapeSet.hxx>
 #include <FSD_FileHeader.hxx>
-#include <OSD_FileSystem.hxx>
+#include <OSD_OpenFile.hxx>
 #include <Storage_StreamTypeMismatchError.hxx>
 
 //=======================================================================
@@ -39,44 +39,27 @@ Standard_OStream& BinTools::PutBool(Standard_OStream& OS, const Standard_Boolean
 Standard_OStream& BinTools::PutInteger(Standard_OStream& OS, const Standard_Integer aValue)
 {
   Standard_Integer anIntValue = aValue;
-#ifdef DO_INVERSE
+#if DO_INVERSE
       anIntValue = InverseInt (aValue);
 #endif
-  OS.write ((char*)&anIntValue, sizeof (Standard_Integer));  
+  OS.write((char*)&anIntValue, sizeof(Standard_Integer));  
   return OS;
 }
 
 
 //=======================================================================
 //function : PutReal
-//purpose  :
+//purpose  : 
 //=======================================================================
-Standard_OStream& BinTools::PutReal (Standard_OStream& theOS,
-                                     const Standard_Real& theValue)
-{
-#ifdef DO_INVERSE
-  const Standard_Real aRValue = InverseReal (theValue);
-  theOS.write ((char*)&aRValue, sizeof (Standard_Real));
-#else
-  theOS.write ((char*)&theValue, sizeof (Standard_Real));
-#endif
-  return theOS;
-}
 
-//=======================================================================
-//function : PutShortReal
-//purpose  :
-//=======================================================================
-Standard_OStream& BinTools::PutShortReal (Standard_OStream& theOS,
-                                          const Standard_ShortReal& theValue)
+Standard_OStream& BinTools::PutReal(Standard_OStream& OS, const Standard_Real aValue)
 {
-#ifdef DO_INVERSE
-  const Standard_ShortReal aValue = InverseShortReal (theValue);
-  theOS.write ((char*)&aValue, sizeof(Standard_ShortReal));
-#else
-  theOS.write ((char*)&theValue, sizeof(Standard_ShortReal));
+  Standard_Real aRValue = aValue;
+#if DO_INVERSE
+      aRValue = InverseReal (aValue);
 #endif
-  return theOS;
+  OS.write((char*)&aRValue, sizeof(Standard_Real));  
+  return OS;
 }
 
 //=======================================================================
@@ -87,45 +70,25 @@ Standard_OStream& BinTools::PutShortReal (Standard_OStream& theOS,
 Standard_OStream& BinTools::PutExtChar(Standard_OStream& OS, const Standard_ExtCharacter aValue)
 {
   Standard_ExtCharacter aSValue = aValue;
-#ifdef DO_INVERSE
+#if DO_INVERSE
       aSValue = InverseExtChar (aValue);
 #endif
   OS.write((char*)&aSValue, sizeof(Standard_ExtCharacter));  
   return OS;
 }
-
 //=======================================================================
 //function : GetReal
-//purpose  :
+//purpose  : 
 //=======================================================================
-Standard_IStream& BinTools::GetReal (Standard_IStream& theIS,
-                                     Standard_Real& theValue)
-{
-  if (!theIS.read ((char*)&theValue, sizeof(Standard_Real)))
-  {
-    throw Storage_StreamTypeMismatchError();
-  }
-#ifdef DO_INVERSE
-  theValue = InverseReal (theValue);
-#endif
-  return theIS;
-}
 
-//=======================================================================
-//function : GetShortReal
-//purpose  :
-//=======================================================================
-Standard_IStream& BinTools::GetShortReal (Standard_IStream& theIS,
-                                          Standard_ShortReal& theValue)
+Standard_IStream& BinTools::GetReal(Standard_IStream& IS, Standard_Real& aValue)
 {
-  if (!theIS.read ((char*)&theValue, sizeof(Standard_ShortReal)))
-  {
+  if(!IS.read ((char*)&aValue, sizeof(Standard_Real)))
     throw Storage_StreamTypeMismatchError();
-  }
-#ifdef DO_INVERSE
-  theValue = InverseShortReal (theValue);
+#if DO_INVERSE
+  aValue = InverseReal (aValue);
 #endif
-  return theIS;
+  return IS;
 }
 
 //=======================================================================
@@ -136,8 +99,8 @@ Standard_IStream& BinTools::GetShortReal (Standard_IStream& theIS,
 Standard_IStream& BinTools::GetInteger(Standard_IStream& IS, Standard_Integer& aValue)
 {
   if(!IS.read ((char*)&aValue, sizeof(Standard_Integer)))
-    throw Storage_StreamTypeMismatchError();
-#ifdef DO_INVERSE
+    throw Storage_StreamTypeMismatchError();;
+#if DO_INVERSE
   aValue = InverseInt (aValue);
 #endif
   return IS;
@@ -151,8 +114,8 @@ Standard_IStream& BinTools::GetInteger(Standard_IStream& IS, Standard_Integer& a
 Standard_IStream& BinTools::GetExtChar(Standard_IStream& IS, Standard_ExtCharacter& theValue)
 {
   if(!IS.read ((char*)&theValue, sizeof(Standard_ExtCharacter)))
-    throw Storage_StreamTypeMismatchError();
-#ifdef DO_INVERSE
+    throw Storage_StreamTypeMismatchError();;
+#if DO_INVERSE
   theValue = InverseExtChar (theValue);
 #endif
   return IS;
@@ -171,21 +134,15 @@ Standard_IStream& BinTools::GetBool(Standard_IStream& IS, Standard_Boolean& aVal
 
 //=======================================================================
 //function : Write
-//purpose  :
+//purpose  : 
 //=======================================================================
-void BinTools::Write (const TopoDS_Shape& theShape,
-                      Standard_OStream& theStream,
-                      const Standard_Boolean theWithTriangles,
-                      const Standard_Boolean theWithNormals,
-                      const BinTools_FormatVersion theVersion,
-                      const Message_ProgressRange& theRange)
+
+void BinTools::Write (const TopoDS_Shape& theShape, Standard_OStream& theStream)
 {
-  BinTools_ShapeSet aShapeSet;
-  aShapeSet.SetWithTriangles(theWithTriangles);
-  aShapeSet.SetWithNormals(theWithNormals);
-  aShapeSet.SetFormatNb (theVersion);
+  BinTools_ShapeSet aShapeSet(Standard_True);
+  aShapeSet.SetFormatNb (3);
   aShapeSet.Add (theShape);
-  aShapeSet.Write (theStream, theRange);
+  aShapeSet.Write (theStream);
   aShapeSet.Write (theShape, theStream);
 }
 
@@ -194,35 +151,29 @@ void BinTools::Write (const TopoDS_Shape& theShape,
 //purpose  : 
 //=======================================================================
 
-void BinTools::Read (TopoDS_Shape& theShape, Standard_IStream& theStream,
-                     const Message_ProgressRange& theRange)
+void BinTools::Read (TopoDS_Shape& theShape, Standard_IStream& theStream)
 {
-  BinTools_ShapeSet aShapeSet;
-  aShapeSet.SetWithTriangles(Standard_True);
-  aShapeSet.Read (theStream, theRange);
-  aShapeSet.ReadSubs (theShape, theStream, aShapeSet.NbShapes());
+  BinTools_ShapeSet aShapeSet(Standard_True);
+  aShapeSet.Read (theStream);
+  aShapeSet.Read (theShape, theStream, aShapeSet.NbShapes());
 }
 
 //=======================================================================
 //function : Write
-//purpose  :
+//purpose  : 
 //=======================================================================
-Standard_Boolean BinTools::Write (const TopoDS_Shape& theShape,
-                                  const Standard_CString theFile,
-                                  const Standard_Boolean theWithTriangles,
-                                  const Standard_Boolean theWithNormals,
-                                  const BinTools_FormatVersion theVersion,
-                                  const Message_ProgressRange& theRange)
+
+Standard_Boolean BinTools::Write (const TopoDS_Shape& theShape, const Standard_CString theFile)
 {
-  const Handle(OSD_FileSystem)& aFileSystem = OSD_FileSystem::DefaultFileSystem();
-  opencascade::std::shared_ptr<std::ostream> aStream = aFileSystem->OpenOStream (theFile, std::ios::out | std::ios::binary);
-  aStream->precision (15);
-  if (aStream.get() == NULL || !aStream->good())
+  std::ofstream aStream;
+  aStream.precision (15);
+  OSD_OpenStream (aStream, theFile, std::ios::out | std::ios::binary);
+  if (!aStream.good())
     return Standard_False;
 
-  Write (theShape, *aStream, theWithTriangles, theWithNormals, theVersion, theRange);
-  aStream->flush();
-  return aStream->good();
+  Write (theShape, aStream);
+  aStream.close();
+  return aStream.good();
 }
 
 //=======================================================================
@@ -230,16 +181,14 @@ Standard_Boolean BinTools::Write (const TopoDS_Shape& theShape,
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean BinTools::Read (TopoDS_Shape& theShape, const Standard_CString theFile,
-                                 const Message_ProgressRange& theRange)
+Standard_Boolean BinTools::Read (TopoDS_Shape& theShape, const Standard_CString theFile)
 {
-  const Handle(OSD_FileSystem)& aFileSystem = OSD_FileSystem::DefaultFileSystem();
-  opencascade::std::shared_ptr<std::istream> aStream = aFileSystem->OpenIStream (theFile, std::ios::in | std::ios::binary);
-  if (aStream.get() == NULL)
-  {
+  std::filebuf aBuf;
+  OSD_OpenStream (aBuf, theFile, std::ios::in | std::ios::binary);
+  if (!aBuf.is_open())
     return Standard_False;
-  }
 
-  Read (theShape, *aStream, theRange);
-  return aStream->good();
+  Standard_IStream aStream (&aBuf);
+  Read (theShape, aStream);
+  return aStream.good();
 }

@@ -29,6 +29,9 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <GccEnt_Position.hxx>
 #include <Standard_Real.hxx>
+class Standard_OutOfRange;
+class GccEnt_BadQualifier;
+class StdFail_NotDone;
 class gp_Pnt2d;
 class gp_Lin2d;
 class GccEnt_QualifiedCirc;
@@ -83,7 +86,7 @@ public:
   //! number of solutions.
   Standard_EXPORT gp_Lin2d ThisSolution (const Standard_Integer Index) const;
   
-  //! Returns the information about the qualifiers of the
+  //! Returns the informations about the qualifiers of the
   //! tangency arguments concerning the solution number Index.
   //! It returns the real qualifiers (the qualifiers given to the
   //! constructor method in case of enclosed, enclosing and outside
@@ -94,13 +97,13 @@ public:
   //! number of solutions.
   Standard_EXPORT void WhichQualifier (const Standard_Integer Index, GccEnt_Position& Qualif1) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result number Index and the first argument.
   //! ParSol is the intrinsic parameter of the point on the
   //! solution curv.
   //! ParArg is the intrinsic parameter of the point on the
   //! argument curv.
-  //! ParArg is equal 0 when the solution is passing through
+  //! ParArg is equal 0 when the solution is passing thrue
   //! a point. Raises NotDone if the construction algorithm
   //! didn't succeed.
   //! It raises OutOfRange if Index is greater than the

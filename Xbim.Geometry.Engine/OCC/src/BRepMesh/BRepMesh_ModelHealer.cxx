@@ -33,8 +33,6 @@
 #include <TopoDS_Compound.hxx>
 #endif
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_ModelHealer, IMeshTools_ModelAlgo)
-
 namespace
 {
   //! Decreases deflection of the given edge and tries to update discretization.
@@ -75,7 +73,7 @@ namespace
   };
 
   //! Returns True if some of two vertcies is same with reference one.
-  Standard_Boolean isSameWithSomeOf(
+  inline Standard_Boolean isSameWithSomeOf(
     const TopoDS_Vertex& theRefVertex,
     const TopoDS_Vertex& theVertex1,
     const TopoDS_Vertex& theVertex2)
@@ -85,7 +83,7 @@ namespace
   }
 
   //! Returns True if some of two vertcies is within tolerance of reference one.
-  Standard_Boolean isInToleranceWithSomeOf(
+  inline Standard_Boolean isInToleranceWithSomeOf(
     const gp_Pnt& theRefPoint,
     const gp_Pnt& thePoint1,
     const gp_Pnt& thePoint2,
@@ -119,10 +117,8 @@ BRepMesh_ModelHealer::~BRepMesh_ModelHealer()
 //=======================================================================
 Standard_Boolean BRepMesh_ModelHealer::performInternal(
   const Handle(IMeshData_Model)& theModel,
-  const IMeshTools_Parameters&   theParameters,
-  const Message_ProgressRange&   theRange)
+  const IMeshTools_Parameters&   theParameters)
 {
-  (void )theRange;
   myModel      = theModel;
   myParameters = theParameters;
   if (myModel.IsNull())
@@ -175,13 +171,11 @@ void BRepMesh_ModelHealer::amplifyEdges()
   Standard_Integer aAmpIt = 0;
   const Standard_Real aIterNb = 5;
   IMeshData::MapOfIEdgePtr aEdgesToUpdate(1, aTmpAlloc);
-  EdgeAmplifier anEdgeAmplifier (myParameters);
-
   while (aAmpIt++ < aIterNb && popEdgesToUpdate(aEdgesToUpdate))
   {
     // Try to update discretization by decreasing deflection of problematic edges.
     OSD_Parallel::ForEach(aEdgesToUpdate.cbegin(), aEdgesToUpdate.cend(),
-                          anEdgeAmplifier,
+                          EdgeAmplifier(myParameters),
                           !(myParameters.InParallel && aEdgesToUpdate.Size() > 1),
                           aEdgesToUpdate.Size());
 

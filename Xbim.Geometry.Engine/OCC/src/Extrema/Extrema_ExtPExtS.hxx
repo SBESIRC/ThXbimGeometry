@@ -17,13 +17,28 @@
 #ifndef _Extrema_ExtPExtS_HeaderFile
 #define _Extrema_ExtPExtS_HeaderFile
 
-#include <Extrema_GenExtPS.hxx>
-#include <Extrema_FuncPSNorm.hxx>
-#include <Extrema_POnSurf.hxx>
-#include <GeomAdaptor_SurfaceOfLinearExtrusion.hxx>
-#include <gp_Ax2.hxx>
-#include <gp_Vec.hxx>
+#include <Standard.hxx>
+#include <Standard_Type.hxx>
 
+#include <Standard_Real.hxx>
+#include <Extrema_FuncPSNorm.hxx>
+#include <gp_Vec.hxx>
+#include <gp_Ax2.hxx>
+#include <Extrema_GenExtPS.hxx>
+#include <Standard_Boolean.hxx>
+#include <Standard_Integer.hxx>
+#include <Extrema_POnSurf.hxx>
+#include <Standard_Transient.hxx>
+class Adaptor3d_HCurve;
+class GeomAdaptor_HSurfaceOfLinearExtrusion;
+class StdFail_NotDone;
+class Standard_OutOfRange;
+class gp_Pnt;
+class Extrema_POnSurf;
+class gp_Ax2;
+
+
+class Extrema_ExtPExtS;
 DEFINE_STANDARD_HANDLE(Extrema_ExtPExtS, Standard_Transient)
 
 //! It calculates all the extremum (minimum and
@@ -39,14 +54,14 @@ public:
   
   //! It calculates all the distances between a point
   //! from gp and a Surface.
-  Standard_EXPORT Extrema_ExtPExtS(const gp_Pnt& P, const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)& S, const Standard_Real Umin, const Standard_Real Usup, const Standard_Real Vmin, const Standard_Real Vsup, const Standard_Real TolU, const Standard_Real TolV);
+  Standard_EXPORT Extrema_ExtPExtS(const gp_Pnt& P, const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)& S, const Standard_Real Umin, const Standard_Real Usup, const Standard_Real Vmin, const Standard_Real Vsup, const Standard_Real TolU, const Standard_Real TolV);
   
   //! It calculates all the distances between a point
   //! from gp and a Surface.
-  Standard_EXPORT Extrema_ExtPExtS(const gp_Pnt& P, const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)& S, const Standard_Real TolU, const Standard_Real TolV);
+  Standard_EXPORT Extrema_ExtPExtS(const gp_Pnt& P, const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)& S, const Standard_Real TolU, const Standard_Real TolV);
   
   //! Initializes the fields of the algorithm.
-  Standard_EXPORT void Initialize (const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)& S, const Standard_Real Uinf, const Standard_Real Usup, const Standard_Real Vinf, const Standard_Real Vsup, const Standard_Real TolU, const Standard_Real TolV);
+  Standard_EXPORT void Initialize (const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)& S, const Standard_Real Uinf, const Standard_Real Usup, const Standard_Real Vinf, const Standard_Real Vsup, const Standard_Real TolU, const Standard_Real TolV);
   
   Standard_EXPORT void Perform (const gp_Pnt& P);
   
@@ -84,8 +99,8 @@ private:
   Standard_Real myvsup;
   Standard_Real mytolv;
   Extrema_FuncPSNorm myF;
-  Handle(Adaptor3d_Curve) myC;
-  Handle(GeomAdaptor_SurfaceOfLinearExtrusion) myS;
+  Handle(Adaptor3d_HCurve) myC;
+  Handle(GeomAdaptor_HSurfaceOfLinearExtrusion) myS;
   gp_Vec myDirection;
   gp_Ax2 myPosition;
   Extrema_GenExtPS myExtPS;

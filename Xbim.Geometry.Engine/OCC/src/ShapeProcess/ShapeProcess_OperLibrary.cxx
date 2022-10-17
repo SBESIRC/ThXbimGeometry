@@ -19,7 +19,7 @@
 #include <BRepTools_Modification.hxx>
 #include <BRepTools_Modifier.hxx>
 #include <Message_MsgFile.hxx>
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressIndicator.hxx>
 #include <Precision.hxx>
 #include <ShapeBuild_ReShape.hxx>
 #include <ShapeCustom_BSplineRestriction.hxx>
@@ -86,7 +86,7 @@ TopoDS_Shape ShapeProcess_OperLibrary::ApplyModifier (const TopoDS_Shape &S,
 	map.Bind ( shape, res );
       }
       if ( ! res.IsSame ( shape ) ) locModified = Standard_True;
-      res.Location ( L, Standard_False );
+      res.Location ( L );
       B.Add ( C, res );
     }
     if ( ! locModified ) return S;
@@ -109,8 +109,7 @@ TopoDS_Shape ShapeProcess_OperLibrary::ApplyModifier (const TopoDS_Shape &S,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean directfaces (const Handle(ShapeProcess_Context)& context,
-                                     const Message_ProgressRange&)
+static Standard_Boolean directfaces (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -134,8 +133,7 @@ static Standard_Boolean directfaces (const Handle(ShapeProcess_Context)& context
 //purpose  :
 //=======================================================================
 
-static Standard_Boolean sameparam (const Handle(ShapeProcess_Context)& context,
-                                   const Message_ProgressRange&)
+static Standard_Boolean sameparam (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -147,7 +145,7 @@ static Standard_Boolean sameparam (const Handle(ShapeProcess_Context)& context,
   ShapeFix::SameParameter ( ctx->Result(),
                             ctx->BooleanVal ( "Force", Standard_False ),
                             ctx->RealVal ( "Tolerance3d", Precision::Confusion() /* -1 */),
-                            Message_ProgressRange(), msg );
+                            NULL, msg );
 
   if ( !msg.IsNull() )
   {
@@ -164,8 +162,7 @@ static Standard_Boolean sameparam (const Handle(ShapeProcess_Context)& context,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean settol (const Handle(ShapeProcess_Context)& context,
-                                const Message_ProgressRange&)
+static Standard_Boolean settol (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -195,8 +192,7 @@ static Standard_Boolean settol (const Handle(ShapeProcess_Context)& context,
 //purpose  :
 //=======================================================================
 
-static Standard_Boolean splitangle (const Handle(ShapeProcess_Context)& context,
-                                    const Message_ProgressRange&)
+static Standard_Boolean splitangle (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -227,8 +223,7 @@ static Standard_Boolean splitangle (const Handle(ShapeProcess_Context)& context,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean bsplinerestriction (const Handle(ShapeProcess_Context)& context,
-                                            const Message_ProgressRange&)
+static Standard_Boolean bsplinerestriction (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -291,8 +286,7 @@ static Standard_Boolean bsplinerestriction (const Handle(ShapeProcess_Context)& 
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean torevol (const Handle(ShapeProcess_Context)& context,
-                                 const Message_ProgressRange&)
+static Standard_Boolean torevol (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -316,8 +310,7 @@ static Standard_Boolean torevol (const Handle(ShapeProcess_Context)& context,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean swepttoelem (const Handle(ShapeProcess_Context)& context,
-                                     const Message_ProgressRange&)
+static Standard_Boolean swepttoelem (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -341,8 +334,7 @@ static Standard_Boolean swepttoelem (const Handle(ShapeProcess_Context)& context
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean shapetobezier (const Handle(ShapeProcess_Context)& context,
-                                       const Message_ProgressRange&)
+static Standard_Boolean shapetobezier (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -406,8 +398,7 @@ static Standard_Boolean shapetobezier (const Handle(ShapeProcess_Context)& conte
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean converttobspline (const Handle(ShapeProcess_Context)& context,
-                                          const Message_ProgressRange&)
+static Standard_Boolean converttobspline (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -439,8 +430,7 @@ static Standard_Boolean converttobspline (const Handle(ShapeProcess_Context)& co
 //purpose  : Split by Continuity
 //=======================================================================
 
-static Standard_Boolean splitcontinuity (const Handle(ShapeProcess_Context)& context,
-                                         const Message_ProgressRange&)
+static Standard_Boolean splitcontinuity (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -484,8 +474,7 @@ static Standard_Boolean splitcontinuity (const Handle(ShapeProcess_Context)& con
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean splitclosedfaces (const Handle(ShapeProcess_Context)& context,
-                                          const Message_ProgressRange&)
+static Standard_Boolean splitclosedfaces (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -527,8 +516,7 @@ static Standard_Boolean splitclosedfaces (const Handle(ShapeProcess_Context)& co
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean fixfacesize (const Handle(ShapeProcess_Context)& context,
-                                     const Message_ProgressRange&)
+static Standard_Boolean fixfacesize (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -563,8 +551,7 @@ static Standard_Boolean fixfacesize (const Handle(ShapeProcess_Context)& context
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean fixwgaps (const Handle(ShapeProcess_Context)& context,
-                                  const Message_ProgressRange&)
+static Standard_Boolean fixwgaps (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -595,8 +582,7 @@ static Standard_Boolean fixwgaps (const Handle(ShapeProcess_Context)& context,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean dropsmallsolids (const Handle(ShapeProcess_Context)& context,
-                                         const Message_ProgressRange&)
+static Standard_Boolean dropsmallsolids (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx =
     Handle(ShapeProcess_ShapeContext)::DownCast (context);
@@ -670,8 +656,7 @@ static Standard_Boolean dropsmalledges (const Handle(ShapeProcess_Context)& cont
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean mergesmalledges (const Handle(ShapeProcess_Context)& context,
-                                         const Message_ProgressRange&)
+static Standard_Boolean mergesmalledges (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -700,8 +685,7 @@ static Standard_Boolean mergesmalledges (const Handle(ShapeProcess_Context)& con
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean fixshape (const Handle(ShapeProcess_Context)& context,
-                                  const Message_ProgressRange& theProgress)
+static Standard_Boolean fixshape (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;
@@ -774,14 +758,13 @@ static Standard_Boolean fixshape (const Handle(ShapeProcess_Context)& context,
   sfw->FixSelfIntersectingEdgeMode() = ctx->IntegerVal ( "FixSelfIntersectingEdgeMode", -1 );
   sfw->FixIntersectingEdgesMode()    = ctx->IntegerVal ( "FixIntersectingEdgesMode", -1 );
   sfw->FixNonAdjacentIntersectingEdgesMode() = ctx->IntegerVal ( "FixNonAdjacentIntersectingEdgesMode", -1 );
-  Message_ProgressScope aPS(theProgress, NULL, 2);
   if (sfw->FixTailMode() == 1)
   {
     sfw->FixTailMode() = 0;
     sfs->Init(ctx->Result());
-    sfs->Perform (aPS.Next());
+    sfs->Perform(ctx->Progress());
     sfw->FixTailMode() = 1;
-    if (aPS.UserBreak())
+    if (!ctx->Progress().IsNull() && ctx->Progress()->UserBreak())
     {
       return Standard_False;
     }
@@ -796,8 +779,8 @@ static Standard_Boolean fixshape (const Handle(ShapeProcess_Context)& context,
   }
 
   sfs->Init(ctx->Result());
-  sfs->Perform (aPS.Next());
-  if (aPS.UserBreak())
+  sfs->Perform(ctx->Progress());
+  if (!ctx->Progress().IsNull() && ctx->Progress()->UserBreak())
   {
     return Standard_False;
   }
@@ -818,8 +801,7 @@ static Standard_Boolean fixshape (const Handle(ShapeProcess_Context)& context,
 //purpose  : 
 //=======================================================================
 
-static Standard_Boolean spltclosededges (const Handle(ShapeProcess_Context)& context,
-                                         const Message_ProgressRange&)
+static Standard_Boolean spltclosededges (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx =
     Handle(ShapeProcess_ShapeContext)::DownCast ( context );
@@ -854,8 +836,7 @@ static Standard_Boolean spltclosededges (const Handle(ShapeProcess_Context)& con
 //           and isn't valid in STEP => before writing into STEP it is necessary
 //           to split this vertex (each wire must has one vertex)
 //=======================================================================
-static Standard_Boolean splitcommonvertex (const Handle(ShapeProcess_Context)& context,
-                                           const Message_ProgressRange&)
+static Standard_Boolean splitcommonvertex (const Handle(ShapeProcess_Context)& context)
 {
   Handle(ShapeProcess_ShapeContext) ctx = Handle(ShapeProcess_ShapeContext)::DownCast ( context );
   if ( ctx.IsNull() ) return Standard_False;

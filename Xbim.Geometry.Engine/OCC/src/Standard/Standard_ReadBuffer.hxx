@@ -25,8 +25,7 @@ public:
 
   //! Constructor with initialization.
   Standard_ReadBuffer (int64_t theDataLen,
-                       size_t  theChunkLen,
-                       bool theIsPartialPayload = false)
+                       size_t  theChunkLen)
   : myBufferPtr(NULL),
     myBufferEnd(NULL),
     myDataLen  (0),
@@ -35,28 +34,17 @@ public:
     myNbChunks (0),
     myBufferLen(0)
   {
-    Init (theDataLen, theChunkLen, theIsPartialPayload);
+    Init (theDataLen, theChunkLen);
   }
 
   //! Initialize the buffer.
-  //! @param theDataLen  [in] the full length of input data to read from stream.
-  //! @param theChunkLen [in] the length of single chunk to read
-  //! @param theIsPartialPayload [in] when FALSE, theDataLen will be automatically aligned to the multiple of theChunkLen;
-  //!                                 when TRUE, last chunk will be read from stream exactly till theDataLen
-  //!                                 allowing portion of chunk to be uninitialized (useful for interleaved data)
+  //! @param theDataLen  the full length of input data to read from stream.
+  //! @param theChunkLen the length of single chunk to read
   void Init (int64_t theDataLen,
-             size_t  theChunkLen,
-             bool theIsPartialPayload = false)
+             size_t  theChunkLen)
   {
     myDataRead  = 0;
-    if (theIsPartialPayload)
-    {
-      myDataLen = theDataLen;
-    }
-    else
-    {
-      myDataLen = theDataLen - theDataLen % int64_t(theChunkLen);
-    }
+    myDataLen   = theDataLen - theDataLen % int64_t(theChunkLen);
     myChunkLen  = theChunkLen;
     myNbChunks  = sizeof(myBuffer) / theChunkLen;
     myBufferLen = theChunkLen * myNbChunks;
@@ -100,11 +88,6 @@ private:
   template<typename Stream_T>
   char* readRawDataChunk (Stream_T& theStream)
   {
-    if (myBufferPtr == NULL)
-    {
-      return NULL;
-    }
-
     myBufferPtr += myChunkLen;
     if (myBufferPtr < myBufferEnd)
     {
@@ -112,7 +95,7 @@ private:
     }
 
     const int64_t aDataLeft = myDataLen - myDataRead;
-    if (aDataLeft <= 0) // myDataLen is normally multiple of myChunkLen, but can be smaller in interleaved data
+    if (aDataLeft == 0) // myDataLen should be multiple of myChunkLen
     {
       myBufferPtr = NULL;
       return NULL;

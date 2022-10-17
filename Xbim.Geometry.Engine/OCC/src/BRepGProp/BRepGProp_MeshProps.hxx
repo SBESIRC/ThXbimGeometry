@@ -21,6 +21,7 @@
 
 class Poly_Triangulation;
 class TopLoc_Location;
+class gp_Pnt;
 
 
 //! Computes the global properties of a surface mesh. The mesh can be
@@ -54,7 +55,8 @@ public:
                                const TopLoc_Location& theLoc,
                                const TopAbs_Orientation theOri);
 
-  Standard_EXPORT void Perform(const Handle(Poly_Triangulation)& theMesh,
+  Standard_EXPORT void Perform(const TColgp_Array1OfPnt& theNodes,
+                               const Poly_Array1OfTriangle& theTriangles, 
                                const TopAbs_Orientation theOri);
 
   //! Computes the global properties of triangle {p1, p2, p3} relatively 

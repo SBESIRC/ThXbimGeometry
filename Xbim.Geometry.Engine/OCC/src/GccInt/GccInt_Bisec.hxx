@@ -22,6 +22,7 @@
 
 #include <Standard_Transient.hxx>
 #include <GccInt_IType.hxx>
+class Standard_DomainError;
 class gp_Pnt2d;
 class gp_Lin2d;
 class gp_Circ2d;

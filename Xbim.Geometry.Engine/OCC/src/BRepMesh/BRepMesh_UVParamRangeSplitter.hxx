@@ -49,25 +49,25 @@ public:
 
 public:
   //! Returns U parameters.
-  const IMeshData::IMapOfReal& GetParametersU() const
+  inline const IMeshData::IMapOfReal& GetParametersU() const
   {
     return myUParams;
   }
 
   //! Returns U parameters.
-  IMeshData::IMapOfReal& GetParametersU()
+  inline IMeshData::IMapOfReal& GetParametersU()
   {
     return myUParams;
   }
 
   //! Returns V parameters.
-  const IMeshData::IMapOfReal& GetParametersV() const
+  inline const IMeshData::IMapOfReal& GetParametersV() const
   {
     return myVParams;
   }
 
   //! Returns V parameters.
-  IMeshData::IMapOfReal& GetParametersV()
+  inline IMeshData::IMapOfReal& GetParametersV()
   {
     return myVParams;
   }

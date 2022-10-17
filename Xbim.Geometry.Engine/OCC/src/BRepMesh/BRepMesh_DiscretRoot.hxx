@@ -18,7 +18,6 @@
 #include <Standard_Type.hxx>
 #include <TopoDS_Shape.hxx>
 #include <Standard_Transient.hxx>
-#include <Message_ProgressRange.hxx>
 
 //! This is a common interface for meshing algorithms 
 //! instantiated by Mesh Factory and implemented by plugins.
@@ -30,24 +29,24 @@ public:
   Standard_EXPORT virtual ~BRepMesh_DiscretRoot();
 
   //! Set the shape to triangulate.
-  void SetShape(const TopoDS_Shape& theShape)
+  inline void SetShape(const TopoDS_Shape& theShape)
   {
     myShape = theShape;
   }
   
-  const TopoDS_Shape& Shape() const
+  inline const TopoDS_Shape& Shape() const
   {
     return myShape;
   }
   
   //! Returns true if triangualtion was performed and has success.
-  Standard_Boolean IsDone() const
+  inline Standard_Boolean IsDone() const
   {
     return myIsDone;
   }
 
   //! Compute triangulation for set shape.
-  virtual void Perform(const Message_ProgressRange& theRange = Message_ProgressRange()) = 0;
+  virtual void Perform() = 0;
 
 
   DEFINE_STANDARD_RTTIEXT(BRepMesh_DiscretRoot,Standard_Transient)
@@ -58,13 +57,13 @@ protected:
   Standard_EXPORT BRepMesh_DiscretRoot();
   
   //! Sets IsDone flag.
-  void setDone()
+  inline void setDone()
   {
     myIsDone = Standard_True;
   }
   
   //! Clears IsDone flag.
-  void setNotDone()
+  inline void setNotDone()
   {
     myIsDone = Standard_False;
   }

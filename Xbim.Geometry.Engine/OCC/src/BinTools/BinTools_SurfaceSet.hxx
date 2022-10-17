@@ -24,10 +24,7 @@
 #include <Standard_Integer.hxx>
 #include <Standard_OStream.hxx>
 #include <Standard_IStream.hxx>
-
-#include <Message_ProgressRange.hxx>
-#include <BinTools_OStream.hxx>
-
+class Standard_OutOfRange;
 class Geom_Surface;
 
 
@@ -57,27 +54,43 @@ public:
   
   //! Writes the content of  me  on the stream <OS> in
   //! binary format that can be read back by Read.
-  Standard_EXPORT void Write (Standard_OStream& OS,
-                              const Message_ProgressRange& theRange = Message_ProgressRange()) const;
+  Standard_EXPORT void Write (Standard_OStream& OS) const;
   
   //! Reads the content of me from the  stream  <IS>. me
   //! is first cleared.
-  Standard_EXPORT void Read (Standard_IStream& IS,
-                             const Message_ProgressRange& therange = Message_ProgressRange());
+  Standard_EXPORT void Read (Standard_IStream& IS);
   
   //! Dumps the surface on the stream in binary
   //! format that can be read back.
-  Standard_EXPORT static void WriteSurface (const Handle(Geom_Surface)& S, BinTools_OStream& OS);
+  Standard_EXPORT static void WriteSurface (const Handle(Geom_Surface)& S, Standard_OStream& OS);
   
   //! Reads the surface  from  the stream.  The  surface  is
   //! assumed   to have  been  written  with  the Write
   //! method.
   Standard_EXPORT static Standard_IStream& ReadSurface (Standard_IStream& IS, Handle(Geom_Surface)& S);
 
+
+
+
+protected:
+
+
+
+
+
 private:
+
+
 
   TColStd_IndexedMapOfTransient myMap;
 
+
 };
+
+
+
+
+
+
 
 #endif // _BinTools_SurfaceSet_HeaderFile

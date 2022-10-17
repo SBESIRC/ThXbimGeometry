@@ -28,10 +28,8 @@
 //purpose  : Initialize for a deferred interference.
 //=======================================================================
 Intf_Interference::Intf_Interference (const Standard_Boolean Self)
-     : SelfIntf(Self),
-       Tolerance(0.0)
-{
-}
+     : SelfIntf(Self)
+{}
 
 
 //=======================================================================

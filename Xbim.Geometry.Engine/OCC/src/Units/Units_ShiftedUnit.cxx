@@ -46,8 +46,7 @@ Units_ShiftedUnit::Units_ShiftedUnit(const Standard_CString aname,
 
 Units_ShiftedUnit::Units_ShiftedUnit(const Standard_CString aname,
 				     const Standard_CString asymbol)
-     : Units_Unit(aname,asymbol),
-       themove(0.0)
+     : Units_Unit(aname,asymbol)
 {}
 
 //=======================================================================
@@ -56,8 +55,7 @@ Units_ShiftedUnit::Units_ShiftedUnit(const Standard_CString aname,
 //=======================================================================
 
 Units_ShiftedUnit::Units_ShiftedUnit(const Standard_CString aname)
-     : Units_Unit(aname),
-       themove(0.0)
+     : Units_Unit(aname)
 {}
 
 //=======================================================================

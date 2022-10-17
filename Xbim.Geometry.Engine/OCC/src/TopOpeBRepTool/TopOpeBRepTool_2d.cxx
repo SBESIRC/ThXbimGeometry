@@ -24,7 +24,10 @@
 #include <Geom_Surface.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_HSurface.hxx>
+#include <BRepAdaptor_HCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <TopOpeBRepTool_CurveTool.hxx>
 #include <TopOpeBRepTool_DataMapOfShapeListOfC2DF.hxx>
@@ -199,9 +202,9 @@ static Handle(Geom2d_Curve) FC2D_make2d(const TopoDS_Edge& E,const TopoDS_Face& 
     if (FE.IsNull()) return C2D;
     Standard_Boolean compminmaxUV = Standard_False;
     BRepAdaptor_Surface BAS(F,compminmaxUV);
-    Handle(BRepAdaptor_Surface) BAHS = new BRepAdaptor_Surface(BAS);
+    Handle(BRepAdaptor_HSurface) BAHS = new BRepAdaptor_HSurface(BAS);
     BRepAdaptor_Curve AC(E,FE);
-    Handle(BRepAdaptor_Curve) AHC = new BRepAdaptor_Curve(AC);
+    Handle(BRepAdaptor_HCurve) AHC = new BRepAdaptor_HCurve(AC);
     Standard_Real tolin; FTOL_FaceTolerances3d(F,FE,tolin);
     ProjLib_ProjectedCurve projcurv(BAHS,AHC,tolin);    
     C2D = MakePCurve(projcurv);
@@ -337,9 +340,9 @@ static Handle(Geom2d_Curve) FC2D_make2d(const TopoDS_Edge& E,const TopoDS_Face& 
     if (FE.IsNull()) return C2D;
     Standard_Boolean compminmaxUV = Standard_False;
     BRepAdaptor_Surface BAS(F,compminmaxUV);
-    Handle(BRepAdaptor_Surface) BAHS = new BRepAdaptor_Surface(BAS);
+    Handle(BRepAdaptor_HSurface) BAHS = new BRepAdaptor_HSurface(BAS);
     BRepAdaptor_Curve AC(E,FE);
-    Handle(BRepAdaptor_Curve) AHC = new BRepAdaptor_Curve(AC);
+    Handle(BRepAdaptor_HCurve) AHC = new BRepAdaptor_HCurve(AC);
     Standard_Real tolin; FTOL_FaceTolerances3d(F,FE,tolin);
     ProjLib_ProjectedCurve projcurv(BAHS,AHC,tolin);
     C2D = MakePCurve(projcurv);

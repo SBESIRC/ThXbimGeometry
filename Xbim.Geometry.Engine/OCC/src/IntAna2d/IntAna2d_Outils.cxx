@@ -42,11 +42,7 @@ MyDirectPolynomialRoots::MyDirectPolynomialRoots(const Standard_Real A4,
     return;
   }
   Standard_Integer i,j,nbp;
-  for (size_t anIdx = 0; anIdx < sizeof (val) / sizeof (val[0]); anIdx++)
-  {
-    val[anIdx] = RealLast();
-    sol[anIdx] = RealLast();
-  }
+  for(i=0;i<16;i++) val[i]=RealLast();
   
   Standard_Real tol = Epsilon(100.0);
   math_DirectPolynomialRoots MATH_A43210(A4,A3,A2,A1,A0);
@@ -197,11 +193,6 @@ MyDirectPolynomialRoots::MyDirectPolynomialRoots(const Standard_Real A2,
 						 const Standard_Real A1,
 						 const Standard_Real A0) { 
   //-- std::cout<<" IntAna2d : A2..A0 "<<A2<<" "<<A1<<" "<<A0<<" "<<std::endl;
-  for (size_t anIdx = 0; anIdx < sizeof (val) / sizeof (val[0]); anIdx++)
-  {
-    val[anIdx] = RealLast();
-    sol[anIdx] = RealLast();
-  }
   nbsol=0;
   if((Abs(A2)+Abs(A1)+Abs(A0))<Epsilon(10000.0))  { 
     same = Standard_True;

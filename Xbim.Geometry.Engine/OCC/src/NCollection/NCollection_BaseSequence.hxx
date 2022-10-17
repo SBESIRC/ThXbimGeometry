@@ -75,6 +75,13 @@ public:
       myPrevious = (isStart ? NULL : theSeq.myLastItem);
     }
 
+    //! Assignment
+    Iterator& operator = (const Iterator& theOther)
+    {
+      myCurrent = theOther.myCurrent;
+      myPrevious = theOther.myPrevious;
+      return *this;
+    }
     //! Switch to previous element; note that it will reset 
     void Previous()
     {
@@ -156,12 +163,7 @@ public:
   // 
   Standard_EXPORT NCollection_BaseSequence
                            (const NCollection_BaseSequence& Other);
-  void Nullify()
-  {
-    myFirstItem = myLastItem = myCurrentItem = NULL;
-    myCurrentIndex = mySize = 0;
-  }
-
+  inline void Nullify ();
   friend class Iterator;
 };
 

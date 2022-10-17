@@ -19,6 +19,7 @@
 
 #include <TCollection_AsciiString.hxx>
 #include <TCollection_ExtendedString.hxx>
+#include <TCollection_AsciiString.hxx>
 #include <NCollection_DataMap.hxx>
 
 typedef NCollection_DataMap<TCollection_AsciiString,TCollection_ExtendedString,TCollection_AsciiString> Resource_DataMapOfAsciiStringExtendedString;

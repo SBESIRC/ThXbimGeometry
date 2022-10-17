@@ -47,16 +47,11 @@ public:
   //! Performs processing of the given face.
   virtual void Perform(
     const IMeshData::IFaceHandle& theDFace,
-    const IMeshTools_Parameters&  theParameters,
-    const Message_ProgressRange&  theRange) Standard_OVERRIDE
+    const IMeshTools_Parameters&  theParameters) Standard_OVERRIDE
   {
     myRangeSplitter.Reset(theDFace, theParameters);
     myClassifier = new BRepMesh_Classifier;
-    if (!theRange.More())
-    {
-      return;
-    }
-    BaseAlgo::Perform(theDFace, theParameters, theRange);
+    BaseAlgo::Perform(theDFace, theParameters);
     myClassifier.Nullify();
   }
 

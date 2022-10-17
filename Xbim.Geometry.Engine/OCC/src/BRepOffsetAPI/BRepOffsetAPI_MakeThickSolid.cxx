@@ -34,6 +34,27 @@ BRepOffsetAPI_MakeThickSolid::BRepOffsetAPI_MakeThickSolid()
 }
 
 //=======================================================================
+//function : BRepOffsetAPI_MakeThickSolid
+//purpose  : 
+//=======================================================================
+BRepOffsetAPI_MakeThickSolid::BRepOffsetAPI_MakeThickSolid(const TopoDS_Shape& S,
+                                                           const TopTools_ListOfShape& ClosingFaces,
+                                                           const Standard_Real Offset,
+                                                           const Standard_Real Tol,
+                                                           const BRepOffset_Mode Mode,
+                                                           const Standard_Boolean Intersection,
+                                                           const Standard_Boolean SelfInter,
+                                                           const GeomAbs_JoinType Join,
+                                                           const Standard_Boolean RemoveIntEdges)
+{
+  // Build only solids.
+  mySimpleOffsetShape.SetBuildSolidFlag(Standard_True);
+
+  MakeThickSolidByJoin(S, ClosingFaces, Offset, Tol,
+                       Mode, Intersection, SelfInter, Join, RemoveIntEdges);
+}
+
+//=======================================================================
 //function : MakeThickSolidByJoin
 //purpose  : 
 //=======================================================================
@@ -41,13 +62,12 @@ void BRepOffsetAPI_MakeThickSolid::MakeThickSolidByJoin
 (const TopoDS_Shape&         S,
  const TopTools_ListOfShape& ClosingFaces,
  const Standard_Real         Offset, 
- const Standard_Real         Tol,
+ const Standard_Real         Tol, 
  const BRepOffset_Mode       Mode,
  const Standard_Boolean      Intersection,
  const Standard_Boolean      SelfInter,
  const GeomAbs_JoinType      Join,
- const Standard_Boolean      RemoveIntEdges,
- const Message_ProgressRange& theRange)
+ const Standard_Boolean      RemoveIntEdges)
 {
   NotDone();
   myLastUsedAlgo = OffsetAlgo_JOIN;
@@ -58,7 +78,7 @@ void BRepOffsetAPI_MakeThickSolid::MakeThickSolidByJoin
   for (; it.More(); it.Next())
     myOffsetShape.AddFace(TopoDS::Face(it.Value()));
 
-  myOffsetShape.MakeThickSolid(theRange);
+  myOffsetShape.MakeThickSolid();
   if (!myOffsetShape.IsDone())
     return;
 
@@ -90,7 +110,7 @@ void BRepOffsetAPI_MakeThickSolid::MakeThickSolidBySimple(const TopoDS_Shape& th
 //function : Build
 //purpose  : 
 //=======================================================================
-void BRepOffsetAPI_MakeThickSolid::Build(const Message_ProgressRange& /*theRange*/)
+void BRepOffsetAPI_MakeThickSolid::Build()
 {
 }
 

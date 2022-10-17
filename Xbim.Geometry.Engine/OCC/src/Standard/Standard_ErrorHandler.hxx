@@ -202,8 +202,6 @@ inline Standard_ErrorHandler::Callback::Callback ()
 }
 inline Standard_ErrorHandler::Callback::~Callback ()
 {
-  (void)myHandler;
-  (void)myPrev;
 }
 inline void Standard_ErrorHandler::Callback::RegisterCallback ()
 {

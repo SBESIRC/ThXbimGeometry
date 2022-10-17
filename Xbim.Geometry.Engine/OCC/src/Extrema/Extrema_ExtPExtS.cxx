@@ -17,7 +17,7 @@
 #include <Standard_NotImplemented.hxx>
 #include <Standard_OutOfRange.hxx>
 #include <StdFail_NotDone.hxx>
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
 #include <ElCLib.hxx>
 #include <Extrema_ExtPElC.hxx>
 #include <Extrema_ExtPExtS.hxx>
@@ -33,16 +33,16 @@
 #include <gp_Vec.hxx>
 #include <math_FunctionSetRoot.hxx>
 #include <math_Vector.hxx>
-#include <GeomAdaptor_SurfaceOfLinearExtrusion.hxx>
+#include <GeomAdaptor_HSurfaceOfLinearExtrusion.hxx>
 
 
 IMPLEMENT_STANDARD_RTTIEXT(Extrema_ExtPExtS,Standard_Transient)
 
-static gp_Ax2 GetPosition (const Handle(Adaptor3d_Curve)& C);
+static gp_Ax2 GetPosition (const Handle(Adaptor3d_HCurve)& C);
      
 static void PerformExtPElC (Extrema_ExtPElC& E,
 			    const gp_Pnt& P,
-			    const Handle(Adaptor3d_Curve)& C,
+			    const Handle(Adaptor3d_HCurve)& C,
 			    const Standard_Real Tol);
      
 static Standard_Boolean
@@ -51,7 +51,7 @@ static Standard_Boolean
 				const gp_Dir& theSurfaceDirection) ;
 
 static gp_Pnt GetValue(const Standard_Real U,
-		       const Handle(Adaptor3d_Curve)& C);
+		       const Handle(Adaptor3d_HCurve)& C);
 //=======================================================================
 //function : Project
 //purpose  : Returns the projection of a point <Point> on a plane 
@@ -155,16 +155,12 @@ Extrema_ExtPExtS::Extrema_ExtPExtS()
   myDone(Standard_False),
   myNbExt(0)
 {
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 }
 
 //=============================================================================
 
 Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                                       theP,
-                                    const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)&  theS,
+                                    const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)&  theS,
                                     const Standard_Real                                 theUmin,
                                     const Standard_Real                                 theUsup,
                                     const Standard_Real                                 theVmin,
@@ -182,10 +178,6 @@ Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                               
   myDone(Standard_False),
   myNbExt(0)
 {
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
   Initialize (theS,
               theUmin,
               theUsup,
@@ -199,7 +191,7 @@ Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                               
 //=============================================================================
 
 Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                                       theP,
-                                    const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)&  theS,
+                                    const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)&  theS,
                                     const Standard_Real                                 theTolU, 
                                     const Standard_Real                                 theTolV)
 : myuinf(theS->FirstUParameter()),
@@ -213,10 +205,6 @@ Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                               
   myDone(Standard_False),
   myNbExt(0)
 {
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
   Initialize (theS,
               theS->FirstUParameter(),
               theS->LastUParameter(),
@@ -233,7 +221,7 @@ Extrema_ExtPExtS::Extrema_ExtPExtS (const gp_Pnt&                               
 //purpose  : 
 //=======================================================================
 
-void Extrema_ExtPExtS::Initialize (const Handle(GeomAdaptor_SurfaceOfLinearExtrusion)&  theS,
+void Extrema_ExtPExtS::Initialize (const Handle(GeomAdaptor_HSurfaceOfLinearExtrusion)&  theS,
                                    const Standard_Real                                 theUinf,
                                    const Standard_Real                                 theUsup,
                                    const Standard_Real                                 theVinf,
@@ -253,9 +241,9 @@ void Extrema_ExtPExtS::Initialize (const Handle(GeomAdaptor_SurfaceOfLinearExtru
   myDone = Standard_False;
   myNbExt = 0;
 
-  Handle(Adaptor3d_Curve) anACurve = theS->BasisCurve();
+  Handle(Adaptor3d_HCurve) anACurve = theS->BasisCurve();
 
-  myF.Initialize (*theS);
+  myF.Initialize (theS->ChangeSurface());
   myC = anACurve;
   myS = theS;
   myPosition = GetPosition(myC);
@@ -265,7 +253,7 @@ void Extrema_ExtPExtS::Initialize (const Handle(GeomAdaptor_SurfaceOfLinearExtru
   
   if (!myIsAnalyticallyComputable)
   {
-    myExtPS.Initialize (*theS,
+    myExtPS.Initialize (theS->ChangeSurface(),
                         32,
                         32,
                         theUinf,
@@ -496,7 +484,7 @@ const Extrema_POnSurf& Extrema_ExtPExtS::Point (const Standard_Integer N) const
 //=============================================================================
 
 
-static gp_Ax2 GetPosition (const Handle(Adaptor3d_Curve)& C)
+static gp_Ax2 GetPosition (const Handle(Adaptor3d_HCurve)& C)
 {
   switch (C->GetType()) {
   case GeomAbs_Line: {
@@ -525,7 +513,7 @@ static gp_Ax2 GetPosition (const Handle(Adaptor3d_Curve)& C)
 
 static void PerformExtPElC (Extrema_ExtPElC& E,
 			    const gp_Pnt& P,
-			    const Handle(Adaptor3d_Curve)& C,
+			    const Handle(Adaptor3d_HCurve)& C,
 			    const Standard_Real Tol)
 {
   switch (C->GetType()) {
@@ -582,7 +570,7 @@ static Standard_Boolean IsCaseAnalyticallyComputable
 //=======================================================================
 
 static gp_Pnt GetValue(const Standard_Real U,
-		       const Handle(Adaptor3d_Curve)& C)
+		       const Handle(Adaptor3d_HCurve)& C)
 {
   switch (C->GetType()) {
   case GeomAbs_Line:
@@ -606,7 +594,7 @@ static gp_Pnt GetValue(const Standard_Real U,
 //#ifdef OCCT_DEBUG
 //static Standard_Real GetU(const gp_Vec& vec,
 //			  const gp_Pnt& P,
-//			  const Handle(Adaptor3d_Curve)& C)
+//			  const Handle(Adaptor3d_HCurve)& C)
 //{
 //  switch (C->GetType()) {
 //  case GeomAbs_Line:

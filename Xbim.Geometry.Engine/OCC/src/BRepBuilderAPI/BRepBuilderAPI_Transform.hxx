@@ -26,6 +26,8 @@
 #include <Standard_Boolean.hxx>
 #include <BRepBuilderAPI_ModifyShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+class Standard_NoSuchObject;
+class gp_Trsf;
 class TopoDS_Shape;
 
 

@@ -28,6 +28,12 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 #include <TopAbs_Orientation.hxx>
+class Standard_DomainError;
+class Standard_TypeMismatch;
+class TopoDS_Vertex;
+class TopoDS_Edge;
+class gp_Pnt;
+class gp_Vec;
 
 
 //! point    start/end of  fillet common  to  2 adjacent  filets
@@ -115,7 +121,7 @@ public:
   //! arc returned by the method Arc().
   Standard_EXPORT Standard_Real ParameterOnArc() const;
   
-  //! Returns the parameter on the spine
+  //! Returns  the parameter the  paramter on the  spine
   Standard_EXPORT Standard_Real Parameter() const;
   
   //! Returns the 3d point

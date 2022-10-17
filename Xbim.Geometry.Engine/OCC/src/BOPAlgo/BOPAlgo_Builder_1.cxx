@@ -38,16 +38,11 @@
 //function : FillImagesVertices
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::FillImagesVertices(const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::FillImagesVertices()
 {
-  Message_ProgressScope aPS(theRange, "Filling splits of vertices", myDS->ShapesSD().Size());
   TColStd_DataMapIteratorOfDataMapOfIntegerInteger aIt(myDS->ShapesSD());
-  for (; aIt.More(); aIt.Next(), aPS.Next())
+  for (; aIt.More(); aIt.Next())
   {
-    if (UserBreak(aPS))
-    {
-      return;
-    }
     Standard_Integer nV = aIt.Key();
     Standard_Integer nVSD = aIt.Value();
 
@@ -68,11 +63,10 @@ void BOPAlgo_Builder::FillImagesVertices(const Message_ProgressRange& theRange)
 //function : FillImagesEdges
 //purpose  : 
 //=======================================================================
-  void BOPAlgo_Builder::FillImagesEdges(const Message_ProgressRange& theRange)
+  void BOPAlgo_Builder::FillImagesEdges()
 {
   Standard_Integer i, aNbS = myDS->NbSourceShapes();
-  Message_ProgressScope aPS(theRange, "Filling splits of edges", aNbS);
-  for (i = 0; i < aNbS; ++i, aPS.Next()) {
+  for (i = 0; i < aNbS; ++i) {
     const BOPDS_ShapeInfo& aSI = myDS->ShapeInfo(i);
     if (aSI.ShapeType() != TopAbs_EDGE) {
       continue;
@@ -111,10 +105,6 @@ void BOPAlgo_Builder::FillImagesVertices(const Message_ProgressRange& theRange)
         const TopoDS_Shape& aSp = myDS->Shape(nSp);
         myShapesSD.Bind(aSp, aSpR);
       }
-    }
-    if (UserBreak(aPS))
-    {
-      return;
     }
   }
 }
@@ -159,45 +149,35 @@ void BOPAlgo_Builder::BuildResult(const TopAbs_ShapeEnum theType)
 // function: FillImagesContainers
 // purpose: 
 //=======================================================================
-  void BOPAlgo_Builder::FillImagesContainers(const TopAbs_ShapeEnum theType, const Message_ProgressRange& theRange)
+  void BOPAlgo_Builder::FillImagesContainers(const TopAbs_ShapeEnum theType)
 {
   Standard_Integer i, aNbS;
   TopTools_MapOfShape aMFP(100, myAllocator);
   //
   aNbS=myDS->NbSourceShapes();
-  Message_ProgressScope aPS(theRange, "Building splits of containers", 1);
   for (i=0; i<aNbS; ++i) {
     const BOPDS_ShapeInfo& aSI=myDS->ShapeInfo(i);
     if (aSI.ShapeType()==theType) {
       const TopoDS_Shape& aC=aSI.Shape();
       FillImagesContainer(aC, theType);
     }   
-    if (UserBreak(aPS))
-    {
-      return;
-    }
   }// for (; aItS.More(); aItS.Next()) {
 }
 //=======================================================================
 // function: FillImagesCompounds
 // purpose: 
 //=======================================================================
-  void BOPAlgo_Builder::FillImagesCompounds(const Message_ProgressRange& theRange)
+  void BOPAlgo_Builder::FillImagesCompounds()
 {
   Standard_Integer i, aNbS;
   TopTools_MapOfShape aMFP(100, myAllocator);
   //
   aNbS=myDS->NbSourceShapes();
-  Message_ProgressScope aPS(theRange, "Building splits of compounds", aNbS);
-  for (i=0; i<aNbS; ++i, aPS.Next()) {
+  for (i=0; i<aNbS; ++i) {
     const BOPDS_ShapeInfo& aSI=myDS->ShapeInfo(i);
     if (aSI.ShapeType()==TopAbs_COMPOUND) {
       const TopoDS_Shape& aC=aSI.Shape();
       FillImagesCompound(aC, aMFP);
-    }
-    if (UserBreak(aPS))
-    {
-      return;
     }
   }// for (; aItS.More(); aItS.Next()) {
 }

@@ -38,8 +38,7 @@ public: //! @name Constructor
   //! Constructor
   BVH_PairDistance()
     : BVH_PairTraverse <NumType, Dimension, BVHSetType, NumType>(),
-      myDistance (std::numeric_limits<NumType>::max()),
-      myIsDone(Standard_False)
+      myDistance (std::numeric_limits<NumType>::max())
   {
   }
 

@@ -16,8 +16,28 @@
 #ifndef _LProp3d_SLProps_HeaderFile
 #define _LProp3d_SLProps_HeaderFile
 
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <Standard_Real.hxx>
+#include <Standard_Integer.hxx>
+#include <gp_Pnt.hxx>
+#include <gp_Vec.hxx>
+#include <gp_Dir.hxx>
 #include <LProp_Status.hxx>
+#include <Standard_Boolean.hxx>
+class Adaptor3d_HSurface;
+class LProp_BadContinuity;
+class Standard_DomainError;
+class Standard_OutOfRange;
+class LProp_NotDefined;
+class LProp3d_SurfaceTool;
+class gp_Pnt;
+class gp_Vec;
+class gp_Dir;
+
+
 
 class LProp3d_SLProps 
 {
@@ -36,11 +56,11 @@ public:
   //! only the tangent, N should be equal to 1.
   //! <Resolution> is the linear tolerance (it is used to test
   //! if a vector is null).
-  Standard_EXPORT LProp3d_SLProps(const Handle(Adaptor3d_Surface)& S, const Standard_Real U, const Standard_Real V, const Standard_Integer N, const Standard_Real Resolution);
+  Standard_EXPORT LProp3d_SLProps(const Handle(Adaptor3d_HSurface)& S, const Standard_Real U, const Standard_Real V, const Standard_Integer N, const Standard_Real Resolution);
   
   //! idem as previous constructor but without setting the value
   //! of parameters <U> and <V>.
-  Standard_EXPORT LProp3d_SLProps(const Handle(Adaptor3d_Surface)& S, const Standard_Integer N, const Standard_Real Resolution);
+  Standard_EXPORT LProp3d_SLProps(const Handle(Adaptor3d_HSurface)& S, const Standard_Integer N, const Standard_Real Resolution);
   
   //! idem as previous constructor but without setting the value
   //! of parameters <U> and <V> and the surface.
@@ -49,7 +69,7 @@ public:
   
   //! Initializes the local properties of the surface S
   //! for the new surface.
-  Standard_EXPORT void SetSurface (const Handle(Adaptor3d_Surface)& S);
+  Standard_EXPORT void SetSurface (const Handle(Adaptor3d_HSurface)& S);
   
   //! Initializes the local properties of the surface S
   //! for the new parameter values (<U>, <V>).
@@ -123,9 +143,20 @@ public:
   //! Returns the Gaussian curvature
   Standard_EXPORT Standard_Real GaussianCurvature();
 
+
+
+
+protected:
+
+
+
+
+
 private:
 
-  Handle(Adaptor3d_Surface) mySurf;
+
+
+  Handle(Adaptor3d_HSurface) mySurf;
   Standard_Real myU;
   Standard_Real myV;
   Standard_Integer myDerOrder;
@@ -151,6 +182,13 @@ private:
   LProp_Status myNormalStatus;
   LProp_Status myCurvatureStatus;
 
+
 };
+
+
+
+
+
+
 
 #endif // _LProp3d_SLProps_HeaderFile

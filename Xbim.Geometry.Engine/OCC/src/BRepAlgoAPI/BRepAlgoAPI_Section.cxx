@@ -271,9 +271,9 @@ void BRepAlgoAPI_Section::SetAttributes()
 //function : Build
 //purpose  : 
 //=======================================================================
-void BRepAlgoAPI_Section::Build(const Message_ProgressRange& theRange) 
+void BRepAlgoAPI_Section::Build() 
 {
-  BRepAlgoAPI_BooleanOperation::Build(theRange);
+  BRepAlgoAPI_BooleanOperation::Build();
 }
 //=======================================================================
 //function : HasAncestorFaceOn1

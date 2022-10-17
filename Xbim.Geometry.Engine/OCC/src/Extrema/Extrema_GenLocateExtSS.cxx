@@ -30,8 +30,6 @@
 //purpose  : 
 //=======================================================================
 Extrema_GenLocateExtSS::Extrema_GenLocateExtSS()
-: myDone(Standard_False),
-  mySqDist(RealLast())
 {
 }
 

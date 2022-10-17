@@ -34,8 +34,6 @@ IMPLEMENT_STANDARD_RTTIEXT(BVH_ObjectTransient,   Standard_Transient)
 template class NCollection_Vec2<Standard_Real>;
 template class NCollection_Vec3<Standard_Real>;
 template class NCollection_Vec4<Standard_Real>;
-template class NCollection_Mat3<Standard_Real>;
-template class NCollection_Mat4<Standard_Real>;
 
 template class BVH_Box<Standard_Real, 2>;
 template class BVH_Box<Standard_Real, 3>;

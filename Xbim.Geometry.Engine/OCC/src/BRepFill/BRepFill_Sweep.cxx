@@ -15,7 +15,7 @@
 // commercial license or contractual agreement.
 
 
-#include <Adaptor3d_CurveOnSurface.hxx>
+#include <Adaptor3d_HCurveOnSurface.hxx>
 #include <Approx_CurveOnSurface.hxx>
 #include <Approx_SameParameter.hxx>
 #include <Bnd_Box.hxx>
@@ -27,9 +27,9 @@
 #include <BRep_TEdge.hxx>
 #include <BRep_Tool.hxx>
 #include <BRep_TVertex.hxx>
-#include <BRepAdaptor_Curve.hxx>
-#include <BRepAdaptor_Curve2d.hxx>
-#include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HCurve.hxx>
+#include <BRepAdaptor_HCurve2d.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepBuilderAPI_MakeWire.hxx>
 #include <BRepCheck_Edge.hxx>
 #include <BRepFill_CurveConstraint.hxx>
@@ -48,7 +48,7 @@
 #include <Geom2d_BSplineCurve.hxx>
 #include <Geom2d_Line.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
 #include <Geom_BezierCurve.hxx>
 #include <Geom_BSplineCurve.hxx>
 #include <Geom_Curve.hxx>
@@ -56,8 +56,8 @@
 #include <Geom_RectangularTrimmedSurface.hxx>
 #include <Geom_Surface.hxx>
 #include <Geom_SurfaceOfRevolution.hxx>
-#include <GeomAdaptor_Curve.hxx>
-#include <GeomAdaptor_Surface.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomConvert_ApproxSurface.hxx>
 #include <GeomFill_LocationLaw.hxx>
 #include <GeomFill_SectionLaw.hxx>
@@ -271,9 +271,9 @@ static Handle(Geom2d_Curve) Couture(const TopoDS_Edge& E,
 //=======================================================================
 
 static Standard_Boolean CheckSameParameter 
-(const Handle(Adaptor3d_Curve)&   C3d,
+(const Handle(Adaptor3d_HCurve)&   C3d,
  const Handle(Geom2d_Curve)&           Pcurv,
- const Handle(Adaptor3d_Surface)& S,
+ const Handle(Adaptor3d_HSurface)& S,
  const Standard_Real             tol3d,
  Standard_Real&                  tolreached)
 {
@@ -315,13 +315,13 @@ static Standard_Boolean SameParameter(TopoDS_Edge&    E,
 				      const Standard_Real          tol3d,
 				      Standard_Real&               tolreached)
 {
-  //Handle(BRepAdaptor_Curve) C3d = new (BRepAdaptor_Curve)(E);
+  //Handle(BRepAdaptor_HCurve) C3d = new (BRepAdaptor_HCurve)(E);
   Standard_Real f, l;
   Handle(Geom_Curve) C3d = BRep_Tool::Curve( E, f, l );
   GeomAdaptor_Curve GAC3d( C3d, f, l );
-  Handle(GeomAdaptor_Curve) HC3d = new GeomAdaptor_Curve( GAC3d );
+  Handle(GeomAdaptor_HCurve) HC3d = new GeomAdaptor_HCurve( GAC3d );
 
-  Handle(GeomAdaptor_Surface) S = new (GeomAdaptor_Surface)(Surf);
+  Handle(GeomAdaptor_HSurface) S = new (GeomAdaptor_HSurface)(Surf);
   Standard_Real ResTol;
 
   if(CheckSameParameter( HC3d, Pcurv, S, tol3d, tolreached )) 
@@ -329,10 +329,9 @@ static Standard_Boolean SameParameter(TopoDS_Edge&    E,
 
   if (!HasPCurves(E))
     {
-      Handle(Geom2dAdaptor_Curve) HC2d = new Geom2dAdaptor_Curve( Pcurv );
-      Approx_CurveOnSurface AppCurve(HC2d, S, HC2d->FirstParameter(), HC2d->LastParameter(), 
-                                     Precision::Confusion());
-      AppCurve.Perform(10, 10, GeomAbs_C1, Standard_True);
+      Handle(Geom2dAdaptor_HCurve) HC2d = new Geom2dAdaptor_HCurve( Pcurv );
+      Approx_CurveOnSurface AppCurve(HC2d, S, HC2d->FirstParameter(), HC2d->LastParameter(),
+				     Precision::Confusion(), GeomAbs_C1, 10, 10, Standard_True);
       if (AppCurve.IsDone() && AppCurve.HasResult())
 	{
 	  C3d = AppCurve.Curve3d();
@@ -343,7 +342,7 @@ static Standard_Boolean SameParameter(TopoDS_Edge&    E,
 	}
     }
 
-  const Handle(Adaptor3d_Curve)& aHCurve = HC3d; // to avoid ambiguity
+  const Handle(Adaptor3d_HCurve)& aHCurve = HC3d; // to avoid ambiguity
   Approx_SameParameter sp (aHCurve, Pcurv, S, tol3d );
   if(sp.IsDone() && !sp.IsSameParameter()) Pcurv = sp.Curve2d();
   else if(!sp.IsDone() && !sp.IsSameParameter()){
@@ -625,7 +624,7 @@ static void BuildFace(const Handle(Geom_Surface)& S,
     }
 
   WW = B.Wire();
-#ifdef DRAW
+#if DRAW
   if (Affich)
     DBRep::Set("wire-on-face", WW);
 #endif
@@ -853,7 +852,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
     WithE4 = Standard_True;
   }
 
-#ifdef DRAW
+#if DRAW
   if (Affich) {
     DBRep::Set("Fill_Edge1", E1);
     DBRep::Set("Fill_Edge2", E2);
@@ -939,7 +938,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
     */
   }
 
-#ifdef DRAW
+#if DRAW
   if (Affich) { 
       char* Temp = "Surf_Init" ;
       DrawTrSurf::Set(Temp, Surf);
@@ -951,9 +950,9 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
 // Deform the surface of revolution.
   GeomPlate_BuildPlateSurface BPS;
 
-  Handle(BRepAdaptor_Surface) AS;
-  Handle(BRepAdaptor_Curve2d) AC2d;
-  Handle(Adaptor3d_CurveOnSurface) HConS;
+  Handle(BRepAdaptor_HSurface) AS;
+  Handle(BRepAdaptor_HCurve2d) AC2d;
+  Handle(Adaptor3d_HCurveOnSurface) HConS;
 */
   Handle(Geom2d_Line) L;
   gp_Pnt2d P2d(0.,0.);
@@ -1009,10 +1008,10 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
   // Determine the constraints and  
   // their parametric localisation.
   if (!E1.IsNull()) {
-     AS = new BRepAdaptor_Surface(TopoDS::Face(F1));
-     AC2d = new BRepAdaptor_Curve2d();
+     AS = new BRepAdaptor_HSurface(TopoDS::Face(F1));
+     AC2d = new BRepAdaptor_HCurve2d();
      AC2d->ChangeCurve2d().Initialize(E1,TopoDS::Face(F1));
-     HConS = new (Adaptor3d_CurveOnSurface)();
+     HConS = new (Adaptor3d_HCurveOnSurface)();
      HConS->ChangeCurve().Load(AC2d);
      HConS->ChangeCurve().Load(AS);
 
@@ -1025,10 +1024,10 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
    }
 
   if (!E2.IsNull()) {
-    AS = new BRepAdaptor_Surface(TopoDS::Face(F2));
-    AC2d = new BRepAdaptor_Curve2d();
+    AS = new BRepAdaptor_HSurface(TopoDS::Face(F2));
+    AC2d = new BRepAdaptor_HCurve2d();
     AC2d->ChangeCurve2d().Initialize(E2,TopoDS::Face(F2));
-    HConS = new (Adaptor3d_CurveOnSurface);
+    HConS = new (Adaptor3d_HCurveOnSurface);
 
     HConS->ChangeCurve().Load(AC2d);
     HConS->ChangeCurve().Load(AS);
@@ -1040,7 +1039,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
   }
 
   if (WithE3) {
-    Handle(BRepAdaptor_Curve) AC = new (BRepAdaptor_Curve) (E3);
+    Handle(BRepAdaptor_HCurve) AC = new (BRepAdaptor_HCurve) (E3);
     Handle(BRepFill_CurveConstraint) Cont
       = new BRepFill_CurveConstraint(AC, 0);
     Cont->SetCurve2dOnSurf(C3);
@@ -1061,7 +1060,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
 
 
   if (WithE4) {
-    Handle(BRepAdaptor_Curve) AC = new (BRepAdaptor_Curve) (E4);
+    Handle(BRepAdaptor_HCurve) AC = new (BRepAdaptor_HCurve) (E4);
     Handle(BRepFill_CurveConstraint) Cont
       = new BRepFill_CurveConstraint(AC, 0);
     Cont->SetCurve2dOnSurf(C4);
@@ -1236,7 +1235,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
     //  C1 = BT.CurveOnSurface(E1, TopoDS::Face(F1), f2, l2);
     C1 = BRep_Tool::CurveOnSurface(E1, TopoDS::Face(F1), f2, l2);
     C1->D0(aPrm[i], P2d);
-    Handle(BRepAdaptor_Surface) AS = new BRepAdaptor_Surface(TopoDS::Face(F1));
+    Handle(BRepAdaptor_HSurface) AS = new BRepAdaptor_HSurface(TopoDS::Face(F1));
     AS->D1(P2d.X(), P2d.Y(), P, D1U, D1V);
     N2 = D1U^D1V;
 
@@ -1258,7 +1257,7 @@ static Standard_Boolean Filling(const TopoDS_Shape& EF,
   if (ToReverseResult)
     Result.Reverse();
 
-#ifdef DRAW
+#if DRAW
   if (Affich) DBRep::Set("BoucheTrou", Result);
 #endif
 
@@ -1555,9 +1554,9 @@ static TopoDS_Edge BuildEdge(const Handle(Geom_Surface)& S,
   Standard_Real MaxTol = 1.e-4;
   Standard_Real theTol;
   GeomAdaptor_Curve GAiso(Iso);
-  Handle(GeomAdaptor_Curve) GAHiso = new GeomAdaptor_Curve(GAiso);
+  Handle(GeomAdaptor_HCurve) GAHiso = new GeomAdaptor_HCurve(GAiso);
   GeomAdaptor_Surface GAsurf(S);
-  Handle(GeomAdaptor_Surface) GAHsurf = new GeomAdaptor_Surface(GAsurf);
+  Handle(GeomAdaptor_HSurface) GAHsurf = new GeomAdaptor_HSurface(GAsurf);
   CheckSameParameter( GAHiso, L, GAHsurf, MaxTol, theTol);
   B.UpdateEdge(E, theTol);
 
@@ -1619,7 +1618,7 @@ static void UpdateEdge(TopoDS_Edge& E,
 
   // Control direction & Range
   Standard_Real R, First, Last, Tol=1.e-4;
-  Standard_Boolean reverse = Standard_False;
+  Standard_Boolean reverse = Standard_False;;
   
 
 // Class BRep_Tool without fields and without Constructor :
@@ -2064,7 +2063,7 @@ BRepFill_Sweep::BRepFill_Sweep(const Handle(BRepFill_SectionLaw)& Section,
        return Standard_False;  
      }
     E = MkE.Edge();
-#ifdef DRAW
+#if DRAW
     if (Affich) {
       sprintf(name,"Surf_%d", ipath);
       char* Temp = name;
@@ -2758,7 +2757,7 @@ BRepFill_Sweep::BRepFill_Sweep(const Handle(BRepFill_SectionLaw)& Section,
     }
   }
 
-  // (3.1) Reverse the faces that have been built earlier
+  // (3.1) Reverse the faces that have been built ealier
   for (ipath = 1; ipath <= NbPath; ipath++)
     for (isec = 1; isec <= NbLaw; isec++)
       if (IsBuilt(isec))
@@ -2923,70 +2922,50 @@ void BRepFill_Sweep::Build(TopTools_MapOfShape& ReversedEdges,
       Standard_Real Extend = 0.0;
       if (NbTrous==1)  Extend = EvalExtrapol(1, Transition);
       isDone = BuildShell(Transition, 
-                          1, NbPath+1,
+			  1, NbPath+1,
                           ReversedEdges,
                           Tapes, Rails,
-                          Extend, Extend);
+			  Extend, Extend);
     }
     else { //  This is done piece by piece
       Standard_Integer IFirst = 1, ILast;
       for (ii=1, isDone=Standard_True; 
-           ii<=NbPart && isDone; ii++) {
-        if (ii > NbTrous) ILast =  NbPath+1;
-        else ILast = Trous->Value(ii);
-        isDone = BuildShell(Transition, 
-                            IFirst, ILast,
+	   ii<=NbPart && isDone; ii++) {
+	if (ii > NbTrous) ILast =  NbPath+1;
+	else ILast = Trous->Value(ii);
+	isDone = BuildShell(Transition, 
+			    IFirst, ILast,
                             ReversedEdges,
                             Tapes, Rails,
-                            EvalExtrapol(IFirst, Transition),
-                            EvalExtrapol(ILast,  Transition));
-        if (IFirst>1) {
-          Translate(myVEdges, IFirst, Bounds, 2);
-          if (!PerformCorner(IFirst,
-            Transition, Bounds))
-          {
-            isDone = Standard_False;
-            return;
-          }
-        }
-        IFirst = ILast;
-        Translate(myVEdges, IFirst, Bounds, 1);
+			    EvalExtrapol(IFirst, Transition),
+			    EvalExtrapol(ILast,  Transition));
+	if (IFirst>1) {
+	  Translate(myVEdges, IFirst, Bounds, 2);
+	  PerformCorner(IFirst, 
+			Transition, Bounds);
+	}
+	IFirst = ILast;
+	Translate(myVEdges, IFirst, Bounds, 1);
       }
     }
     // Management of looping ends
     if ( (NbTrous>0) && (myLoc->IsClosed()) &&
-         (Trous->Value(NbTrous) == NbPath+1) ) {
+	 (Trous->Value(NbTrous) == NbPath+1) ) {
       Translate(myVEdges, NbPath+1, Bounds, 1);
       Translate(myVEdges, 1, Bounds, 2);
-      if (!PerformCorner(1, Transition, Bounds))
-      {
-        isDone = Standard_False;
-        return;
-      }
+      PerformCorner(1, Transition, Bounds); 
       Translate(myVEdges, 1, myVEdges, NbPath+1);
     }
 
     // Construction of the shell
     TopoDS_Shell shell;
     B.MakeShell(shell);
-    Standard_Integer aNbFaces = 0;
     for (ipath=1; ipath<=NbPath; ipath++) 
-      for (isec=1; isec <=NbLaw; isec++)
-      {
-        const TopoDS_Shape& face = myFaces->Value(isec, ipath);
+      for (isec=1; isec <=NbLaw; isec++) {
+      const TopoDS_Shape& face = myFaces->Value(isec, ipath);
 	if (!face.IsNull() && 
-	    (face.ShapeType() == TopAbs_FACE) )
-        {
-          B.Add(shell, face);
-          aNbFaces++;
-        }
+	    (face.ShapeType() == TopAbs_FACE) ) B.Add(shell, face);
       }
-
-    if (aNbFaces == 0)
-    {
-      isDone = Standard_False;
-      return;
-    }
 
     TopTools_ListIteratorOfListOfShape It(myAuxShape);
     for (; It.More(); It.Next()) {
@@ -3195,14 +3174,12 @@ TopoDS_Shape BRepFill_Sweep::Tape(const Standard_Integer Index) const
 //function : PerformCorner
 //purpose  : Trim and/or loop a corner
 //======================================================================
- Standard_Boolean BRepFill_Sweep::PerformCorner(const Standard_Integer Index,
-                                                const BRepFill_TransitionStyle Transition,
-                                                const Handle(TopTools_HArray2OfShape)& Bounds)
+ void  BRepFill_Sweep::PerformCorner(const Standard_Integer Index,
+				     const BRepFill_TransitionStyle Transition,
+				     const Handle(TopTools_HArray2OfShape)& Bounds)
 {
 
-  if (Transition == BRepFill_Modified) return Standard_True; // Do nothing.
-
-  const Standard_Real anAngularTol = 0.025;
+  if (Transition == BRepFill_Modified) return; // Do nothing.
 
   BRepFill_TransitionStyle TheTransition = Transition;
   Standard_Boolean isTangent=Standard_False;
@@ -3248,15 +3225,11 @@ TopoDS_Shape BRepFill_Sweep::Tape(const Standard_Integer Index) const
 #ifdef OCCT_DEBUG
       std::cout << "BRepFill_Sweep::PerformCorner : This is not a corner !" << std::endl;
 #endif
-      return Standard_True;
+      return;
     }
     Sortant = t2 - t1;
   }
 
-  if (T1.Angle(T2) >= M_PI - anAngularTol)
-  {
-    return Standard_False;
-  }
   if ((TheTransition == BRepFill_Right) 
       && (T1.Angle(T2) >  myAngMax) ) {
     TheTransition =  BRepFill_Round;
@@ -3362,7 +3335,7 @@ TopoDS_Shape BRepFill_Sweep::Tape(const Standard_Integer Index) const
 #ifdef OCCT_DEBUG
     std::cout << "Fail of TrimCorner" << std::endl;
 #endif
-    return Standard_True; // Nothing is touched
+    return; // Nothing is touched
   }
 
   if (mySec->IsUClosed())
@@ -3442,7 +3415,7 @@ TopoDS_Shape BRepFill_Sweep::Tape(const Standard_Integer Index) const
 #endif
     }
   }
-  return Standard_True;
+
 /*  
 #if DRAW
   if (Affich) {

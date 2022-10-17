@@ -36,9 +36,8 @@ class MAT_ListOfEdge : public Standard_Transient
 
 public:
 
+  
   Standard_EXPORT MAT_ListOfEdge();
-
-  Standard_EXPORT ~MAT_ListOfEdge();
   
   Standard_EXPORT void First();
   

@@ -20,7 +20,6 @@
 #include <Standard_Failure.hxx>
 #include <Standard_Transient.hxx>
 #include <Standard_Type.hxx>
-#include <Message_ProgressRange.hxx>
 
 class IMeshData_Model;
 struct IMeshTools_Parameters;
@@ -31,21 +30,20 @@ class IMeshTools_ModelAlgo : public Standard_Transient
 public:
 
   //! Destructor.
-  virtual ~IMeshTools_ModelAlgo()
+  Standard_EXPORT virtual ~IMeshTools_ModelAlgo()
   {
   }
 
   //! Exceptions protected processing of the given model.
   Standard_Boolean Perform (
     const Handle (IMeshData_Model)& theModel,
-    const IMeshTools_Parameters&    theParameters,
-    const Message_ProgressRange&    theRange)
+    const IMeshTools_Parameters&    theParameters)
   {
     try
     {
       OCC_CATCH_SIGNALS
 
-      return performInternal (theModel, theParameters, theRange);
+      return performInternal (theModel, theParameters);
     }
     catch (Standard_Failure const&)
     {
@@ -53,20 +51,19 @@ public:
     }
   }
 
-  DEFINE_STANDARD_RTTIEXT(IMeshTools_ModelAlgo, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshTools_ModelAlgo, Standard_Transient)
 
 protected:
 
   //! Constructor.
-  IMeshTools_ModelAlgo()
+  Standard_EXPORT IMeshTools_ModelAlgo()
   {
   }
 
   //! Performs processing of the given model.
   Standard_EXPORT virtual Standard_Boolean performInternal (
     const Handle (IMeshData_Model)& theModel,
-    const IMeshTools_Parameters&    theParameters,
-    const Message_ProgressRange&    theRange) = 0;
+    const IMeshTools_Parameters&    theParameters) = 0;
 };
 
 #endif

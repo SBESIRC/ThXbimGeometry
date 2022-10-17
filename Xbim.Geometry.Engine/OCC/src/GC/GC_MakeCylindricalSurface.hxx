@@ -24,6 +24,7 @@
 #include <GC_Root.hxx>
 #include <Geom_CylindricalSurface.hxx>
 
+class StdFail_NotDone;
 class gp_Ax2;
 class gp_Cylinder;
 class gp_Pnt;

@@ -11,9 +11,9 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <Adaptor3d_Curve.hxx>
-#include <Adaptor3d_Surface.hxx>
-#include <GeomAdaptor_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor3d_HSurface.hxx>
+#include <GeomAdaptor_HCurve.hxx>
 #include <BRepBndLib.hxx>
 #include <GProp_GProps.hxx>
 #include <TopoDS_Shape.hxx>
@@ -33,7 +33,7 @@
 #include <Geom_Line.hxx>
 #include <TColStd_Array1OfInteger.hxx>
 #include <BRepAdaptor_Curve.hxx>
-#include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 
 #include <Geom_OffsetCurve.hxx>
 #include <Geom_BSplineCurve.hxx>
@@ -80,12 +80,12 @@ static Standard_Boolean IsPlanar(const Adaptor3d_Surface& theS)
   const GeomAbs_SurfaceType aST = theS.GetType();
   if(aST == GeomAbs_OffsetSurface)
   {
-    return IsPlanar (*theS.BasisSurface());
+    return IsPlanar(theS.BasisSurface()->Surface());
   }
 
   if(aST == GeomAbs_SurfaceOfExtrusion)
   {
-    return IsLinear (*theS.BasisCurve());
+    return IsLinear(theS.BasisCurve()->Curve());
   }
 
   if((aST == GeomAbs_BSplineSurface) || (aST == GeomAbs_BezierSurface))
@@ -185,26 +185,23 @@ static Standard_Integer PointsForOBB(const TopoDS_Shape& theS,
     }
 
     // Use triangulation of the face
-    const Handle(Poly_Triangulation)& aTrng = BRep_Tool::Triangulation (aF, aLoc);
+    const Handle(Poly_Triangulation) &aTrng = BRep_Tool::Triangulation(aF, aLoc);
     if (aTrng.IsNull())
-    {
       // no triangulation on the face
       return 0;
-    }
 
     const Standard_Integer aCNode = aTrng->NbNodes();
-    const gp_Trsf aTrsf = aLoc;
+    const TColgp_Array1OfPnt& aNodesArr = aTrng->Nodes();
     for (Standard_Integer i = 1; i <= aCNode; i++)
     {
-      if (thePts != NULL)
+      if (thePts)
       {
-        const gp_Pnt aP = aTrsf.Form() == gp_Identity
-                        ? aTrng->Node (i)
-                        : aTrng->Node (i).Transformed (aTrsf);
+        const gp_Pnt aP = aLoc.IsIdentity() ? aNodesArr(i) :
+          aNodesArr(i).Transformed(aLoc);
         (*thePts)(aRetVal) = aP;
       }
 
-      if (theArrOfToler != NULL)
+      if (theArrOfToler)
       {
         (*theArrOfToler) (aRetVal) = aTrng->Deflection();
       }
@@ -242,8 +239,8 @@ static Standard_Integer PointsForOBB(const TopoDS_Shape& theS,
     {
       if (thePts)
       {
-        const gp_Pnt aP = aLoc.IsIdentity() ? aNodesArr[i] :
-          aNodesArr[i].Transformed(aLoc);
+        const gp_Pnt aP = aLoc.IsIdentity() ? aNodesArr(i) :
+          aNodesArr(i).Transformed(aLoc);
         (*thePts)(aRetVal) = aP;
       }
 

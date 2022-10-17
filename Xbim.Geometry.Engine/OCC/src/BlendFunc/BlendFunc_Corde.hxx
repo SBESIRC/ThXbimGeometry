@@ -17,14 +17,25 @@
 #ifndef _BlendFunc_Corde_HeaderFile
 #define _BlendFunc_Corde_HeaderFile
 
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
 #include <gp_Pnt.hxx>
 #include <gp_Pnt2d.hxx>
+#include <Standard_Real.hxx>
 #include <gp_Vec.hxx>
 #include <gp_Vec2d.hxx>
+#include <Standard_Boolean.hxx>
 #include <math_Vector.hxx>
-
+class Adaptor3d_HSurface;
+class Adaptor3d_HCurve;
+class Standard_DomainError;
 class math_Matrix;
+class gp_Pnt;
+class gp_Vec;
+class gp_Vec2d;
+
 
 //! This function calculates point (pts) on the curve of
 //! intersection between the normal to a curve (guide)
@@ -38,7 +49,7 @@ public:
   DEFINE_STANDARD_ALLOC
 
   
-  Standard_EXPORT BlendFunc_Corde(const Handle(Adaptor3d_Surface)& S, const Handle(Adaptor3d_Curve)& CGuide);
+  Standard_EXPORT BlendFunc_Corde(const Handle(Adaptor3d_HSurface)& S, const Handle(Adaptor3d_HCurve)& CGuide);
   
   Standard_EXPORT void SetParam (const Standard_Real Param);
   
@@ -96,8 +107,8 @@ private:
 
 
 
-  Handle(Adaptor3d_Surface) surf;
-  Handle(Adaptor3d_Curve) guide;
+  Handle(Adaptor3d_HSurface) surf;
+  Handle(Adaptor3d_HCurve) guide;
   gp_Pnt pts;
   gp_Pnt2d pt2d;
   Standard_Real dis;

@@ -25,6 +25,10 @@
 #include <Standard_Boolean.hxx>
 #include <GeomAbs_Shape.hxx>
 #include <Standard_Integer.hxx>
+class Standard_RangeError;
+class Standard_NoSuchObject;
+class Geom2d_UndefinedDerivative;
+class Geom2d_UndefinedValue;
 class gp_Trsf2d;
 class gp_Pnt2d;
 class gp_Vec2d;
@@ -106,7 +110,7 @@ public:
   //! - the end point of the initial curve becomes the start
   //! point of the reversed curve.
   //! - Reversed creates a new curve.
-  Standard_NODISCARD Standard_EXPORT Handle(Geom2d_Curve) Reversed() const;
+  Standard_EXPORT Standard_NODISCARD Handle(Geom2d_Curve) Reversed() const;
   
   //! Returns the value of the first parameter.
   //! Warnings :
@@ -127,7 +131,7 @@ public:
   //! Some Curves such as OffsetCurve can be closed or not. These curves
   //! are considered as closed if the distance between the first point
   //! and the last point of the curve is lower or equal to the Resolution
-  //! from package gp which is a fixed criterion independent of the
+  //! from package gp wich is a fixed criterion independant of the
   //! application.
   Standard_EXPORT virtual Standard_Boolean IsClosed() const = 0;
   
@@ -149,7 +153,7 @@ public:
   //! curve  if you want the curve to be periodic.
   Standard_EXPORT virtual Standard_Boolean IsPeriodic() const = 0;
   
-  //! Returns the period of this curve.
+  //! Returns thne period of this curve.
   //! raises if the curve is not periodic
   Standard_EXPORT virtual Standard_Real Period() const;
   
@@ -219,9 +223,6 @@ public:
   //! derivative on the basis curve and the offset direction
   //! are parallel.
   Standard_EXPORT gp_Pnt2d Value (const Standard_Real U) const;
-
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
 
 
 

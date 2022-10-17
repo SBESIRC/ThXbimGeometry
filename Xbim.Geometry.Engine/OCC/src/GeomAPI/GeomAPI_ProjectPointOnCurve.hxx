@@ -25,8 +25,11 @@
 #include <Standard_Integer.hxx>
 #include <Extrema_ExtPC.hxx>
 #include <GeomAdaptor_Curve.hxx>
+class Standard_OutOfRange;
+class StdFail_NotDone;
 class gp_Pnt;
 class Geom_Curve;
+class Extrema_ExtPC;
 
 
 

@@ -31,6 +31,7 @@ class gp_Circ2d;
 class gp_Elips2d;
 class gp_Hypr2d;
 class gp_Parab2d;
+class Extrema_POnCurv2d;
 
 
 //! It calculates all the distance between two elementary
@@ -55,7 +56,7 @@ public:
   Standard_EXPORT Extrema_ExtElC2d(const gp_Lin2d& C1, const gp_Circ2d& C2, const Standard_Real Tol);
   
   //! Calculates the distance between a line and an
-  //! ellipse.
+  //! elipse.
   Standard_EXPORT Extrema_ExtElC2d(const gp_Lin2d& C1, const gp_Elips2d& C2);
   
   //! Calculates the distance between a line and a
@@ -71,7 +72,7 @@ public:
   Standard_EXPORT Extrema_ExtElC2d(const gp_Circ2d& C1, const gp_Circ2d& C2);
   
   //! Calculates the distance between a circle and an
-  //! ellipse.
+  //! elipse.
   Standard_EXPORT Extrema_ExtElC2d(const gp_Circ2d& C1, const gp_Elips2d& C2);
   
   //! Calculates the distance between a circle and a

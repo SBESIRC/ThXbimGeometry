@@ -14,13 +14,15 @@
 #ifndef _IntTools_WLineTool_HeaderFile
 #define _IntTools_WLineTool_HeaderFile
 
-#include <GeomAdaptor_Surface.hxx>
+#include <Standard_Boolean.hxx>
+#include <Standard_Macro.hxx>
 #include <IntPatch_WLine.hxx>
 #include <IntPatch_SequenceOfLine.hxx>
-
 class TopoDS_Face;
+class GeomAdaptor_HSurface;
 class GeomInt_LineConstructor;
 class IntTools_Context;
+class Adaptor3d_TopolTool;
 
 //! IntTools_WLineTool provides set of static methods related to walking lines.
 class IntTools_WLineTool
@@ -38,8 +40,8 @@ public:
 
   Standard_EXPORT static
   Standard_Boolean DecompositionOfWLine(const Handle(IntPatch_WLine)& theWLine,
-                                        const Handle(GeomAdaptor_Surface)&            theSurface1, 
-                                        const Handle(GeomAdaptor_Surface)&            theSurface2,
+                                        const Handle(GeomAdaptor_HSurface)&            theSurface1, 
+                                        const Handle(GeomAdaptor_HSurface)&            theSurface2,
                                         const TopoDS_Face&                             theFace1,
                                         const TopoDS_Face&                             theFace2,
                                         const GeomInt_LineConstructor&                 theLConstructor,

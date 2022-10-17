@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef NCollection_UtfString_HeaderFile
-#define NCollection_UtfString_HeaderFile
+#ifndef _NCollection_UtfString_H__
+#define _NCollection_UtfString_H__
 
 #include <NCollection_UtfIterator.hxx>
 
@@ -163,7 +163,7 @@ public:
                                    const Standard_Integer theEnd) const;
 
   //! Returns NULL-terminated Unicode string.
-  //! Should not be modified or deleted!
+  //! Should not be modifed or deleted!
   //! @return (const Type* ) pointer to string
   const Type* ToCString() const
   {

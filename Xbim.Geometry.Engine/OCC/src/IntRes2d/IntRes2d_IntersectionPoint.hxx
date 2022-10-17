@@ -25,6 +25,8 @@
 #include <Standard_Real.hxx>
 #include <IntRes2d_Transition.hxx>
 #include <Standard_Boolean.hxx>
+class gp_Pnt2d;
+class IntRes2d_Transition;
 
 
 //! Definition of an intersection point between two

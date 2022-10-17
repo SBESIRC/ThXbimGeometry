@@ -22,6 +22,7 @@
 #include <Standard_Handle.hxx>
 
 #include <IntCurveSurface_IntersectionPoint.hxx>
+class IntCurveSurface_IntersectionPoint;
 
 
 //! A IntersectionSegment describes a segment of curve

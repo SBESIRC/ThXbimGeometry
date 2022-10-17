@@ -25,8 +25,7 @@
 #include <Standard_Integer.hxx>
 #include <Standard_OStream.hxx>
 #include <Standard_IStream.hxx>
-#include <Message_ProgressRange.hxx>
-
+class Message_ProgressIndicator;
 class Standard_OutOfRange;
 class TopLoc_Location;
 
@@ -67,17 +66,39 @@ public:
   
   //! Writes the content of  me  on the stream <OS> in a
   //! format that can be read back by Read.
-  Standard_EXPORT void Write (Standard_OStream& OS,
-                              const Message_ProgressRange& theProgress = Message_ProgressRange()) const;
+  Standard_EXPORT void Write (Standard_OStream& OS) const;
   
   //! Reads the content of me from the  stream  <IS>. me
   //! is first cleared.
-  Standard_EXPORT void Read (Standard_IStream& IS,
-                             const Message_ProgressRange& theProgress = Message_ProgressRange());
+  Standard_EXPORT void Read (Standard_IStream& IS);
+  
+  Standard_EXPORT void SetProgress (const Handle(Message_ProgressIndicator)& PR);
+  
+  Standard_EXPORT Handle(Message_ProgressIndicator) GetProgress() const;
+
+
+
+
+protected:
+
+
+
+
 
 private:
 
+
+
   TopLoc_IndexedMapOfLocation myMap;
+  Handle(Message_ProgressIndicator) myProgress;
+
+
 };
+
+
+
+
+
+
 
 #endif // _TopTools_LocationSet_HeaderFile

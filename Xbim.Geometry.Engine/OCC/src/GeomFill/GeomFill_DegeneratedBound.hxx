@@ -24,6 +24,7 @@
 #include <Standard_Real.hxx>
 #include <GeomFill_Boundary.hxx>
 #include <Standard_Boolean.hxx>
+class gp_Pnt;
 class gp_Vec;
 
 
@@ -34,7 +35,7 @@ DEFINE_STANDARD_HANDLE(GeomFill_DegeneratedBound, GeomFill_Boundary)
 //! Class defining  a degenerated  boundary   for   a
 //! constrained filling   with  a   point  and  no   other
 //! constraint. Only used to  simulate an  ordinary bound,
-//! may not be useful and desapear soon.
+//! may not be usefull and desapear soon.
 class GeomFill_DegeneratedBound : public GeomFill_Boundary
 {
 

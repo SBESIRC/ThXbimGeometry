@@ -28,6 +28,10 @@ class Geom_Surface;
 class Geom_Curve;
 class Geom2d_Curve;
 class GeomTools_UndefinedTypeHandler;
+class GeomTools_UndefinedTypeHandler;
+class GeomTools_SurfaceSet;
+class GeomTools_CurveSet;
+class GeomTools_Curve2dSet;
 
 
 //! The GeomTools package provides  utilities for Geometry.

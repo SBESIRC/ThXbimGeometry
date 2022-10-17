@@ -78,7 +78,7 @@ const BRepSweep_Prism&  BRepPrimAPI_MakePrism::Prism()const
 //purpose  : 
 //=======================================================================
 
-void  BRepPrimAPI_MakePrism::Build(const Message_ProgressRange& /*theRange*/)
+void  BRepPrimAPI_MakePrism::Build()
 {
   myShape = myPrism.Shape();
   Done();

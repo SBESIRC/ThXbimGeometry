@@ -34,7 +34,7 @@ public:
 
   
 
-  //! Empty constructor
+  //! Empty contructor
     BOPDS_IndexRange();
 
   //! Modifier

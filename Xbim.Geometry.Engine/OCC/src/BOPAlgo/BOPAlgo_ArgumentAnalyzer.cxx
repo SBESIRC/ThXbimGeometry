@@ -151,98 +151,80 @@ void BOPAlgo_ArgumentAnalyzer::Prepare()
 // function: Perform
 // purpose:
 // ================================================================================
-void BOPAlgo_ArgumentAnalyzer::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_ArgumentAnalyzer::Perform()
 {
-  Message_ProgressScope aPS(theRange, "Analyze shapes", 10);
   try {
     OCC_CATCH_SIGNALS
     myResult.Clear();
-    if (UserBreak(aPS))
-    {
-      return;
-    }
+    //
+    UserBreak();
+    //
     // 1. Prepare
     Prepare();
+    //
+    UserBreak();
     //
     // 2. Test types
     if(myArgumentTypeMode) {
       TestTypes();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 3. Test self-interference
     if(mySelfInterMode) {
-      TestSelfInterferences(aPS.Next(8));
-      if (UserBreak(aPS))
-      {
-        return;
-      }
+      TestSelfInterferences();
     }
+    //
+    UserBreak();
     //
     // 4. Test small edges
     if(mySmallEdgeMode) {
       if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestSmallEdge();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 5. Test possibility to rebuild faces
     if(myRebuildFaceMode) {
       if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestRebuildFace();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 6. Test tangent
     if(myTangentMode) {
-      if (!(!myResult.IsEmpty() && myStopOnFirst))
-      {
+      if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestTangent();
-        if (UserBreak(aPS))
-        {
-          return;
-        }
-      }
     }
+    //
+    UserBreak();
     //
     // 7. Test merge vertices
     if(myMergeVertexMode) {
       if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestMergeVertex();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 8. Test merge edges
     if(myMergeEdgeMode) {
       if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestMergeEdge();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 9. Test shapes continuity
     if(myContinuityMode) {
       if(!(!myResult.IsEmpty() && myStopOnFirst))
         TestContinuity();
-      if (UserBreak(aPS))
-      {
-        return;
-      }
     }
+    //
+    UserBreak();
     //
     // 10. Test validity of the curves on the surfaces
     if(myCurveOnSurfaceMode) {
@@ -323,26 +305,29 @@ void BOPAlgo_ArgumentAnalyzer::TestTypes()
       return;
     }
     //
-    if (myOperation != BOPAlgo_UNKNOWN &&
-        myOperation != BOPAlgo_COMMON)
-    {
-      Standard_Integer iDimMin[2], iDimMax[2];
-      BOPTools_AlgoTools::Dimensions(myShape1, iDimMin[0], iDimMax[0]);
-      BOPTools_AlgoTools::Dimensions(myShape2, iDimMin[1], iDimMax[1]);
-
-      Standard_Boolean bBadTypes =
-        ((myOperation == BOPAlgo_FUSE) &&
-           (iDimMin[0] != iDimMax[0] || iDimMin[1] != iDimMax[1] || iDimMin[0] != iDimMin[1])) ||
-        ((myOperation == BOPAlgo_CUT)   && (iDimMax[0] > iDimMin[1])) ||
-        ((myOperation == BOPAlgo_CUT21) && (iDimMin[0] < iDimMax[1]));
-
-      if (bBadTypes) {
-        BOPAlgo_CheckResult aResult;
-        aResult.SetShape1(myShape1);
-        aResult.SetShape2(myShape2);
-        aResult.SetCheckStatus(BOPAlgo_BadType);
-        myResult.Append(aResult);
+    Standard_Integer aDim1, aDim2;
+    Standard_Boolean bBadTypes = Standard_False;
+    //
+    aDim1 = BOPTools_AlgoTools::Dimension(myShape1);
+    aDim2 = BOPTools_AlgoTools::Dimension(myShape2);
+    if (aDim1 < aDim2) {
+      if (myOperation == BOPAlgo_FUSE ||
+          myOperation == BOPAlgo_CUT21) {
+        bBadTypes = Standard_True;
       }
+    }
+    else if (aDim1 > aDim2) {
+      if (myOperation == BOPAlgo_FUSE ||
+          myOperation == BOPAlgo_CUT) {
+        bBadTypes = Standard_True;
+      }
+    }
+    if (bBadTypes) {
+      BOPAlgo_CheckResult aResult;
+      aResult.SetShape1(myShape1);
+      aResult.SetShape2(myShape2);
+      aResult.SetCheckStatus(BOPAlgo_BadType);
+      myResult.Append(aResult);
     }
   }
 }
@@ -350,9 +335,8 @@ void BOPAlgo_ArgumentAnalyzer::TestTypes()
 //function : TestSelfInterferences
 //purpose  : 
 //=======================================================================
-void BOPAlgo_ArgumentAnalyzer::TestSelfInterferences(const Message_ProgressRange& theRange)
+void BOPAlgo_ArgumentAnalyzer::TestSelfInterferences()
 {
-  Message_ProgressScope aPS(theRange, NULL, (!myShape1.IsNull() && !myShape2.IsNull() ? 2 : 1));
   Standard_Integer ii;
   //
   for(ii = 0; ii < 2; ii++) {
@@ -376,8 +360,9 @@ void BOPAlgo_ArgumentAnalyzer::TestSelfInterferences(const Message_ProgressRange
     aChecker.SetNonDestructive(Standard_True);
     aChecker.SetRunParallel(myRunParallel);
     aChecker.SetFuzzyValue(myFuzzyValue);
+    aChecker.SetProgressIndicator(myProgressIndicator);
     //
-    aChecker.Perform(aPS.Next());
+    aChecker.Perform();
     Standard_Boolean hasError = aChecker.HasErrors();
     //
     const BOPDS_DS& aDS=*(aChecker.PDS());

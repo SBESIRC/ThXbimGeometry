@@ -234,7 +234,7 @@ static void KPartCurve3d(TopoDS_Edge           Edge,
   TopLoc_Location Loc;
   Standard_Real Tol = Precision::Confusion();
 
-  // Search only isos on analytical surfaces.
+  // Seach only isos on analytical surfaces.
   Geom2dAdaptor_Curve C(Curve);
   GeomAdaptor_Surface S(Surf);
   GeomAbs_CurveType   CTy = C.GetType();
@@ -1059,7 +1059,7 @@ void BiTgte_Blend::Perform(const Standard_Boolean BuildShape)
   ChFi3d_ResultChron(ch, t_shape);
 #endif 
 
-  // Finally construct curves 3d from edges to be transferred
+  // Finally construct curves 3d from edges to be transfered
   // since the partition is provided ( A Priori);
   BRepLib::BuildCurves3d(myResult, Precision::Confusion());
 
@@ -1192,42 +1192,35 @@ BiTgte_ContactType BiTgte_Blend::ContactType(const Standard_Integer Index)
   }
   BiTgte_ContactType Type = BiTgte_VertexVertex;
 
-  switch (Type1)
-  {
-    case TopAbs_VERTEX:
-      switch (Type2)
-      {
-        case TopAbs_VERTEX: Type = BiTgte_VertexVertex; break;
-        case TopAbs_EDGE:   Type = BiTgte_EdgeVertex;   break;
-        case TopAbs_FACE:   Type = BiTgte_FaceVertex;   break;
-        default:
-          break;
-      }
-      break;
-
-    case TopAbs_EDGE:
-      switch (Type2)
-      {
-        case TopAbs_EDGE:   Type = BiTgte_EdgeEdge;     break;
-        case TopAbs_FACE:   Type = BiTgte_FaceEdge;     break;
-        default:
-          break;
-      }
-      break;
-
-    case TopAbs_FACE:
-      switch (Type2)
-      {
-        case TopAbs_FACE:   Type = BiTgte_FaceEdge;     break;
-        default:
-          break;
-      }
-      break;
-
+  switch (Type1) {
+    
+  case TopAbs_VERTEX:
+    switch (Type2) {
+    case TopAbs_VERTEX: Type = BiTgte_VertexVertex; break;
+    case TopAbs_EDGE:   Type = BiTgte_EdgeVertex;   break;
+    case TopAbs_FACE:   Type = BiTgte_FaceVertex;   break;
     default:
       break;
+    }
+    
+  case TopAbs_EDGE:
+    switch (Type2) {
+    case TopAbs_EDGE:   Type = BiTgte_EdgeEdge; break;
+    case TopAbs_FACE:   Type = BiTgte_FaceEdge; break;
+    default:
+      break;
+   }
+    
+  case TopAbs_FACE:
+    switch (Type2) {
+    case TopAbs_FACE:   Type = BiTgte_FaceEdge; break;
+    default:
+      break;
+    }
+  default:
+    break;
   }
-
+  
   return Type;
 }
 
@@ -1580,7 +1573,7 @@ void BiTgte_Blend::ComputeCenters()
 	// ------------------------------------
 	TopTools_ListOfShape Let;
 	if ( AS.ShapeType() == TopAbs_FACE) { 
-	  myAnalyse.Edges(TopoDS::Face(AS),ChFiDS_Tangential,Let);
+	  myAnalyse.Edges(TopoDS::Face(AS),BRepOffset_Tangent,Let);
 	}
 	TopTools_ListIteratorOfListOfShape itlet(Let);
     
@@ -1596,14 +1589,14 @@ void BiTgte_Blend::ComputeCenters()
 	    TopExp::Vertices (OTE,OV1,OV2);      
 	    TopTools_ListOfShape LE;
 	    if (!EdgeTgt.IsBound(V1)) {
-	      myAnalyse.Edges(V1,ChFiDS_Tangential,LE);
+	      myAnalyse.Edges(V1,BRepOffset_Tangent,LE);
 	      const TopTools_ListOfShape& LA = myAnalyse.Ancestors(V1);
 	      if (LE.Extent() == LA.Extent())
 		EdgeTgt.Bind(V1,OV1);
 	    }
 	    if (!EdgeTgt.IsBound(V2)) {
 	      LE.Clear();
-	      myAnalyse.Edges(V2,ChFiDS_Tangential,LE);
+	      myAnalyse.Edges(V2,BRepOffset_Tangent,LE);
 	      const TopTools_ListOfShape& LA = myAnalyse.Ancestors(V2);
 	      if (LE.Extent() == LA.Extent())
 		EdgeTgt.Bind(V2,OV2);
@@ -1644,8 +1637,8 @@ void BiTgte_Blend::ComputeCenters()
     //--------------------------------------------------------
     // Construction of tubes on edge.
     //--------------------------------------------------------
-    ChFiDS_TypeOfConcavity OT = ChFiDS_Convex;
-    if (myRadius < 0.) OT = ChFiDS_Concave; 
+    BRepOffset_Type    OT = BRepOffset_Convex;
+    if (myRadius < 0.) OT = BRepOffset_Concave; 
     
     TopTools_IndexedDataMapOfShapeListOfShape Map;
     TopExp::MapShapesAndAncestors(Co,TopAbs_EDGE,TopAbs_FACE,Map);
@@ -1731,8 +1724,8 @@ void BiTgte_Blend::ComputeCenters()
 
   // Proceed with MakeLoops 
   TopTools_IndexedDataMapOfShapeListOfShape aDMVV;
-  ChFiDS_TypeOfConcavity OT = ChFiDS_Concave;
-  if (myRadius < 0.) OT = ChFiDS_Convex; 
+  BRepOffset_Type    OT = BRepOffset_Concave;
+  if (myRadius < 0.) OT = BRepOffset_Convex; 
    
   TopTools_ListOfShape LOF;
   //it.Initialize(myFaces);
@@ -1780,9 +1773,11 @@ void BiTgte_Blend::ComputeCenters()
 	  }
 	}
       }
-      TopTools_DataMapOfShapeListOfShape anEmptyMap;
-      BRepOffset_Inter2d::Compute(myAsDes, CurOF, myEdges, myTol,
-                                  anEmptyMap, aDMVV, Message_ProgressRange());
+      BRepOffset_Inter2d::Compute(myAsDes,
+				  CurOF,
+				  myEdges,
+				  myTol,
+				  aDMVV);
     }
   }
 
@@ -1811,19 +1806,20 @@ void BiTgte_Blend::ComputeCenters()
       myAsDes->Add(CurOF,CurOE);
     }
 
-    TopTools_DataMapOfShapeListOfShape anEmptyMap;
-    BRepOffset_Inter2d::Compute(myAsDes, CurOF, myEdges, myTol,
-                                anEmptyMap, aDMVV, Message_ProgressRange());
+    BRepOffset_Inter2d::Compute(myAsDes,
+				CurOF,
+				myEdges,
+				myTol,
+				aDMVV);
   }
   //
   // fuse vertices on edges stored in AsDes
-  BRepAlgo_Image anEmptyImage;
-  BRepOffset_Inter2d::FuseVertices(aDMVV, myAsDes, anEmptyImage);
+  BRepOffset_Inter2d::FuseVertices(aDMVV, myAsDes);
   // ------------
   // unwinding 
   // ------------
   BRepOffset_MakeLoops MakeLoops;
-  MakeLoops.Build (LOF, myAsDes, myImageOffset, anEmptyImage, Message_ProgressRange());
+  MakeLoops.Build( LOF, myAsDes, myImageOffset );
 
   // ------------------------------------------------------------
   // It is possible to unwind edges at least one ancestor which of 
@@ -2213,7 +2209,7 @@ void BiTgte_Blend::ComputeSurfaces()
 	if (OF2isEdge) { // Update CutEdges.
 	  exp.Next();
 	  const TopoDS_Edge& EOnF2 = TopoDS::Edge(exp.Current());
-	  TopExp::Vertices(EOnF2,V1,V2);
+	  TopExp::Vertices(EOnF2,V1,V2);;
 
 	  gp_Pnt P1 = BRep_Tool::Pnt(V1);
 	  Projector.Init(P1,GC2);
@@ -2302,7 +2298,7 @@ void BiTgte_Blend::ComputeShape()
   // Find in the initial Shapel:
   //  - untouched Faces
   //  - generated tubes
-  //  - the faces neighbors of tubes that should be reconstructed preserving sharing.
+  //  - the faces neighbors of tubes that sould be reconstucted preserving sharing.
 
   // For Debug : Visualize edges of the initial shape that should be reconstructed.
 #ifdef DRAW

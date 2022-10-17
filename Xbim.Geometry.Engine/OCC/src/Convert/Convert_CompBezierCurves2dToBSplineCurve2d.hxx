@@ -31,6 +31,7 @@
 #include <TColgp_Array1OfPnt2d.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TColStd_Array1OfInteger.hxx>
+class Standard_ConstructionError;
 
 
 //! Converts a list  of connecting Bezier Curves 2d to  a

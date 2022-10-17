@@ -594,9 +594,9 @@ void BRepLib_FuseEdges::Perform()
 //=======================================================================
 //function : BuildListConnexEdge
 //purpose  : giving one edge, build the list of connex edges which have
-// vertices that have only two connex edges. All the edges that are added
+// vertices that have only two connex edges. All the edges that are addes
 // to the list must be added also to the mapUniq, in order for the caller
-// to not treat again these edges.
+// to not treat again theses edges.
 // This list is always oriented in the "Forward" direction.
 //=======================================================================
 
@@ -708,7 +708,7 @@ Standard_Boolean BRepLib_FuseEdges::NextConnexEdge(const TopoDS_Vertex& theVerte
 	  itFac1.Next();
 	}
 	
-	// 3rd condition : same support
+	// 3rd condition : same suport
 	if (HasConnex) {
 	  HasConnex = SameSupport(TopoDS::Edge(theEdge),TopoDS::Edge(theEdgeConnex));
 	}

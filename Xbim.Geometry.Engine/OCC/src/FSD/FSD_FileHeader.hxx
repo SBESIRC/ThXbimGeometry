@@ -16,8 +16,6 @@
 #ifndef _FSD_FileHeader_HeaderFile
 #define _FSD_FileHeader_HeaderFile
 
-#include <Standard_PrimitiveTypes.hxx>
-
 struct FSD_FileHeader {
   Standard_Integer testindian;
   Standard_Integer binfo;

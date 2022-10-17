@@ -29,6 +29,9 @@
 #include <TColStd_Array1OfInteger.hxx>
 #include <TColgp_Array1OfPnt2d.hxx>
 #include <Standard_Real.hxx>
+class StdFail_NotDone;
+class Standard_DomainError;
+class Standard_OutOfRange;
 
 
 //! Bspline approximation of a surface.

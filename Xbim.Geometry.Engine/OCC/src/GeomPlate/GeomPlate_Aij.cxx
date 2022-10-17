@@ -20,8 +20,6 @@
 #include <gp_Vec.hxx>
 
 GeomPlate_Aij::GeomPlate_Aij()
-: Ind1(0),
-  Ind2(0)
 {
 }
 

@@ -96,9 +96,7 @@ void BRepClass3d_SolidClassifier::Load(const TopoDS_Shape& S) {
 }
 
 BRepClass3d_SolidClassifier::BRepClass3d_SolidClassifier(const TopoDS_Shape& S)
-: aSolidLoaded(Standard_True),
-  explorer(S),
-  isaholeinspace(Standard_False)
+:  aSolidLoaded(Standard_True),explorer(S) 
 { 
 #if LBRCOMPT
   STAT.NbConstrShape++;

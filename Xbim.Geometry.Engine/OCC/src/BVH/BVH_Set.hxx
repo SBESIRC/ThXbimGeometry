@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef BVH_Set_HeaderFile
-#define BVH_Set_HeaderFile
+#ifndef _BVH_Set_Header
+#define _BVH_Set_Header
 
 #include <BVH_Box.hxx>
 
@@ -35,7 +35,7 @@ public:
   BVH_Set() {}
 
   //! Releases resources of set of objects.
-  virtual ~BVH_Set() {}
+  virtual ~BVH_Set() = 0;
 
   //! Returns AABB of the entire set of objects.
   virtual BVH_Box<T, N> Box() const
@@ -66,5 +66,15 @@ public:
                      const Standard_Integer theIndex2) = 0;
 
 };
+
+// =======================================================================
+// function : ~BVH_Set
+// purpose  :
+// =======================================================================
+template<class T, int N>
+BVH_Set<T, N>::~BVH_Set()
+{
+  //
+}
 
 #endif // _BVH_Set_Header

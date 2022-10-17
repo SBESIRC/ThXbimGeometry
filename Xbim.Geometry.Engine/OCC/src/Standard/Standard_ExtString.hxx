@@ -13,7 +13,7 @@
 // commercial license or contractual agreement.
 
 //============================================================================
-//==== Title: Standard_ExtString.hxx
+//==== Titre: Standard_ExtString.hxx
 //==== 
 //==== Implementation:  This is a primitive type implementadef with typedef
 //====        typedef short* Standard_ExtString;

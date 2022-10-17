@@ -31,12 +31,7 @@
 // Purpose  : Constructor.
 //=======================================================================
 
-Geom2dHatch_Hatching::Geom2dHatch_Hatching ()
-: myTrimDone(Standard_False),
-  myTrimFailed(Standard_False),
-  myIsDone(Standard_False),
-  myStatus(HatchGen_NoProblem)
-{
+Geom2dHatch_Hatching::Geom2dHatch_Hatching () {
 }
 
 //=======================================================================

@@ -29,7 +29,7 @@
     #include <tchar.h>
   #endif
 
-  void _osd_wnt_set_error (OSD_Error&, Standard_Integer, ... );
+  void _osd_wnt_set_error (OSD_Error&, OSD_WhoAmI, ... );
 #else
   #include <errno.h>
   #include <stdio.h>

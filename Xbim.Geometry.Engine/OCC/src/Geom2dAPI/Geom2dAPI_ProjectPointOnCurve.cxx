@@ -28,7 +28,6 @@
 //purpose  : 
 //=======================================================================
 Geom2dAPI_ProjectPointOnCurve::Geom2dAPI_ProjectPointOnCurve()
-: myIndex(-1)
 {
   myIsDone = Standard_False;
 }

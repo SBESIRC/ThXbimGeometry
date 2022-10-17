@@ -25,8 +25,11 @@
 #include <Standard_Integer.hxx>
 #include <Extrema_ExtCC2d.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
+class Standard_OutOfRange;
+class StdFail_NotDone;
 class Geom2d_Curve;
 class gp_Pnt2d;
+class Extrema_ExtCC2d;
 
 
 //! Describes functions for computing all the extrema

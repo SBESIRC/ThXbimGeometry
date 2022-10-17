@@ -12,9 +12,10 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <BRepClass_FaceClassifier.hxx>
 
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepClass_FaceClassifier.hxx>
 #include <BRepClass_FaceExplorer.hxx>
 #include <BRepTools.hxx>
 #include <Extrema_ExtPS.hxx>
@@ -46,41 +47,33 @@ BRepClass_FaceClassifier::BRepClass_FaceClassifier(BRepClass_FaceExplorer& F,
 //function : BRepClass_FaceClassifier
 //purpose  : 
 //=======================================================================
-BRepClass_FaceClassifier::BRepClass_FaceClassifier(const TopoDS_Face& theF, 
-						   const gp_Pnt& theP, 
-						   const Standard_Real theTol,
-               const Standard_Boolean theUseBndBox,
-               const Standard_Real theGapCheckTol)
+BRepClass_FaceClassifier::BRepClass_FaceClassifier(const TopoDS_Face& F, 
+						   const gp_Pnt& P, 
+						   const Standard_Real Tol)
 {
-  Perform(theF, theP, theTol, theUseBndBox, theGapCheckTol);
+  Perform(F,P,Tol);
 }
 //=======================================================================
 //function : BRepClass_FaceClassifier
 //purpose  : 
 //=======================================================================
-BRepClass_FaceClassifier::BRepClass_FaceClassifier(const TopoDS_Face& theF, 
-						   const gp_Pnt2d& theP, 
-						   const Standard_Real theTol,
-               const Standard_Boolean theUseBndBox,
-               const Standard_Real theGapCheckTol)
+BRepClass_FaceClassifier::BRepClass_FaceClassifier(const TopoDS_Face& F, 
+						   const gp_Pnt2d& P, 
+						   const Standard_Real Tol)
 {
-  Perform(theF, theP, theTol, theUseBndBox, theGapCheckTol);
+  Perform(F,P,Tol);
 }
 
 //=======================================================================
 //function : Perform
 //purpose  : 
 //=======================================================================
-void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& theF, 
-					const gp_Pnt2d& theP, 
-					const Standard_Real theTol,
-          const Standard_Boolean theUseBndBox,
-          const Standard_Real theGapCheckTol)
+void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& F, 
+					const gp_Pnt2d& P, 
+					const Standard_Real Tol)
 {
-  BRepClass_FaceExplorer aFex(theF);
-  aFex.SetMaxTolerance(theGapCheckTol);
-  aFex.SetUseBndBox(theUseBndBox);
-  BRepClass_FClassifier::Perform(aFex, theP, theTol);
+  BRepClass_FaceExplorer Fex(F);
+  BRepClass_FClassifier::Perform(Fex,P,Tol);
 }
 
 
@@ -92,11 +85,9 @@ void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& theF,
 //function : Perform
 //purpose  : 
 //=======================================================================
-void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& theF, 
-					const gp_Pnt& theP, 
-					const Standard_Real theTol,
-          const Standard_Boolean theUseBndBox,
-          const Standard_Real theGapCheckTol)
+void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& aF, 
+					const gp_Pnt& aP, 
+					const Standard_Real aTol)
 {
   Standard_Integer aNbExt, aIndice, i; 
   Standard_Real aU1, aU2, aV1, aV2, aMaxDist, aD;
@@ -106,14 +97,14 @@ void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& theF,
   aMaxDist=RealLast();
   aIndice=0;
   //
-  BRepAdaptor_Surface aSurf(theF, Standard_False);
-  BRepTools::UVBounds(theF, aU1, aU2, aV1, aV2);
-  aExtrema.Initialize(aSurf, aU1, aU2, aV1, aV2, theTol, theTol);
+  BRepAdaptor_Surface aSurf(aF, Standard_False);
+  BRepTools::UVBounds(aF, aU1, aU2, aV1, aV2);
+  aExtrema.Initialize(aSurf, aU1, aU2, aV1, aV2, aTol, aTol);
   //
   //modified by NIZNHY-PKV Wed Aug 13 11:28:47 2008f
   rejected=Standard_True;
   //modified by NIZNHY-PKV Wed Aug 13 11:28:49 2008t
-  aExtrema.Perform(theP);
+  aExtrema.Perform(aP);
   if(!aExtrema.IsDone()) {
     return;
   }
@@ -134,6 +125,6 @@ void  BRepClass_FaceClassifier::Perform(const TopoDS_Face& theF,
   if(aIndice) { 
     aExtrema.Point(aIndice).Parameter(aU1, aU2);
     aPuv.SetCoord(aU1, aU2);
-    Perform(theF, aPuv, theTol, theUseBndBox, theGapCheckTol);
+    Perform(aF, aPuv, aTol);
   }
 }

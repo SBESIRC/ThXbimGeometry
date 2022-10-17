@@ -26,6 +26,7 @@
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
 class TopoDS_Wire;
+class TopoDS_Shell;
 class TopoDS_Shape;
 
 

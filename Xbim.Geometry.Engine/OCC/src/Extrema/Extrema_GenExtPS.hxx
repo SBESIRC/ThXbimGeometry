@@ -17,16 +17,30 @@
 #ifndef _Extrema_GenExtPS_HeaderFile
 #define _Extrema_GenExtPS_HeaderFile
 
-#include <Bnd_HArray1OfSphere.hxx>
-#include <Extrema_Array2OfPOnSurfParams.hxx>
-#include <Extrema_POnSurfParams.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <Standard_Boolean.hxx>
+#include <Standard_Real.hxx>
+#include <Standard_Integer.hxx>
+#include <Extrema_HArray2OfPOnSurfParams.hxx>
 #include <Extrema_HUBTreeOfSphere.hxx>
+#include <Bnd_HArray1OfSphere.hxx>
 #include <Extrema_FuncPSNorm.hxx>
+#include <Adaptor3d_SurfacePtr.hxx>
 #include <Extrema_ExtFlag.hxx>
 #include <Extrema_ExtAlgo.hxx>
 #include <TColStd_HArray1OfReal.hxx>
-
+#include <Extrema_POnSurfParams.hxx>
+class StdFail_NotDone;
+class Standard_OutOfRange;
+class Standard_TypeMismatch;
+class gp_Pnt;
 class Adaptor3d_Surface;
+class Extrema_POnSurf;
+class Extrema_POnSurfParams;
+
 
 //! It calculates all the extremum distances
 //! between a point and a surface.
@@ -37,11 +51,12 @@ public:
 
   DEFINE_STANDARD_ALLOC
 
+  
   Standard_EXPORT Extrema_GenExtPS();
   
   //! It calculates all the distances.
   //! The function F(u,v)=distance(P,S(u,v)) has an
-  //! extremum when gradient(F)=0. The algorithm searches
+  //! extremum when gradient(F)=0. The algorithm searchs
   //! all the zeros inside the definition ranges of the
   //! surface.
   //! NbU and NbV are used to locate the close points
@@ -55,7 +70,7 @@ public:
   
   //! It calculates all the distances.
   //! The function F(u,v)=distance(P,S(u,v)) has an
-  //! extremum when gradient(F)=0. The algorithm searches
+  //! extremum when gradient(F)=0. The algorithm searchs
   //! all the zeros inside the definition ranges of the
   //! surface.
   //! NbU and NbV are used to locate the close points
@@ -92,7 +107,19 @@ public:
   //! Returns the point of the Nth resulting distance.
   Standard_EXPORT const Extrema_POnSurf& Point (const Standard_Integer N) const;
 
+
+
+
+protected:
+
+
+
+
+
 private:
+
+  
+  Standard_EXPORT Adaptor3d_SurfacePtr Bidon() const;
   
   Standard_EXPORT void BuildTree();
   
@@ -107,13 +134,6 @@ private:
   //! Compute new edge parameters.
   Standard_EXPORT const Extrema_POnSurfParams& ComputeEdgeParameters (const Standard_Boolean IsUEdge, const Extrema_POnSurfParams& theParam0, const Extrema_POnSurfParams& theParam1, const gp_Pnt& thePoints, const Standard_Real theDiffTol);
 
-private:
-
-  // disallow copies
-  Extrema_GenExtPS            (const Extrema_GenExtPS& ) Standard_DELETE;
-  Extrema_GenExtPS& operator= (const Extrema_GenExtPS& ) Standard_DELETE;
-
-private:
 
   Standard_Boolean myDone;
   Standard_Boolean myInit;
@@ -125,21 +145,27 @@ private:
   Standard_Integer myvsample;
   Standard_Real mytolu;
   Standard_Real mytolv;
-
-  Extrema_Array2OfPOnSurfParams myPoints;
+  Handle(Extrema_HArray2OfPOnSurfParams) myPoints;
   Extrema_HUBTreeOfSphere mySphereUBTree;
   Handle(Bnd_HArray1OfSphere) mySphereArray;
   Extrema_FuncPSNorm myF;
-  const Adaptor3d_Surface* myS;
+  Adaptor3d_SurfacePtr myS;
   Extrema_ExtFlag myFlag;
   Extrema_ExtAlgo myAlgo;
   Handle(TColStd_HArray1OfReal) myUParams;
   Handle(TColStd_HArray1OfReal) myVParams;
-  Extrema_Array2OfPOnSurfParams myFacePntParams;
-  Extrema_Array2OfPOnSurfParams myUEdgePntParams;
-  Extrema_Array2OfPOnSurfParams myVEdgePntParams;
+  Handle(Extrema_HArray2OfPOnSurfParams) myFacePntParams;
+  Handle(Extrema_HArray2OfPOnSurfParams) myUEdgePntParams;
+  Handle(Extrema_HArray2OfPOnSurfParams) myVEdgePntParams;
   Extrema_POnSurfParams myGridParam;
 
+
 };
+
+
+
+
+
+
 
 #endif // _Extrema_GenExtPS_HeaderFile

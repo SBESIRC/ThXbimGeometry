@@ -25,8 +25,11 @@
 #include <Standard_Real.hxx>
 #include <TopAbs_Orientation.hxx>
 #include <Standard_Boolean.hxx>
-
+class BRepAdaptor_HCurve2d;
+class TopoDS_Vertex;
 class gp_Pnt2d;
+class Adaptor2d_HCurve2d;
+class Adaptor3d_HVertex;
 
 
 class BRepTopAdaptor_HVertex;
@@ -39,7 +42,7 @@ class BRepTopAdaptor_HVertex : public Adaptor3d_HVertex
 public:
 
   
-  Standard_EXPORT BRepTopAdaptor_HVertex(const TopoDS_Vertex& Vtx, const Handle(BRepAdaptor_Curve2d)& Curve);
+  Standard_EXPORT BRepTopAdaptor_HVertex(const TopoDS_Vertex& Vtx, const Handle(BRepAdaptor_HCurve2d)& Curve);
   
     const TopoDS_Vertex& Vertex() const;
   
@@ -47,10 +50,10 @@ public:
   
   Standard_EXPORT virtual gp_Pnt2d Value() Standard_OVERRIDE;
   
-  Standard_EXPORT virtual Standard_Real Parameter (const Handle(Adaptor2d_Curve2d)& C) Standard_OVERRIDE;
+  Standard_EXPORT virtual Standard_Real Parameter (const Handle(Adaptor2d_HCurve2d)& C) Standard_OVERRIDE;
   
   //! Parametric resolution (2d).
-  Standard_EXPORT virtual Standard_Real Resolution (const Handle(Adaptor2d_Curve2d)& C) Standard_OVERRIDE;
+  Standard_EXPORT virtual Standard_Real Resolution (const Handle(Adaptor2d_HCurve2d)& C) Standard_OVERRIDE;
   
   Standard_EXPORT virtual TopAbs_Orientation Orientation() Standard_OVERRIDE;
   
@@ -70,7 +73,7 @@ private:
 
 
   TopoDS_Vertex myVtx;
-  Handle(BRepAdaptor_Curve2d) myCurve;
+  Handle(BRepAdaptor_HCurve2d) myCurve;
 
 
 };

@@ -14,10 +14,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <GeomPlate_BuildPlateSurface.hxx>
-
-#include <Adaptor2d_Curve2d.hxx>
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor2d_HCurve2d.hxx>
+#include <Adaptor3d_HCurve.hxx>
 #include <Adaptor3d_CurveOnSurface.hxx>
 #include <Approx_CurveOnSurface.hxx>
 #include <Extrema_ExtPS.hxx>
@@ -33,9 +31,11 @@
 #include <Geom_RectangularTrimmedSurface.hxx>
 #include <Geom_Surface.hxx>
 #include <GeomAdaptor.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <GeomLProp_SLProps.hxx>
 #include <GeomPlate_BuildAveragePlane.hxx>
+#include <GeomPlate_BuildPlateSurface.hxx>
 #include <GeomPlate_CurveConstraint.hxx>
 #include <GeomPlate_HArray1OfSequenceOfReal.hxx>
 #include <GeomPlate_MakeApprox.hxx>
@@ -66,7 +66,7 @@
 #include <TColgp_SequenceOfVec.hxx>
 #include <TColStd_HArray1OfReal.hxx>
 #include <TColStd_SequenceOfInteger.hxx>
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressIndicator.hxx>
 
 #include <stdio.h>
 
@@ -257,25 +257,25 @@ static void TrierTab(Handle(TColStd_HArray1OfInteger)& Tab)
 //---------------------------------------------------------
 // Function : ProjectCurve
 //---------------------------------------------------------
-Handle(Geom2d_Curve)  GeomPlate_BuildPlateSurface::ProjectCurve(const Handle(Adaptor3d_Curve)& Curv) 
+Handle(Geom2d_Curve)  GeomPlate_BuildPlateSurface::ProjectCurve(const Handle(Adaptor3d_HCurve)& Curv) 
 {
  // Project a curve on a plane
  Handle(Geom2d_Curve) Curve2d ;
- Handle(GeomAdaptor_Surface) hsur = new GeomAdaptor_Surface(mySurfInit);
+ Handle(GeomAdaptor_HSurface) hsur = new GeomAdaptor_HSurface(mySurfInit);
  gp_Pnt2d P2d;
 
- Handle(ProjLib_HCompProjectedCurve) HProjector = new ProjLib_HCompProjectedCurve (hsur, Curv, myTol3d/10, myTol3d/10);
+ ProjLib_CompProjectedCurve Projector(hsur, Curv, myTol3d/10, myTol3d/10);
 
  Standard_Real UdebCheck, UfinCheck, ProjUdeb, ProjUfin;
  UdebCheck = Curv->FirstParameter();
  UfinCheck = Curv->LastParameter();
- HProjector->Bounds( 1, ProjUdeb, ProjUfin );
+ Projector.Bounds( 1, ProjUdeb, ProjUfin );
 
- if (HProjector->NbCurves() != 1 ||
+ if (Projector.NbCurves() != 1 ||
      Abs( UdebCheck -ProjUdeb ) > Precision::PConfusion() ||
      Abs( UfinCheck -ProjUfin ) > Precision::PConfusion())
    {
-     if (HProjector->IsSinglePnt(1, P2d))
+     if (Projector.IsSinglePnt(1, P2d))
        {
 	 // solution in a point
 	 TColgp_Array1OfPnt2d poles(1, 2);
@@ -294,15 +294,19 @@ Handle(Geom2d_Curve)  GeomPlate_BuildPlateSurface::ProjectCurve(const Handle(Ada
    GeomAbs_Shape Continuity = GeomAbs_C1;
    Standard_Integer MaxDegree = 10, MaxSeg;
    Standard_Real Udeb, Ufin;
-   HProjector->Bounds(1, Udeb, Ufin);
+   Handle(ProjLib_HCompProjectedCurve) HProjector = 
+     new ProjLib_HCompProjectedCurve();
+   HProjector->Set(Projector);
+   Projector.Bounds(1, Udeb, Ufin);
    
    MaxSeg = 20 + HProjector->NbIntervals(GeomAbs_C3);
-   Approx_CurveOnSurface appr(HProjector, hsur, Udeb, Ufin, myTol3d);
-   appr.Perform(MaxSeg, MaxDegree, Continuity, Standard_False, Standard_True);
-
+   Approx_CurveOnSurface appr(HProjector, hsur, Udeb, Ufin, myTol3d,
+			      Continuity, MaxDegree, MaxSeg, 
+			      Standard_False, Standard_True);
+   
    Curve2d = appr.Curve2d();
  }
-#ifdef DRAW
+#if DRAW
  if (Affich) {
    char name[256];
    sprintf(name,"proj_%d",++NbProj);
@@ -314,15 +318,18 @@ Handle(Geom2d_Curve)  GeomPlate_BuildPlateSurface::ProjectCurve(const Handle(Ada
 //---------------------------------------------------------
 // Function : ProjectedCurve
 //---------------------------------------------------------
-Handle(Adaptor2d_Curve2d)  GeomPlate_BuildPlateSurface::ProjectedCurve( Handle(Adaptor3d_Curve)& Curv) 
+Handle(Adaptor2d_HCurve2d)  GeomPlate_BuildPlateSurface::ProjectedCurve( Handle(Adaptor3d_HCurve)& Curv) 
 {
  // Projection of a curve on the initial surface
 
- Handle(GeomAdaptor_Surface) hsur = new GeomAdaptor_Surface(mySurfInit);
+ Handle(GeomAdaptor_HSurface) hsur = new GeomAdaptor_HSurface(mySurfInit);
 
- Handle(ProjLib_HCompProjectedCurve) HProjector = new ProjLib_HCompProjectedCurve (hsur, Curv, myTolU/10, myTolV/10);
- if (HProjector->NbCurves() != 1)
- {
+ ProjLib_CompProjectedCurve Projector(hsur, Curv, myTolU/10, myTolV/10);
+ Handle(ProjLib_HCompProjectedCurve) HProjector = 
+     new ProjLib_HCompProjectedCurve();
+
+ if (Projector.NbCurves() != 1) {
+     
      HProjector.Nullify(); // No continuous solution
 #ifdef OCCT_DEBUG
      std::cout << "BuildPlateSurace :: No continuous projection" << std::endl;
@@ -333,12 +340,15 @@ Handle(Adaptor2d_Curve2d)  GeomPlate_BuildPlateSurface::ProjectedCurve( Handle(A
      Standard_Real First1,Last1,First2,Last2;
      First1=Curv->FirstParameter();
      Last1 =Curv->LastParameter();
-     HProjector->Bounds(1,First2,Last2);
+     Projector.Bounds(1,First2,Last2);
 
      if (Abs(First1-First2) <= Max(myTolU,myTolV) && 
          Abs(Last1-Last2) <= Max(myTolU,myTolV))
      {    
-         HProjector = Handle(ProjLib_HCompProjectedCurve)::DownCast(HProjector->Trim(First2,Last2,Precision::PConfusion()));
+
+         HProjector->Set(Projector);
+         HProjector = Handle(ProjLib_HCompProjectedCurve)::
+	   DownCast(HProjector->Trim(First2,Last2,Precision::PConfusion()));
      }
      else
      {
@@ -439,7 +449,7 @@ void GeomPlate_BuildPlateSurface::
 // Function : Perform
 // Calculates the surface filled with loaded constraints
 //---------------------------------------------------------
-void GeomPlate_BuildPlateSurface::Perform(const Message_ProgressRange& theProgress)
+void GeomPlate_BuildPlateSurface::Perform(const Handle(Message_ProgressIndicator) & aProgress)
 { 
 #ifdef OCCT_DEBUG
   // Timing
@@ -470,13 +480,8 @@ void GeomPlate_BuildPlateSurface::Perform(const Message_ProgressRange& theProgre
   //======================================================================   
   // Initial Surface 
   //======================================================================
-  Message_ProgressScope aPS(theProgress, "Calculating the surface filled", 100, Standard_True);
   if (!mySurfInitIsGive)
-  {
-    ComputeSurfInit (aPS.Next(10));
-    if (aPS.UserBreak())
-      return;
-  }
+    ComputeSurfInit(aProgress);
 
   else {
    if (NTLinCont>=2)
@@ -647,9 +652,9 @@ void GeomPlate_BuildPlateSurface::Perform(const Message_ProgressRange& theProgre
 	  // Construction of the surface
 	  //====================================================================
 
-	  myPlate.SolveTI(myDegree, ComputeAnisotropie(), aPS.Next(90));
+	  myPlate.SolveTI(myDegree, ComputeAnisotropie(), aProgress);
 
-	  if (aPS.UserBreak())
+	  if (!aProgress.IsNull() && aProgress->UserBreak())
 	  {
 	    return;
 	  }
@@ -686,9 +691,9 @@ void GeomPlate_BuildPlateSurface::Perform(const Message_ProgressRange& theProgre
 	  //====================================================================
 	  //Construction of the surface
 	  //====================================================================
-	  myPlate.SolveTI(myDegree, ComputeAnisotropie(), aPS.Next(90));
+	  myPlate.SolveTI(myDegree, ComputeAnisotropie(), aProgress);
 
-	  if (aPS.UserBreak())
+	  if (!aProgress.IsNull() && aProgress->UserBreak())
 	  {
 	    return;
 	  }
@@ -1009,7 +1014,7 @@ Disc3dContour (const Standard_Integer /*nbp*/,
   for(i=1; i<=NTCurve; i++) 
     if (myLinCont->Value(i)->Order()!=-1) 
       
-      { Standard_Integer NbPt=myParCont->Value(i).Length();
+      { Standard_Integer NbPt=myParCont->Value(i).Length();;
 	// first constraint point (j=0)
 	// Standard_Integer NbPt=myParCont->Length();
 	if (iordre==0) {
@@ -1354,7 +1359,7 @@ Standard_Boolean GeomPlate_BuildPlateSurface::
 // there are point constraints.
 //-------------------------------------------------------------------------
 
-void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& theProgress)
+void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Handle(Message_ProgressIndicator) & aProgress)
 {
   Standard_Integer nopt=2, popt=2, Np=1;
   Standard_Boolean isHalfSpace = Standard_True;
@@ -1544,9 +1549,7 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
 	{ Standard_Integer NbPoint= (Standard_Integer )( NTPoint*(myLinCont->Value(i)->Length())/LenT);
 	  if (NbPoint<10)
 	    NbPoint=10;
-
-	  (void )Npt; // unused but set for debug
-	  Npt += NbPoint;
+	  Npt+=NbPoint;
 	}
       // Table containing a cloud of points for calculation of the plane
       Handle(TColgp_HArray1OfPnt) Pts = new TColgp_HArray1OfPnt(1,20*NTLinCont+NTPntCont);
@@ -1601,8 +1604,8 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
 	(Handle( Geom_RectangularTrimmedSurface )::DownCast(mySurfInit))->BasisSurface();
       
       Standard_Real Ratio = 0., R1 = 2., R2 = 0.6; //R1 = 3, R2 = 0.5;//R1 = 1.4, R2 = 0.8; //R1 = 5., R2 = 0.2; 
-      Handle( GeomAdaptor_Surface ) hsur = 
-	new GeomAdaptor_Surface( InitPlane );
+      Handle( GeomAdaptor_HSurface ) hsur = 
+	new GeomAdaptor_HSurface( InitPlane );
       Standard_Integer NbPoint = 20;
 //      gp_Pnt P;
 //      gp_Vec DerC, DerCproj, DU, DV;
@@ -1616,8 +1619,11 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
 	  Standard_Real LastPar  = myLinCont->Value(i)->LastParameter();
 	  Standard_Real Uif = (LastPar - FirstPar)/(NbPoint);
 	  
-	  Handle( Adaptor3d_Curve ) Curve = myLinCont->Value(i)->Curve3d();
-	  Handle( ProjLib_HCompProjectedCurve ) ProjCurve = new ProjLib_HCompProjectedCurve (hsur, Curve, myTol3d, myTol3d);
+	  Handle( Adaptor3d_HCurve ) Curve = myLinCont->Value(i)->Curve3d();
+	  ProjLib_CompProjectedCurve Projector( hsur, Curve, myTol3d, myTol3d );
+	  Handle( ProjLib_HCompProjectedCurve ) ProjCurve = 
+	    new ProjLib_HCompProjectedCurve();
+	  ProjCurve->Set( Projector );
           Adaptor3d_CurveOnSurface AProj(ProjCurve, hsur);
 	  
 	  gp_Pnt P;
@@ -1654,7 +1660,7 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
   if (! myIsLinear)
     {
       myPlanarSurfInit = mySurfInit;
-#ifdef DRAW
+#if DRAW
       if (Affich) {
 	char name[256];
 	sprintf(name,"planinit_%d",NbPlan+1);
@@ -1718,9 +1724,8 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
       //====================================================================
       // Construction of the surface
       //====================================================================
-      Message_ProgressScope aPS(theProgress, "ComputeSurfInit", 1);
-      myPlate.SolveTI(2, ComputeAnisotropie(), aPS.Next());
-      if (theProgress.UserBreak())
+      myPlate.SolveTI(2, ComputeAnisotropie(), aProgress);
+      if (!aProgress.IsNull() && aProgress->UserBreak())
       {
           return;
       }
@@ -1752,7 +1757,7 @@ void GeomPlate_BuildPlateSurface::ComputeSurfInit(const Message_ProgressRange& t
 	}
     }
 
-#ifdef DRAW
+#if DRAW
   if (Affich) {
     char name[256];
     sprintf(name,"surfinit_%d",++NbPlan);
@@ -1881,13 +1886,13 @@ Intersect(Handle(GeomPlate_HArray1OfSequenceOfReal)& PntInter,
 			  gp_Vec vec, vecU, vecV, N;
 			  if (myLinCont->Value(i)->Order() == 0)
 			    {
-			      Handle( Adaptor3d_Curve ) theCurve = myLinCont->Value(i)->Curve3d();
+			      Handle( Adaptor3d_HCurve ) theCurve = myLinCont->Value(i)->Curve3d();
 			      theCurve->D1( int2d.ParamOnFirst(), P1, vec );
 			      myLinCont->Value(j)->D1( int2d.ParamOnSecond(), P2, vecU, vecV );
 			    }
 			  else
 			    {
-			      Handle( Adaptor3d_Curve ) theCurve = myLinCont->Value(j)->Curve3d();
+			      Handle( Adaptor3d_HCurve ) theCurve = myLinCont->Value(j)->Curve3d();
 			      theCurve->D1( int2d.ParamOnSecond(), P2, vec );
 			      myLinCont->Value(i)->D1( int2d.ParamOnFirst(), P1, vecU, vecV );
 			    }
@@ -2420,8 +2425,8 @@ VerifSurface(const Standard_Integer NbBoucle)
 
       EcartContraintesMil (i,tdist,tang,tcourb);
 
-      Standard_Real diffDistMax=0, diffAngMax=0;
-      //Standard_Real SdiffDist=0, SdiffAng=0;
+      Standard_Real diffDistMax=0,SdiffDist=0;
+      Standard_Real diffAngMax=0,SdiffAng=0;
       Standard_Integer NdiffDist=0,NdiffAng=0;
 
    
@@ -2447,9 +2452,9 @@ VerifSurface(const Standard_Integer NbBoucle)
             diffDist = diffDist/LinCont->G0Criterion(U);
 	    if (diffDist>diffDistMax)
 	      diffDistMax = diffDist;
-	    //SdiffDist+=diffDist;
+	    SdiffDist+=diffDist;
 	    NdiffDist++;
-#ifdef DRAW
+#if DRAW
 	    if ((Affich) && (NbBoucle == myNbIter)) {
 	      gp_Pnt P;
 	      gp_Pnt2d P2d;
@@ -2479,9 +2484,9 @@ VerifSurface(const Standard_Integer NbBoucle)
 	      diffAng=diffAng/myLinCont->Value(i)->G1Criterion(U);
 	      if (diffAng>diffAngMax)
 		diffAngMax = diffAng;
-	      //SdiffAng+=diffAng;
+	      SdiffAng+=diffAng;
 	      NdiffAng++;
-#ifdef DRAW
+#if DRAW
 	      if ((Affich) && (NbBoucle == myNbIter)) {
 		gp_Pnt P;
 		LinCont->D0(U,P);	

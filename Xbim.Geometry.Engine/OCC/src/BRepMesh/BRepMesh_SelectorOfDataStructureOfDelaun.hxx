@@ -60,40 +60,40 @@ public:
   Standard_EXPORT void NeighboursByEdgeOf(const BRepMesh_Triangle& theElement);
   
   //! Adds a level of neighbours by edge to the selector.
-  void NeighboursOf(const BRepMesh_SelectorOfDataStructureOfDelaun& /*theSelector*/)
+  inline void NeighboursOf(const BRepMesh_SelectorOfDataStructureOfDelaun& /*theSelector*/)
   {
   }
   
   //! Adds a level of neighbours by edge the selector.
-  void AddNeighbours()
+  inline void AddNeighbours()
   {
   }
   
   //! Returns selected nodes.
-  const IMeshData::MapOfInteger& Nodes() const
+  inline const IMeshData::MapOfInteger& Nodes() const
   {
     return myNodes;
   }
   
   //! Returns selected links.
-  const IMeshData::MapOfInteger& Links() const
+  inline const IMeshData::MapOfInteger& Links() const
   {
     return myLinks;
   }
   
   //! Returns selected elements.
-  const IMeshData::MapOfInteger& Elements() const
+  inline const IMeshData::MapOfInteger& Elements() const
   {
     return myElements;
   }
   
   //! Gives the list of incices of frontier links.
-  const IMeshData::MapOfInteger& FrontierLinks() const
+  inline const IMeshData::MapOfInteger& FrontierLinks() const
   {
     return myFrontier;
   }
 
-  DEFINE_STANDARD_RTTIEXT(BRepMesh_SelectorOfDataStructureOfDelaun, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(BRepMesh_SelectorOfDataStructureOfDelaun, Standard_Transient)
 
 private:
 

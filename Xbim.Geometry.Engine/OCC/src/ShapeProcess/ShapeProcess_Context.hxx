@@ -27,6 +27,7 @@
 #include <Standard_Real.hxx>
 class Resource_Manager;
 class Message_Messenger;
+class Message_ProgressIndicator;
 class TCollection_AsciiString;
 
 
@@ -102,6 +103,12 @@ public:
   //! Returns Messenger used for outputting messages.
   Standard_EXPORT Handle(Message_Messenger) Messenger() const;
   
+  //! Sets Progress Indicator.
+  Standard_EXPORT void SetProgress (const Handle(Message_ProgressIndicator)& theProgress);
+  
+  //! Returns Progress Indicator.
+  Standard_EXPORT Handle(Message_ProgressIndicator) Progress() const;
+  
   //! Sets trace level used for outputting messages
   //! - 0: no trace at all
   //! - 1: errors
@@ -129,6 +136,7 @@ private:
   Handle(Resource_Manager) myRC;
   Handle(TColStd_HSequenceOfHAsciiString) myScope;
   Handle(Message_Messenger) myMessenger;
+  Handle(Message_ProgressIndicator) myProgress;
   Standard_Integer myTraceLev;
 
 

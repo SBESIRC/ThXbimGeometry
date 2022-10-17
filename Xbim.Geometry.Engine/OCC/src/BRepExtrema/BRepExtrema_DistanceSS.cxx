@@ -64,13 +64,11 @@
 //------------------------------------------------------------------------------
 static Standard_Boolean TRI_SOLUTION (const BRepExtrema_SeqOfSolution& SeqSol, const gp_Pnt& Pt)
 {
-  for (BRepExtrema_SeqOfSolution::iterator anIt = SeqSol.begin(); anIt != SeqSol.end(); anIt++)
+  const Standard_Integer Nbsol = SeqSol.Length();
+  for (Standard_Integer i = 1; i <= Nbsol; i++)
   {
-    const Standard_Real dst = anIt->Point().Distance(Pt);
-    if (dst <= Precision::Confusion())
-    {
-      return Standard_False;
-    }
+    const Standard_Real dst = SeqSol.Value(i).Point().Distance(Pt);
+    if (dst <= Precision::Confusion()) return Standard_False;
   }
   return Standard_True;
 }  
@@ -85,16 +83,15 @@ static void MIN_SOLUTION (const BRepExtrema_SeqOfSolution& SeqSol1,
                           BRepExtrema_SeqOfSolution& seqSol1,
                           BRepExtrema_SeqOfSolution& seqSol2)
 {
-  for (BRepExtrema_SeqOfSolution::iterator anIt1 = SeqSol1.begin(), anIt2 = SeqSol2.begin(); 
-       anIt1 != SeqSol1.end(); 
-       anIt1++, anIt2++)
+  const Standard_Integer nbSol = SeqSol1.Length();
+  for (Standard_Integer i = 1; i <= nbSol; i++)
   {
-    const Standard_Real dst1 = anIt1->Dist();
+    const Standard_Real dst1 = SeqSol1.Value(i).Dist();
     if (fabs(dst1 - DstRef) < Eps)
-	  {	  
-      seqSol1.Append(*anIt1);
-      seqSol2.Append(*anIt2);
-	  }
+	{	  
+      seqSol1.Append(SeqSol1.Value(i));
+      seqSol2.Append(SeqSol2.Value(i));
+	}
   }
 }
 

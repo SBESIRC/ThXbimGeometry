@@ -21,6 +21,7 @@
 #include <BRep_TEdge.hxx>
 #include <BRep_Tool.hxx>
 #include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepClass_FaceClassifier.hxx>
 #include <BRepTools.hxx>
@@ -39,6 +40,8 @@
 #include <Geom_Surface.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <GeomInt.hxx>
 #include <GeomLib.hxx>
@@ -551,8 +554,8 @@ void BOPTools_AlgoTools2D::MakePCurveOnFace
     pBAS = &aBASTmp;
   }
   //
-  Handle(BRepAdaptor_Surface) aBAHS = new BRepAdaptor_Surface(*pBAS);
-  Handle(GeomAdaptor_Curve) aBAHC = new GeomAdaptor_Curve(aC3D, aT1, aT2);
+  Handle(BRepAdaptor_HSurface) aBAHS = new BRepAdaptor_HSurface(*pBAS);
+  Handle(GeomAdaptor_HCurve) aBAHC = new GeomAdaptor_HCurve(aC3D, aT1, aT2);
   //
   Standard_Real aTolR;
   Standard_Real aTR = Precision::Confusion();//1.e-7;
@@ -576,7 +579,6 @@ void BOPTools_AlgoTools2D::MakePCurveOnFace
     Standard_Integer aDegMin = -1, aDegMax = -1, aMaxSegments = -1;
     Standard_Real aMaxDist = -1;
     AppParCurves_Constraint aBndPnt = AppParCurves_TangencyPoint;
-    Standard_Boolean isExtendSurf = Standard_False;
     if ((TolReached2d  >= 10. * aTR) && (TolReached2d <= aMaxTol || isAnaSurf))
     {
       aTR = Min(aMaxTol, 0.1*TolReached2d);
@@ -586,34 +588,12 @@ void BOPTools_AlgoTools2D::MakePCurveOnFace
       {
         aBndPnt = AppParCurves_PassPoint;
       }
-      isExtendSurf = Standard_True;
     }
     else if(TolReached2d > aMaxTol)
     {
       aTR = Min(TolReached2d, 1.e3 * aMaxTol);
       aMaxDist = 1.e2 * aTR;
       aMaxSegments = 100;
-      isExtendSurf = Standard_True;
-    }
-    if (isExtendSurf)
-    {
-      Handle(Adaptor3d_Surface) anA3dSurf;
-      Standard_Real dt = (aBAHS->LastUParameter() - aBAHS->FirstUParameter());
-      if (!aBAHS->IsUPeriodic() || Abs(dt - aBAHS->UPeriod()) > 0.01 * dt)
-      {
-        dt *= 0.01;
-        anA3dSurf = aBAHS->UTrim(aBAHS->FirstUParameter() - dt, aBAHS->LastUParameter() + dt, 0.);
-      }
-      dt = (aBAHS->LastVParameter() - aBAHS->FirstVParameter());
-      if (!aBAHS->IsVPeriodic() || Abs(dt - aBAHS->VPeriod()) > 0.01 * dt)
-      {
-        dt *= 0.01;
-        anA3dSurf = aBAHS->VTrim(aBAHS->FirstVParameter() - dt, aBAHS->LastVParameter() + dt, 0.);
-      }
-      if (!anA3dSurf.IsNull())
-      {
-        aProjCurv.Load(anA3dSurf);
-      }
     }
     aProjCurv.Load(aTR);
     aProjCurv.SetDegree(aDegMin, aDegMax);
@@ -714,7 +694,7 @@ void BOPTools_AlgoTools2D::IsEdgeIsoline( const TopoDS_Edge& theE,
   if(aSqMagn <= gp::Resolution())
     return;
 
-  //Normalize aT
+  //Normalyze aT
   aT /= sqrt(aSqMagn);
 
   //sin(da) ~ da, when da->0.

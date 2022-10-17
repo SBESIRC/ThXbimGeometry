@@ -25,6 +25,10 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 class Geom_Curve;
+class GeomLProp_CurveTool;
+class GeomLProp_SurfaceTool;
+class GeomLProp_CLProps;
+class GeomLProp_SLProps;
 
 
 //! These global functions compute the degree of
@@ -45,7 +49,7 @@ public:
   //! compare the derivative.
   Standard_EXPORT static GeomAbs_Shape Continuity (const Handle(Geom_Curve)& C1, const Handle(Geom_Curve)& C2, const Standard_Real u1, const Standard_Real u2, const Standard_Boolean r1, const Standard_Boolean r2, const Standard_Real tl, const Standard_Real ta);
   
-  //! The  same  as  preceding   but   using  the   standard
+  //! The  same  as  preciding   but   using  the   standard
   //! tolerances from package Precision.
   Standard_EXPORT static GeomAbs_Shape Continuity (const Handle(Geom_Curve)& C1, const Handle(Geom_Curve)& C2, const Standard_Real u1, const Standard_Real u2, const Standard_Boolean r1, const Standard_Boolean r2);
 

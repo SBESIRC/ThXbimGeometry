@@ -86,7 +86,7 @@ public:
   //! Allows to modify domain on witch the blending function
   //! associated to  the constrained boundary B  will propag
   //! the  influence   of the  field   of  tangency.  Can be
-  //! useful to  reduce  influence of boundaries  on which
+  //! usefull to  reduce  influence of boundaries  on whitch
   //! the Coons compatibility  conditions are not respected.
   //! l is a  relative value of  the parametric range of  B.
   //! Default value for l is 1 (used in Init).

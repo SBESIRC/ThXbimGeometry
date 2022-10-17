@@ -24,6 +24,8 @@
 #include <Standard_Boolean.hxx>
 #include <Standard_Integer.hxx>
 class Expr_GeneralExpression;
+class Standard_OutOfRange;
+class Expr_GeneralRelation;
 class Expr_NamedUnknown;
 
 
@@ -66,7 +68,7 @@ public:
   //! Tests if <me> contains <exp>.
   Standard_EXPORT Standard_Boolean Contains (const Handle(Expr_GeneralExpression)& exp) const Standard_OVERRIDE;
   
-  //! Replaces all occurrences of <var> with <with> in <me>.
+  //! Replaces all occurences of <var> with <with> in <me>.
   Standard_EXPORT void Replace (const Handle(Expr_NamedUnknown)& var, const Handle(Expr_GeneralExpression)& with) Standard_OVERRIDE;
 
 

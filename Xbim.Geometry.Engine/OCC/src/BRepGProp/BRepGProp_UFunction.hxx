@@ -27,6 +27,8 @@
 #include <GProp_ValueType.hxx>
 #include <Standard_Boolean.hxx>
 #include <math_Function.hxx>
+class BRepGProp_Face;
+class gp_Pnt;
 class gp_XYZ;
 
 
@@ -68,7 +70,7 @@ public:
   //! If IsByPoint is equal to Standard_False, the number of the
   //! coefficients is 4 and they represent the combination of
   //! plane parameters and shift values.
-  Standard_EXPORT BRepGProp_UFunction(const BRepGProp_Face& theSurface, const gp_Pnt& theVertex, const Standard_Boolean IsByPoint, const Standard_Real* theCoeffs);
+  Standard_EXPORT BRepGProp_UFunction(const BRepGProp_Face& theSurface, const gp_Pnt& theVertex, const Standard_Boolean IsByPoint, const Standard_Address theCoeffs);
   
   //! Setting the type of the value to be returned.
     void SetValueType (const GProp_ValueType theType);
@@ -80,8 +82,18 @@ public:
   //! Returns a value of the function.
   Standard_EXPORT virtual Standard_Boolean Value (const Standard_Real X, Standard_Real& F) Standard_OVERRIDE;
 
+
+
+
+protected:
+
+
+
+
+
 private:
 
+  
   //! Private method. Returns the value for volume computation.
   //! Other returned values are:
   //! -  thePMP0 - PSurf(X,Y) minus Location.
@@ -108,7 +120,7 @@ private:
 
   BRepGProp_Face mySurface;
   gp_Pnt myVertex;
-  const Standard_Real* myCoeffs;
+  Standard_Address myCoeffs;
   Standard_Real myVParam;
   GProp_ValueType myValueType;
   Standard_Boolean myIsByPoint;

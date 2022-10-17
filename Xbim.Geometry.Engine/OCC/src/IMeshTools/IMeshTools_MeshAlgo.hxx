@@ -19,7 +19,6 @@
 #include <Standard_Transient.hxx>
 #include <Standard_Type.hxx>
 #include <IMeshData_Types.hxx>
-#include <Message_ProgressRange.hxx>
 
 struct IMeshTools_Parameters;
 
@@ -29,22 +28,21 @@ class IMeshTools_MeshAlgo : public Standard_Transient
 public:
 
   //! Destructor.
-  virtual ~IMeshTools_MeshAlgo()
+  Standard_EXPORT virtual ~IMeshTools_MeshAlgo()
   {
   }
 
   //! Performs processing of the given face.
   Standard_EXPORT virtual void Perform(
     const IMeshData::IFaceHandle& theDFace,
-    const IMeshTools_Parameters&  theParameters,
-    const Message_ProgressRange&  theRange) = 0;
+    const IMeshTools_Parameters&  theParameters) = 0;
 
-  DEFINE_STANDARD_RTTIEXT(IMeshTools_MeshAlgo, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshTools_MeshAlgo, Standard_Transient)
 
 protected:
 
   //! Constructor.
-  IMeshTools_MeshAlgo()
+  Standard_EXPORT IMeshTools_MeshAlgo()
   {
   }
 };

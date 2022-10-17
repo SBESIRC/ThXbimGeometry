@@ -60,7 +60,8 @@ static
 //
 static
   void MapFacesToBuildSolids(const TopoDS_Shape& theSol,
-                             TopTools_IndexedDataMapOfShapeListOfShape& theMFS);
+                             TopTools_IndexedDataMapOfShapeListOfShape& theMFS,
+                             TopTools_IndexedMapOfShape& theMFI);
 
 //=======================================================================
 //function : 
@@ -121,7 +122,7 @@ BOPAlgo_Operation BOPAlgo_BOP::Operation()const
 //=======================================================================
 void BOPAlgo_BOP::CheckData()
 {
-  Standard_Integer i, j, aNbArgs, aNbTools;
+  Standard_Integer i, j, iDim, aNbArgs, aNbTools;
   Standard_Boolean bFuse;
   TopTools_ListIteratorOfListOfShape aItLS;
   //
@@ -163,8 +164,7 @@ void BOPAlgo_BOP::CheckData()
   //            or equal to the MAXIMAL dimension of the TOOLS;
   // 4. COMMON: The arguments and tools could have any dimensions.
   //
-  Standard_Integer iDimMin[2] = { 3, 3 },
-                   iDimMax[2] = { 0, 0 };
+  Standard_Integer iDimMin[2] = { 0, 0 }, iDimMax[2] = { 0, 0 };
   Standard_Boolean bHasValid[2] = {Standard_False, Standard_False};
   //
   for (i=0; i<2; ++i) {
@@ -173,27 +173,38 @@ void BOPAlgo_BOP::CheckData()
     for (j=0; aItLS.More(); aItLS.Next(), ++j) {
       const TopoDS_Shape& aS=aItLS.Value();
       Standard_Boolean bIsEmpty = BOPTools_AlgoTools3D::IsEmptyShape(aS);
-      if (bIsEmpty)
-      {
+      if (bIsEmpty) {
         AddWarning(new BOPAlgo_AlertEmptyShape (aS));
         continue;
       }
-
-      Standard_Integer iDMin, iDMax;
-      BOPTools_AlgoTools::Dimensions(aS, iDMin, iDMax);
-
-      if (iDMin < iDimMin[i])
-        iDimMin[i] = iDMin;
-      if (iDMax > iDimMax[i])
-        iDimMax[i] = iDMax;
-
-      if (bFuse && (iDimMin[i] != iDimMax[i]))
-      {
+      //
+      iDim = BOPTools_AlgoTools::Dimension(aS);
+      if (iDim < 0) {
         // non-homogeneous argument
         AddError (new BOPAlgo_AlertBOPNotAllowed);
         return;
       }
+      //
       bHasValid[i] = Standard_True;
+      //
+      if (!j) {
+        iDimMin[i] = iDim;
+        iDimMax[i] = iDim;
+        continue;
+      }
+      //
+      if (iDim < iDimMin[i]) {
+        iDimMin[i] = iDim;
+      }
+      else if (iDim > iDimMax[i]) {
+        iDimMax[i] = iDim;
+      }
+      //
+      if (bFuse && (iDimMin[i] != iDimMax[i])) {
+        // non-homogeneous argument
+        AddError (new BOPAlgo_AlertBOPNotAllowed);
+        return;
+      }
     }
   }
   //
@@ -211,7 +222,7 @@ void BOPAlgo_BOP::CheckData()
   if (bHasValid[0] || bHasValid[1])
   {
     // In case of all empty shapes in one of the groups
-    // this group acquires the dimension of other group
+    // this group aquires the dimension of other group
     myDims[0] = bHasValid[0] ? iDimMin[0] : iDimMin[1];
     myDims[1] = bHasValid[1] ? iDimMin[1] : iDimMin[0];
   }
@@ -353,7 +364,7 @@ void BOPAlgo_BOP::BuildResult(const TopAbs_ShapeEnum theType)
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BOPAlgo_BOP::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_BOP::Perform()
 {
   Handle(NCollection_BaseAllocator) aAllocator;
   BOPAlgo_PaveFiller* pPF;
@@ -387,35 +398,22 @@ void BOPAlgo_BOP::Perform(const Message_ProgressRange& theRange)
   pPF=new BOPAlgo_PaveFiller(aAllocator);
   pPF->SetArguments(aLS);
   pPF->SetRunParallel(myRunParallel);
-  Message_ProgressScope aPS(theRange, "Performing Boolean operation", 10);
-
+  pPF->SetProgressIndicator(myProgressIndicator);
   pPF->SetFuzzyValue(myFuzzyValue);
   pPF->SetNonDestructive(myNonDestructive);
   pPF->SetGlue(myGlue);
   pPF->SetUseOBB(myUseOBB);
   //
-  pPF->Perform(aPS.Next(9));
+  pPF->Perform();
   //
   myEntryPoint=1;
-  PerformInternal(*pPF, aPS.Next());
+  PerformInternal(*pPF);
 }
-
-//=======================================================================
-// function: fillPIConstants
-// purpose: 
-//=======================================================================
-void BOPAlgo_BOP::fillPIConstants (const Standard_Real theWhole, BOPAlgo_PISteps& theSteps) const
-{
-  BOPAlgo_Builder::fillPIConstants(theWhole, theSteps);
-  theSteps.SetStep (PIOperation_BuildShape, (myOperation == BOPAlgo_FUSE ? 10. : 5.) * theWhole / 100.);
-}
-
 //=======================================================================
 //function : PerformInternal1
 //purpose  : 
 //=======================================================================
-void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
-                                   const Message_ProgressRange& theRange)
+void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller)
 {
   myPaveFiller=(BOPAlgo_PaveFiller*)&theFiller;
   myDS=myPaveFiller->PDS();
@@ -439,18 +437,14 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   {
     Standard_Boolean bDone = TreatEmptyShape();
     if (bDone) {
-      PrepareHistory (theRange);
+      PrepareHistory();
       return;
     }
   }
-  Message_ProgressScope aPS(theRange, "Building the result of Boolean operation", 100);
   //
-  BOPAlgo_PISteps aSteps (PIOperation_Last);
-  analyzeProgress (100, aSteps);
-
   // 3. Fill Images
   // 3.1 Vertices
-  FillImagesVertices(aPS.Next(aSteps.GetStep(PIOperation_TreatVertices)));
+  FillImagesVertices();
   if (HasErrors()) {
     return;
   }
@@ -460,7 +454,7 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
     return;
   }
   // 3.2 Edges
-  FillImagesEdges(aPS.Next(aSteps.GetStep(PIOperation_TreatEdges)));
+  FillImagesEdges();
   if (HasErrors()) {
     return;
   }
@@ -471,7 +465,7 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 3.3 Wires
-  FillImagesContainers(TopAbs_WIRE, aPS.Next(aSteps.GetStep(PIOperation_TreatWires)));
+  FillImagesContainers(TopAbs_WIRE);
   if (HasErrors()) {
     return;
   }
@@ -482,18 +476,18 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 3.4 Faces
-  FillImagesFaces(aPS.Next(aSteps.GetStep(PIOperation_TreatFaces)));
+  FillImagesFaces();
   if (HasErrors()) {
     return;
   }
-
+  
   BuildResult(TopAbs_FACE);
   if (HasErrors()) {
     return;
   }
   //
   // 3.5 Shells
-  FillImagesContainers(TopAbs_SHELL, aPS.Next(aSteps.GetStep(PIOperation_TreatShells)));
+  FillImagesContainers(TopAbs_SHELL);
   if (HasErrors()) {
     return;
   }
@@ -504,7 +498,7 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 3.6 Solids
-  FillImagesSolids(aPS.Next(aSteps.GetStep(PIOperation_TreatSolids)));
+  FillImagesSolids();
   if (HasErrors()) {
     return;
   }
@@ -515,7 +509,7 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 3.7 CompSolids
-  FillImagesContainers(TopAbs_COMPSOLID, aPS.Next(aSteps.GetStep(PIOperation_TreatCompsolids)));
+  FillImagesContainers(TopAbs_COMPSOLID);
   if (HasErrors()) {
     return;
   }
@@ -526,7 +520,7 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 3.8 Compounds
-  FillImagesCompounds(aPS.Next(aSteps.GetStep(PIOperation_TreatCompounds)));
+  FillImagesCompounds();
   if (HasErrors()) {
     return;
   }
@@ -537,28 +531,23 @@ void BOPAlgo_BOP::PerformInternal1(const BOPAlgo_PaveFiller& theFiller,
   }
   //
   // 4.BuildShape;
-  BuildShape(aPS.Next(aSteps.GetStep(PIOperation_BuildShape)));
+  BuildShape();
   if (HasErrors()) {
     return;
   }
   // 
   // 5.History
-  PrepareHistory(aPS.Next(aSteps.GetStep(PIOperation_FillHistory)));
-  if (HasErrors()) {
-    return;
-  }
+  PrepareHistory();
   //
   // 6 Post-treatment 
-  PostTreat(aPS.Next(aSteps.GetStep(PIOperation_PostTreat)));
+  PostTreat();
 }
 //=======================================================================
 //function : BuildRC
 //purpose  : 
 //=======================================================================
-void BOPAlgo_BOP::BuildRC(const Message_ProgressRange& theRange)
+void BOPAlgo_BOP::BuildRC()
 {
-  Message_ProgressScope aPS(theRange, NULL, 1);
-
   TopAbs_ShapeEnum aType;
   TopoDS_Compound aC;
   BRep_Builder aBB;
@@ -580,10 +569,6 @@ void BOPAlgo_BOP::BuildRC(const Message_ProgressRange& theRange)
     return;
   }
   //
-  if (UserBreak(aPS))
-  {
-    return;
-  }
   // B. Common, Cut, Cut21
   //
   Standard_Integer i, j, aNb, iDim;
@@ -598,23 +583,13 @@ void BOPAlgo_BOP::BuildRC(const Message_ProgressRange& theRange)
     aItLS.Initialize(aLS);
     for (; aItLS.More(); aItLS.Next()) {
       const TopoDS_Shape& aS = aItLS.Value();
-      TopTools_ListOfShape aList;
-      BOPTools_AlgoTools::TreatCompound (aS, aList);
-      for (TopTools_ListOfShape::Iterator itList (aList); itList.More(); itList.Next())
-      {
-        const TopoDS_Shape& aSS = itList.Value();
-        iDim = BOPTools_AlgoTools::Dimension (aSS);
-        if (iDim < 0)
-          continue;
-        aType = TypeToExplore (iDim);
-        TopExp::MapShapes (aSS, aType, aMS);
+      iDim = BOPTools_AlgoTools::Dimension(aS);
+      if (iDim < 0) {
+        continue;
       }
+      aType = TypeToExplore(iDim);
+      TopExp::MapShapes(aS, aType, aMS);
     }
-  }
-  //
-  if (UserBreak(aPS))
-  {
-    return;
   }
   //
   bCheckEdges = Standard_False;
@@ -751,10 +726,6 @@ void BOPAlgo_BOP::BuildRC(const Message_ProgressRange& theRange)
     return;
   }
   //
-  if (UserBreak(aPS))
-  {
-    return;
-  }
   // The squats around degenerated edges
   Standard_Integer nVD;
   TopTools_IndexedMapOfShape aMVC;
@@ -800,10 +771,8 @@ void BOPAlgo_BOP::BuildRC(const Message_ProgressRange& theRange)
 //function : BuildShape
 //purpose  : 
 //=======================================================================
-void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
+void BOPAlgo_BOP::BuildShape()
 {
-  Message_ProgressScope aPS(theRange, NULL, 10.);
-
   if (myDims[0] == 3 && myDims[1] == 3)
   {
     // For the Boolean operation on solids we need to check first
@@ -818,7 +787,7 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
     if (hasNotClosedSolids)
     {
       Handle(Message_Report) aReport = new Message_Report();
-      BuildBOP(myArguments, myTools, myOperation, Message_ProgressRange(), aReport);
+      BuildBOP(myArguments, myTools, myOperation, aReport);
       if (aReport->GetAlerts(Message_Fail).IsEmpty())
       {
         // Success. Merge the report into the main report.
@@ -829,16 +798,11 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
   }
 
   // Build the result using splits of arguments.
-  BuildRC(aPS.Next(2.));
+
+  BuildRC();
   //
   if ((myOperation == BOPAlgo_FUSE) && (myDims[0] == 3)) {
-    BuildSolid(aPS.Next(8.));
-    return;
-  }
-
-  // Check for user break
-  if (UserBreak(aPS))
-  {
+    BuildSolid();
     return;
   }
   //
@@ -863,11 +827,6 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
       //
       CollectContainers(aS, aLSC);
     }
-  }
-  // Check for user break
-  if (UserBreak(aPS))
-  {
-    return;
   }
   // make containers
   TopTools_ListOfShape aLCRes;
@@ -948,12 +907,6 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
   }
   //
   RemoveDuplicates(aLCRes);
-
-  // Check for user break
-  if (UserBreak(aPS))
-  {
-    return;
-  }
   //
   // add containers to result
   TopoDS_Compound aResult;
@@ -977,7 +930,7 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
     for (; aItLS.More(); aItLS.Next())
     {
       const TopoDS_Shape& aS = aItLS.Value();
-      BOPTools_AlgoTools::TreatCompound(aS, aLSNonCont, &aMInpFence);
+      BOPAlgo_Tools::TreatCompound(aS, aMInpFence, aLSNonCont);
     }
   }
 
@@ -1007,9 +960,8 @@ void BOPAlgo_BOP::BuildShape(const Message_ProgressRange& theRange)
 //function : BuildSolid
 //purpose  : 
 //=======================================================================
-void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
+void BOPAlgo_BOP::BuildSolid()
 {
-  Message_ProgressScope aPS(theRange, NULL, 10.);
   // Containers
   TopTools_ListOfShape aLSC;
   //
@@ -1037,11 +989,6 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
       CollectContainers(aSA, aLSC);
     }
   }
-  // Check for user break
-  if (UserBreak(aPS))
-  {
-    return;
-  }
   //
   // Find solids in input arguments sharing faces with other solids
   TopTools_MapOfShape aMTSols;
@@ -1060,6 +1007,8 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
   TopTools_IndexedMapOfShape aMUSols;
   // Use map to chose the most outer faces to build result solids
   aMFS.Clear();
+  // Internal faces
+  TopTools_IndexedMapOfShape aMFI;
   //
   TopoDS_Iterator aIt(myRC);
   for (; aIt.More(); aIt.Next()) {
@@ -1071,7 +1020,7 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
       }
     }
     //
-    MapFacesToBuildSolids(aSx, aMFS);
+    MapFacesToBuildSolids(aSx, aMFS, aMFI);
   } // for (; aIt.More(); aIt.Next()) {
   //
   // Process possibly untouched solids.
@@ -1091,7 +1040,7 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
     }
     //
     if (aExp.More()) {
-      MapFacesToBuildSolids(aSx, aMFS);
+      MapFacesToBuildSolids(aSx, aMFS, aMFI);
     }
     else {
       BOPTools_Set aST;
@@ -1100,11 +1049,6 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
         aDMSTS.Add(aST, aSx);
       }
     }
-  }
-  // Check for user break
-  if (UserBreak(aPS))
-  {
-    return;
   }
   //
   TopTools_IndexedDataMapOfShapeListOfShape aMEF;
@@ -1119,6 +1063,13 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
       aSFS.Append(aFx);
     }
   }
+  // Internal faces
+  aNb = aMFI.Extent();
+  for (i = 1; i <= aNb; ++i) {
+    TopoDS_Shape aFx = aMFI.FindKey(i);
+    aSFS.Append(aFx.Oriented(TopAbs_FORWARD));
+    aSFS.Append(aFx.Oriented(TopAbs_REVERSED));
+  }
   //
   TopoDS_Shape aRC;
   BOPTools_AlgoTools::MakeContainer(TopAbs_COMPOUND, aRC);
@@ -1127,8 +1078,7 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
     BOPAlgo_BuilderSolid aBS;
     aBS.SetContext(myContext);
     aBS.SetShapes(aSFS);
-    aBS.SetAvoidInternalShapes (Standard_True);
-    aBS.Perform(aPS.Next(8.));
+    aBS.Perform();
     if (aBS.HasErrors()) {
       AddError (new BOPAlgo_AlertSolidBuilderFailed); // SolidBuilder failed
       return;
@@ -1166,7 +1116,6 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
   TopoDS_Shape aResult;
   BOPTools_AlgoTools::MakeContainer(TopAbs_COMPOUND, aResult);
   //
-
   aIt.Initialize(aRC);
   if (!aIt.More()) {
     // no solids in the result
@@ -1209,11 +1158,6 @@ void BOPAlgo_BOP::BuildSolid(const Message_ProgressRange& theRange)
     }
   }
   //
-  // Check for user break
-  if (UserBreak(aPS))
-  {
-    return;
-  }
   // build connexity blocks from new solids
   TopTools_ListOfShape aLCBS;
   BOPTools_AlgoTools::MakeConnexityBlocks(aRC, TopAbs_FACE, TopAbs_SOLID, aLCBS);
@@ -1579,16 +1523,19 @@ Standard_Integer NbCommonItemsInMap(const TopTools_MapOfShape& theM1,
 //=======================================================================
 //function : MapFacesToBuildSolids
 //purpose  : Stores the faces of the given solid into outgoing maps:
-//           <theMFS> - not internal faces with reference to solid.
+//           <theMFS> - not internal faces with reference to solid;
+//           <theMFI> - internal faces.
 //=======================================================================
 void MapFacesToBuildSolids(const TopoDS_Shape& theSol,
-                           TopTools_IndexedDataMapOfShapeListOfShape& theMFS)
+                           TopTools_IndexedDataMapOfShapeListOfShape& theMFS,
+                           TopTools_IndexedMapOfShape& theMFI)
 {
   TopExp_Explorer aExp(theSol, TopAbs_FACE);
   for (; aExp.More(); aExp.Next()) {
     const TopoDS_Shape& aF = aExp.Current();
     //
     if (aF.Orientation() == TopAbs_INTERNAL) {
+      theMFI.Add(aF);
       continue;
     }
     //

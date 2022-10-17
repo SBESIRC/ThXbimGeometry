@@ -31,6 +31,7 @@
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColStd_Array1OfReal.hxx>
 #include <TColStd_Array1OfInteger.hxx>
+class Standard_ConstructionError;
 
 
 //! An algorithm to convert a sequence of adjacent

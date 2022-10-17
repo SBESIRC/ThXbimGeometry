@@ -17,8 +17,8 @@
 
 /******************************************************************************/
 /* File:      OSD_WNT.cxx                                                     */
-/* Purpose:   Security management routines ( more convenient than WIN32       */
-/*            ones ) and other convrnient functions.                          */
+/* Purpose:   Security management routines ( more convinient than WIN32       */
+/*            ones ) and other convinient functions.                          */
 /******************************************************************************/
 /***/
 #include <OSD_WNT.hxx>
@@ -699,13 +699,12 @@ retry:
   if (retVal || (!retVal && GetLastError() == ERROR_ALREADY_EXISTS))
   {
     size_t anOldDirLength;
-    StringCchLengthW (oldDir, MAX_PATH, &anOldDirLength);
-    const size_t aNameLength = anOldDirLength + WILD_CARD_LEN + sizeof (L'\x00');
+    StringCchLengthW (oldDir, sizeof(oldDir) / sizeof(oldDir[0]), &anOldDirLength);
     if ((pFD = (WIN32_FIND_DATAW* )HeapAlloc (hHeap, 0, sizeof(WIN32_FIND_DATAW))) != NULL
-     && (pName =        (wchar_t* )HeapAlloc (hHeap, 0, aNameLength)) != NULL)
+     && (pName =        (wchar_t* )HeapAlloc (hHeap, 0, anOldDirLength + WILD_CARD_LEN + sizeof(L'\x00'))) != NULL)
     {
-      StringCchCopyW (pName, aNameLength, oldDir);
-      StringCchCatW  (pName, aNameLength, WILD_CARD);
+      StringCchCopyW (pName, sizeof(pName) / sizeof(pName[0]), oldDir);
+      StringCchCatW  (pName, sizeof(pName), WILD_CARD);
       retVal = TRUE;
       hFindFile = FindFirstFileExW (pName, FindExInfoStandard, pFD, FindExSearchNameMatch, NULL, 0);
       for (BOOL fFind = hFindFile != INVALID_HANDLE_VALUE; fFind; fFind = FindNextFileW (hFindFile, pFD))
@@ -716,24 +715,23 @@ retry:
           continue;
         }
 
-        size_t aNewDirLength = 0, aFileNameLength = 0;
-        StringCchLengthW (newDir, MAX_PATH, &aNewDirLength);
+        size_t anOldDirLength2 = 0, aNewDirLength = 0, aFileNameLength = 0;
+        StringCchLengthW (oldDir, sizeof(oldDir) / sizeof(oldDir[0]), &anOldDirLength2);
+        StringCchLengthW (newDir, sizeof(newDir) / sizeof(newDir[0]), &aNewDirLength);
         StringCchLengthW (pFD->cFileName, sizeof(pFD->cFileName) / sizeof(pFD->cFileName[0]), &aFileNameLength);
-        const size_t aFullNameSrcLength = anOldDirLength + aFileNameLength + sizeof (L'/') + sizeof (L'\x00');
-        const size_t aFullNameDstLength = aNewDirLength + aFileNameLength + sizeof (L'/') + sizeof (L'\x00');
-        if ((pFullNameSrc = (wchar_t* )HeapAlloc (hHeap, 0, aFullNameSrcLength)) == NULL
-          || (pFullNameDst = (wchar_t* )HeapAlloc (hHeap, 0, aFullNameDstLength)) == NULL)
+        if ((pFullNameSrc = (wchar_t* )HeapAlloc (hHeap, 0, anOldDirLength2 + aFileNameLength + sizeof(L'/') + sizeof(L'\x00'))) == NULL
+          || (pFullNameDst = (wchar_t* )HeapAlloc (hHeap, 0, aNewDirLength   + aFileNameLength + sizeof(L'/') + sizeof(L'\x00'))) == NULL)
         {
           break;
         }
 
-        StringCchCopyW (pFullNameSrc, aFullNameSrcLength, oldDir);
-        StringCchCatW  (pFullNameSrc, aFullNameSrcLength, L"/");
-        StringCchCatW  (pFullNameSrc, aFullNameSrcLength, pFD->cFileName);
+        StringCchCopyW (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), oldDir);
+        StringCchCatW  (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), L"/");
+        StringCchCatW  (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), pFD->cFileName);
 
-        StringCchCopyW (pFullNameDst, aFullNameDstLength, newDir);
-        StringCchCatW  (pFullNameDst, aFullNameDstLength, L"/");
-        StringCchCatW  (pFullNameDst, aFullNameDstLength, pFD->cFileName);
+        StringCchCopyW (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), newDir);
+        StringCchCatW  (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), L"/");
+        StringCchCatW  (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), pFD->cFileName);
 
         if ((pFD->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
@@ -855,13 +853,12 @@ BOOL CopyDirectory (const wchar_t* dirSrc, const wchar_t* dirDst)
   if (retVal || (!retVal && GetLastError() == ERROR_ALREADY_EXISTS))
   {
     size_t aDirSrcLength = 0;
-    StringCchLengthW (dirSrc, MAX_PATH, &aDirSrcLength);
-    const size_t aNameLength = aDirSrcLength + WILD_CARD_LEN + sizeof (L'\x00');
+    StringCchLengthW (dirSrc, sizeof(dirSrc) / sizeof(dirSrc[0]), &aDirSrcLength);
     if ((pFD = (WIN32_FIND_DATAW* )HeapAlloc (hHeap, 0, sizeof(WIN32_FIND_DATAW))) != NULL
-     && (pName = (wchar_t* )HeapAlloc (hHeap, 0, aNameLength)) != NULL)
+     && (pName = (wchar_t* )HeapAlloc (hHeap, 0, aDirSrcLength + WILD_CARD_LEN + sizeof(L'\x00'))) != NULL)
     {
-      StringCchCopyW(pName, aNameLength, dirSrc);
-      StringCchCatW (pName, aNameLength, WILD_CARD);
+      StringCchCopyW(pName, sizeof(pName) / sizeof(pName[0]), dirSrc);
+      StringCchCatW (pName, sizeof(pName) / sizeof(pName[0]), WILD_CARD);
 
       retVal = TRUE;
       hFindFile = FindFirstFileExW (pName, FindExInfoStandard, pFD, FindExSearchNameMatch, NULL, 0);
@@ -873,24 +870,23 @@ BOOL CopyDirectory (const wchar_t* dirSrc, const wchar_t* dirDst)
           continue;
         }
 
-        size_t aDirDstLength = 0, aFileNameLength = 0;
-        StringCchLengthW (dirDst, MAX_PATH, &aDirDstLength);
+        size_t aDirSrcLength2 = 0, aDirDstLength = 0, aFileNameLength = 0;
+        StringCchLengthW (dirSrc, sizeof(dirSrc) / sizeof(dirSrc[0]), &aDirSrcLength2);
+        StringCchLengthW (dirDst, sizeof(dirDst) / sizeof(dirDst[0]), &aDirDstLength);
         StringCchLengthW (pFD->cFileName, sizeof(pFD->cFileName) / sizeof(pFD->cFileName[0]), &aFileNameLength);
-        const size_t aFullNameSrcLength = aDirSrcLength + aFileNameLength + sizeof (L'/') + sizeof (L'\x00');
-        const size_t aFullNameDstLength = aDirDstLength + aFileNameLength + sizeof (L'/') + sizeof (L'\x00');
-        if ((pFullNameSrc = (wchar_t* )HeapAlloc (hHeap, 0, aFullNameSrcLength)) == NULL
-         || (pFullNameDst = (wchar_t* )HeapAlloc (hHeap, 0, aFullNameDstLength)) == NULL)
+        if ((pFullNameSrc = (wchar_t* )HeapAlloc (hHeap, 0, aDirSrcLength2 + aFileNameLength + sizeof(L'/') + sizeof(L'\x00'))) == NULL
+         || (pFullNameDst = (wchar_t* )HeapAlloc (hHeap, 0, aDirDstLength  + aFileNameLength + sizeof(L'/') + sizeof(L'\x00'))) == NULL)
         {
           break;
         }
 
-        StringCchCopyW (pFullNameSrc, aFullNameSrcLength, dirSrc);
-        StringCchCatW  (pFullNameSrc, aFullNameSrcLength, L"/");
-        StringCchCatW  (pFullNameSrc, aFullNameSrcLength, pFD->cFileName);
+        StringCchCopyW (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), dirSrc);
+        StringCchCatW  (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), L"/");
+        StringCchCatW  (pFullNameSrc, sizeof(pFullNameSrc) / sizeof(pFullNameSrc[0]), pFD->cFileName);
 
-        StringCchCopyW (pFullNameDst, aFullNameDstLength, dirDst);
-        StringCchCatW  (pFullNameDst, aFullNameDstLength, L"/");
-        StringCchCatW  (pFullNameDst, aFullNameDstLength, pFD->cFileName);
+        StringCchCopyW (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), dirDst);
+        StringCchCatW  (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), L"/");
+        StringCchCatW  (pFullNameDst, sizeof(pFullNameDst) / sizeof(pFullNameDst[0]), pFD->cFileName);
         if ((pFD->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
         {
           retVal = CopyDirectory (pFullNameSrc, pFullNameDst);
@@ -970,7 +966,7 @@ retry:
 /***/
 /******************************************************************************/
 /* Function : SetMoveDirectoryProc                                          */
-/* Purpose  : Sets callback procedure which is calling by the               */
+/* Purpose  : Sets callback procedure which is calling by the               */ 
 /*            'MoveDirectory' after moving of each item in the              */
 /*            directory. To unregister this callback function supply NULL   */
 /*            pointer                                                       */
@@ -984,7 +980,7 @@ void SetMoveDirectoryProc ( MOVE_DIR_PROC proc ) {
 /***/
 /******************************************************************************/
 /* Function : SetCopyDirectoryProc                                          */
-/* Purpose  : Sets callback procedure which is calling by the               */
+/* Purpose  : Sets callback procedure which is calling by the               */ 
 /*            'CopyDirectory' after copying of each item in the             */
 /*            directory. To unregister this callback function supply NULL   */
 /*            pointer                                                       */
@@ -998,10 +994,10 @@ void SetCopyDirectoryProc ( COPY_DIR_PROC proc ) {
 /***/
 /******************************************************************************/
 /* Function : SetResponseDirectoryProc                                      */
-/* Purpose  : Sets callback procedure which is calling by the               */
-/*            directory processing function if an error was occur.          */
+/* Purpose  : Sets callback procedure which is calling by the               */ 
+/*            directoy processing function if an error was occur.           */
 /*            The return value of that callback procedure determines        */
-/*            behaviour of directory processing functions in case of error. */
+/*            behaviour of directoy processing functions in case of error.  */
 /*            To unregister this callback function supply NULL pointer      */
 /******************************************************************************/
 /***/

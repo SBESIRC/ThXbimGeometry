@@ -258,13 +258,12 @@ TCollection_ExtendedString::TCollection_ExtendedString
 //  Create an extendedstring from an AsciiString 
 //---------------------------------------------------------------------------
 TCollection_ExtendedString::TCollection_ExtendedString
-                                (const TCollection_AsciiString& theString,
-                                 const Standard_Boolean isMultiByte)
+                                (const TCollection_AsciiString& theString)
 {
   mylength = nbSymbols (theString.ToCString());
   mystring = allocateExtChars (mylength);
   mystring[mylength] = 0;
-  if (isMultiByte && ConvertToUnicode (theString.ToCString()))
+  if (ConvertToUnicode (theString.ToCString()))
   {
     return;
   }
@@ -303,20 +302,6 @@ void TCollection_ExtendedString::AssignCat (const TCollection_ExtendedString& th
   }
   mylength = aNewlength;
   mystring[mylength] = 0;
-}
-
-// ----------------------------------------------------------------------------
-//  AssignCat
-// ----------------------------------------------------------------------------
-void TCollection_ExtendedString::AssignCat(const Standard_Utf16Char theChar)
-{
-  if (theChar != '\0')
-  {
-    mystring = reallocateExtChars(mystring, mylength + 1);
-    mystring[mylength] = theChar;
-    mylength += 1;
-    mystring[mylength] = '\0';
-  }  
 }
 
 // ----------------------------------------------------------------------------
@@ -611,12 +596,16 @@ Standard_Integer TCollection_ExtendedString::Length()  const
 // ----------------------------------------------------------------------------
 // Print
 // ----------------------------------------------------------------------------
-void TCollection_ExtendedString::Print (Standard_OStream& theStream) const
-{
-  if (mylength > 0)
-  {
-    const TCollection_AsciiString aUtf8 (mystring);
-    theStream << aUtf8;
+void TCollection_ExtendedString::Print(Standard_OStream& astream) const 
+{ 
+  // ASCII symbols (including extended Ascii) are printed as is;
+  // other Unicode characters are encoded as SGML numeric character references
+  for (Standard_Integer i = 0 ; i < mylength ; i++) {
+    Standard_ExtCharacter c = mystring[i];
+    if ( IsAnAscii(c) )
+      astream << ToCharacter(c);
+    else 
+      astream << "&#" << c << ";";
   }
 }
 

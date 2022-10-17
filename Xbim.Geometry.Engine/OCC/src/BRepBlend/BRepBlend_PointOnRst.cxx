@@ -12,19 +12,16 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <BRepBlend_PointOnRst.hxx>
 
-#include <Adaptor2d_Curve2d.hxx>
+#include <Adaptor2d_HCurve2d.hxx>
+#include <BRepBlend_PointOnRst.hxx>
 #include <IntSurf_Transition.hxx>
 #include <Standard_DomainError.hxx>
 
-BRepBlend_PointOnRst::BRepBlend_PointOnRst ()
-: prm(0.0)
-{
-}
+BRepBlend_PointOnRst::BRepBlend_PointOnRst () {}
 
 
-BRepBlend_PointOnRst::BRepBlend_PointOnRst(const Handle(Adaptor2d_Curve2d)& A,
+BRepBlend_PointOnRst::BRepBlend_PointOnRst(const Handle(Adaptor2d_HCurve2d)& A,
 				   const Standard_Real Param,
 				   const IntSurf_Transition& TLine,
 				   const IntSurf_Transition& TArc):
@@ -32,7 +29,7 @@ BRepBlend_PointOnRst::BRepBlend_PointOnRst(const Handle(Adaptor2d_Curve2d)& A,
        arc(A),traline(TLine),traarc(TArc),prm(Param)
 {}
 
-void BRepBlend_PointOnRst::SetArc(const Handle(Adaptor2d_Curve2d)& A,
+void BRepBlend_PointOnRst::SetArc(const Handle(Adaptor2d_HCurve2d)& A,
 			      const Standard_Real Param,
 			      const IntSurf_Transition& TLine,
 			      const IntSurf_Transition& TArc)

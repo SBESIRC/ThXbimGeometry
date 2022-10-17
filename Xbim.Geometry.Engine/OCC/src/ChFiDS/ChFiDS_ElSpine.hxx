@@ -33,6 +33,12 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <GeomAbs_CurveType.hxx>
 class ChFiDS_SurfData;
+class Standard_OutOfRange;
+class Standard_NoSuchObject;
+class Standard_DomainError;
+class Adaptor3d_HCurve;
+class gp_Pnt;
+class gp_Vec;
 class gp_Ax1;
 class Geom_Curve;
 class gp_Lin;
@@ -43,18 +49,16 @@ class gp_Parab;
 class Geom_BezierCurve;
 class Geom_BSplineCurve;
 
-DEFINE_STANDARD_HANDLE(ChFiDS_ElSpine, Adaptor3d_Curve)
 
 //! Elementary  Spine for cheminements and approximations.
 class ChFiDS_ElSpine  : public Adaptor3d_Curve
 {
-  DEFINE_STANDARD_RTTIEXT(ChFiDS_ElSpine, Adaptor3d_Curve)
 public:
 
-  Standard_EXPORT ChFiDS_ElSpine();
+  DEFINE_STANDARD_ALLOC
 
-  //! Shallow copy of adaptor
-  Standard_EXPORT virtual Handle(Adaptor3d_Curve) ShallowCopy() const Standard_OVERRIDE;
+  
+  Standard_EXPORT ChFiDS_ElSpine();
   
   Standard_EXPORT virtual Standard_Real FirstParameter() const Standard_OVERRIDE;
   
@@ -73,7 +77,7 @@ public:
   //! Returns    a  curve equivalent   of  <me>  between
   //! parameters <First>  and <Last>. <Tol>  is used  to
   //! test for 3d points confusion.
-  Standard_EXPORT virtual Handle(Adaptor3d_Curve) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
+  Standard_EXPORT virtual Handle(Adaptor3d_HCurve) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
   
   Standard_EXPORT virtual Standard_Real Resolution (const Standard_Real R3d) const Standard_OVERRIDE;
   
@@ -143,7 +147,18 @@ public:
   
   Standard_EXPORT Handle(Geom_BSplineCurve) BSpline() const Standard_OVERRIDE;
 
+
+
+
+protected:
+
+
+
+
+
 private:
+
+
 
   GeomAdaptor_Curve curve;
   gp_Pnt ptfirst;
@@ -160,6 +175,13 @@ private:
   Standard_Real pfirstsav;
   Standard_Real plastsav;
 
+
 };
+
+
+
+
+
+
 
 #endif // _ChFiDS_ElSpine_HeaderFile

@@ -14,10 +14,9 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <ProjLib_ProjectOnSurface.hxx>
 
-#include <Adaptor3d_Curve.hxx>
-#include <Adaptor3d_Surface.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor3d_HSurface.hxx>
 #include <AppCont_Function.hxx>
 #include <AppParCurves_MultiCurve.hxx>
 #include <Approx_FitAndDivide.hxx>
@@ -27,6 +26,7 @@
 #include <Geom_BSplineCurve.hxx>
 #include <PLib.hxx>
 #include <Precision.hxx>
+#include <ProjLib_ProjectOnSurface.hxx>
 #include <Standard_NoSuchObject.hxx>
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColStd_Array1OfInteger.hxx>
@@ -37,7 +37,7 @@
 //purpose  : Evaluate current point of the projected curve
 //=======================================================================
 static gp_Pnt OnSurface_Value(const Standard_Real U,
-			      const Handle(Adaptor3d_Curve)& myCurve,
+			      const Handle(Adaptor3d_HCurve)& myCurve,
 			      Extrema_ExtPS * myExtPS)
 {
   // on essaie de rendre le point solution le plus proche.
@@ -69,7 +69,7 @@ static gp_Pnt OnSurface_Value(const Standard_Real U,
 static Standard_Boolean OnSurface_D1(const Standard_Real , // U,
 				     gp_Pnt& ,       // P,
 				     gp_Vec&       , // V,
-				     const  Handle(Adaptor3d_Curve)& , //  myCurve,
+				     const  Handle(Adaptor3d_HCurve)& , //  myCurve,
 				     Extrema_ExtPS *) // myExtPS)
 {
   return Standard_False;
@@ -86,8 +86,8 @@ class ProjLib_OnSurface : public AppCont_Function
 {
 public:
 
-  ProjLib_OnSurface(const Handle(Adaptor3d_Curve)   & C, 
-                    const Handle(Adaptor3d_Surface) & S)
+  ProjLib_OnSurface(const Handle(Adaptor3d_HCurve)   & C, 
+                    const Handle(Adaptor3d_HSurface) & S)
  : myCurve(C)
   {
     myNbPnt = 1;
@@ -95,7 +95,7 @@ public:
     Standard_Real U = myCurve->FirstParameter();
     gp_Pnt P = myCurve->Value(U);
     Standard_Real Tol = Precision::PConfusion();
-    myExtPS = new Extrema_ExtPS (P, *S, Tol, Tol);
+    myExtPS = new Extrema_ExtPS(P,S->Surface(),Tol,Tol);
   }
 
   ~ProjLib_OnSurface() { delete myExtPS; }
@@ -127,7 +127,7 @@ private:
   ProjLib_OnSurface& operator= (const ProjLib_OnSurface&);
 
 private:
-  Handle(Adaptor3d_Curve)       myCurve;
+  Handle(Adaptor3d_HCurve)       myCurve;
   Extrema_ExtPS*                 myExtPS;
 };
 
@@ -147,38 +147,23 @@ private:
 //=======================================================================
 
 ProjLib_ProjectOnSurface::ProjLib_ProjectOnSurface() :
-myTolerance(0.0),
-myIsDone(Standard_False)
+myIsDone(Standard_False) 
 {
 }
 
 //=======================================================================
 //function : ProjLib_ProjectOnSurface
-//purpose  :
+//purpose  : 
 //=======================================================================
+
 ProjLib_ProjectOnSurface::ProjLib_ProjectOnSurface
-(const Handle(Adaptor3d_Surface)& S ) :
-myTolerance(0.0),
-myIsDone(Standard_False)
+(const Handle(Adaptor3d_HSurface)& S ) :
+myIsDone(Standard_False) 
 {
   mySurface = S;
 }
 
-//=======================================================================
-//function : Load
-//purpose  :
-//=======================================================================
-void ProjLib_ProjectOnSurface::Load (const Handle(Adaptor3d_Surface)& S)
-{
-  mySurface = S;
-  myIsDone = Standard_False;
-}
-
-//=======================================================================
-//function : Load
-//purpose  :
-//=======================================================================
-void ProjLib_ProjectOnSurface::Load(const Handle(Adaptor3d_Curve)& C,
+void ProjLib_ProjectOnSurface::Load(const Handle(Adaptor3d_HCurve)& C,
 				    const Standard_Real  Tolerance) 
 {
   myTolerance = Tolerance ;
@@ -280,4 +265,14 @@ Handle(Geom_BSplineCurve) ProjLib_ProjectOnSurface::BSpline() const
     (!myIsDone,
      "ProjLib_ProjectOnSurface:BSpline");
   return myResult ;
+}
+
+//=======================================================================
+//function : IsDone
+//purpose  : 
+//=======================================================================
+
+Standard_Boolean ProjLib_ProjectOnSurface::IsDone() const 
+{
+  return myIsDone;
 }

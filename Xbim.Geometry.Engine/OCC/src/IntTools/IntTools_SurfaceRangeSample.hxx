@@ -24,6 +24,7 @@
 #include <Standard_Integer.hxx>
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
+class IntTools_CurveRangeSample;
 class IntTools_Range;
 
 

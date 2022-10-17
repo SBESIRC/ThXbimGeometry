@@ -22,14 +22,13 @@
 //		dans Init(Path, FirstSect, LastSect) :
 //		il faut placer les 2 sections au debut de la trajectoire
 
-#include <GeomFill_Pipe.hxx>
-
 #include <Adaptor3d_CurveOnSurface.hxx>
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor3d_HCurveOnSurface.hxx>
 #include <Approx_SweepApproximation.hxx>
 #include <ElCLib.hxx>
 #include <Geom2d_Curve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
 #include <Geom_BSplineCurve.hxx>
 #include <Geom_BSplineSurface.hxx>
 #include <Geom_Circle.hxx>
@@ -46,7 +45,8 @@
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomAbs_SurfaceType.hxx>
 #include <GeomAdaptor_Curve.hxx>
-#include <GeomAdaptor_Surface.hxx>
+#include <GeomAdaptor_HCurve.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomFill_AppSweep.hxx>
 #include <GeomFill_CircularBlendFunc.hxx>
 #include <GeomFill_ConstantBiNormal.hxx>
@@ -61,6 +61,7 @@
 #include <GeomFill_LocationGuide.hxx>
 #include <GeomFill_LocationLaw.hxx>
 #include <GeomFill_NSections.hxx>
+#include <GeomFill_Pipe.hxx>
 #include <GeomFill_Profiler.hxx>
 #include <GeomFill_SectionLaw.hxx>
 #include <GeomFill_SectionPlacement.hxx>
@@ -304,12 +305,12 @@ GeomFill_Pipe::GeomFill_Pipe(const Handle(Geom_Curve)& Path,
      : myIsDone(Standard_False),myExchUV(Standard_False),myKPart(Standard_False)
 {
   Init();
-  Handle(GeomAdaptor_Curve) AdpPath = 
-    new GeomAdaptor_Curve( Path);
-  Handle(GeomAdaptor_Curve) AdpCurve1 = 
-    new GeomAdaptor_Curve( Curve1);
-  Handle(GeomAdaptor_Curve) AdpCurve2 = 
-    new GeomAdaptor_Curve( Curve2);
+  Handle(GeomAdaptor_HCurve) AdpPath = 
+    new GeomAdaptor_HCurve( Path);
+  Handle(GeomAdaptor_HCurve) AdpCurve1 = 
+    new GeomAdaptor_HCurve( Curve1);
+  Handle(GeomAdaptor_HCurve) AdpCurve2 = 
+    new GeomAdaptor_HCurve( Curve2);
 
   Init(AdpPath, AdpCurve1, AdpCurve2, Radius);
 }
@@ -320,9 +321,9 @@ GeomFill_Pipe::GeomFill_Pipe(const Handle(Geom_Curve)& Path,
 //purpose  : 
 //=======================================================================
 
-GeomFill_Pipe::GeomFill_Pipe(const Handle(Adaptor3d_Curve)& Path, 
-                             const Handle(Adaptor3d_Curve)& Curve1,
-                             const Handle(Adaptor3d_Curve)& Curve2,
+GeomFill_Pipe::GeomFill_Pipe(const Handle(Adaptor3d_HCurve)& Path, 
+                             const Handle(Adaptor3d_HCurve)& Curve1,
+                             const Handle(Adaptor3d_HCurve)& Curve2,
                              const Standard_Real Radius)
      : myIsDone(Standard_False),myExchUV(Standard_False),myKPart(Standard_False)
 {
@@ -340,7 +341,7 @@ GeomFill_Pipe::GeomFill_Pipe(const Handle(Adaptor3d_Curve)& Path,
 //=======================================================================
 
 GeomFill_Pipe::GeomFill_Pipe(const Handle(Geom_Curve)& Path,
-                             const Handle(Adaptor3d_Curve)& Guide,
+                             const Handle(Adaptor3d_HCurve)& Guide,
 			     const Handle(Geom_Curve)& FirstSect,
 			     const Standard_Boolean byACR,
 			     const Standard_Boolean rotat)
@@ -362,7 +363,7 @@ GeomFill_Pipe::GeomFill_Pipe(const Handle(Geom_Curve)& Path,
 //=======================================================================
 
 void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
-			 const Handle(Adaptor3d_Curve)& Guide,
+			 const Handle(Adaptor3d_HCurve)& Guide,
 			 const Handle(Geom_Curve)& FirstSect,
 			 const Standard_Boolean byACR,
 			 const Standard_Boolean rotat)
@@ -373,7 +374,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
 // triedre : AC pour absc. curv. ou P pour plan ortho
 {
   Standard_Real angle;
-  myAdpPath = new (GeomAdaptor_Curve) 
+  myAdpPath = new (GeomAdaptor_HCurve) 
     (Handle(Geom_Curve)::DownCast(Path->Copy()));
 
   Handle (GeomFill_TrihedronWithGuide) TLaw;
@@ -450,7 +451,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
   myRadius = Radius;
 
 // Nouvelle methode
-  myAdpPath = new (GeomAdaptor_Curve) (Path);
+  myAdpPath = new (GeomAdaptor_HCurve) (Path);
   Handle(Geom_Circle) C = new (Geom_Circle) (gp::XOY(), Radius);
   C->Rotate(gp::OZ(),M_PI/2.);
   
@@ -481,7 +482,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
 {
   Handle(Geom_Curve) Sect;
   Handle(GeomFill_TrihedronLaw) TLaw;
-  myAdpPath = new (GeomAdaptor_Curve) 
+  myAdpPath = new (GeomAdaptor_HCurve) 
     (Handle(Geom_Curve)::DownCast(Path->Copy()));
   Standard_Real param =  Path->FirstParameter();
 
@@ -604,9 +605,9 @@ void GeomFill_Pipe::Init(const Handle(Geom2d_Curve)& Path,
   Handle(Geom_Curve) Sect;
   Handle(GeomFill_TrihedronLaw) TLaw = new (GeomFill_Darboux)();
   myAdpPath = 
-    new Adaptor3d_CurveOnSurface(Adaptor3d_CurveOnSurface(
-		       new Geom2dAdaptor_Curve(Path), 
-		       new GeomAdaptor_Surface(Support)));
+    new Adaptor3d_HCurveOnSurface(Adaptor3d_CurveOnSurface(
+		       new Geom2dAdaptor_HCurve(Path), 
+		       new GeomAdaptor_HSurface(Support)));
  
   myLoc = new (GeomFill_CurveAndTrihedron) (TLaw);
   myLoc->SetCurve(myAdpPath);
@@ -639,7 +640,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
   Init();
 
   Handle(Geom_Curve) Sect;
-  myAdpPath = new (GeomAdaptor_Curve) 
+  myAdpPath = new (GeomAdaptor_HCurve) 
     (Handle(Geom_Curve)::DownCast(Path->Copy()));
   gp_Vec V;
   V.SetXYZ(Direction.XYZ());
@@ -678,7 +679,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
 
   Handle(GeomFill_TrihedronLaw) TLaw;
   TLaw = new (GeomFill_CorrectedFrenet) ();
-  myAdpPath = new (GeomAdaptor_Curve) 
+  myAdpPath = new (GeomAdaptor_HCurve) 
     (Handle(Geom_Curve)::DownCast(Path->Copy()));
   if (!TLaw.IsNull()) {
     myLoc = new (GeomFill_CurveAndTrihedron) (TLaw);
@@ -746,7 +747,7 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
                 last = Path->LastParameter();
   Handle(GeomFill_TrihedronLaw) TLaw;
   TLaw = new (GeomFill_CorrectedFrenet) ();
-  myAdpPath = new (GeomAdaptor_Curve) 
+  myAdpPath = new (GeomAdaptor_HCurve) 
     (Handle(Geom_Curve)::DownCast(Path->Copy()));
 
   if (!TLaw.IsNull()) {
@@ -784,9 +785,9 @@ void GeomFill_Pipe::Init(const Handle(Geom_Curve)& Path,
 //purpose  : 
 //=======================================================================
 
-void GeomFill_Pipe::Init(const Handle(Adaptor3d_Curve)& Path, 
-			 const Handle(Adaptor3d_Curve)& Curve1,
-			 const Handle(Adaptor3d_Curve)& Curve2,
+void GeomFill_Pipe::Init(const Handle(Adaptor3d_HCurve)& Path, 
+			 const Handle(Adaptor3d_HCurve)& Curve1,
+			 const Handle(Adaptor3d_HCurve)& Curve2,
 			 const Standard_Real           Radius)
 {
   myType         = 4;

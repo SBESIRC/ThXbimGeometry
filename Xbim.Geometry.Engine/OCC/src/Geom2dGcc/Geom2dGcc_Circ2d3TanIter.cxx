@@ -63,9 +63,6 @@ Geom2dGcc_Circ2d3TanIter (const Geom2dGcc_QCurve& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -190,9 +187,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedCirc& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -322,9 +316,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedCirc& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -457,9 +448,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedLin& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() ||
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -592,9 +580,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedLin&  Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || 
@@ -720,9 +705,6 @@ Geom2dGcc_Circ2d3TanIter (const Geom2dGcc_QCurve& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -838,9 +820,6 @@ Geom2dGcc_Circ2d3TanIter (const Geom2dGcc_QCurve& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified())) {
                                 throw GccEnt_BadQualifier();
@@ -950,9 +929,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedLin&  Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() ||
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 
@@ -1072,9 +1048,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedCirc& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() ||
@@ -1204,9 +1177,6 @@ Geom2dGcc_Circ2d3TanIter (const GccEnt_QualifiedCirc& Qualified1 ,
 
                             Standard_Real Tol = Abs(Tolerance);
                             WellDone = Standard_False;
-                            qualifier1 = GccEnt_noqualifier;
-                            qualifier2 = GccEnt_noqualifier;
-                            qualifier3 = GccEnt_noqualifier;
                             if (!(Qualified1.IsEnclosed() || Qualified1.IsEnclosing() || 
                               Qualified1.IsOutside() || Qualified1.IsUnqualified()) ||
                               !(Qualified2.IsEnclosed() || Qualified2.IsEnclosing() || 

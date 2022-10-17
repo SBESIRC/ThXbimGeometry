@@ -13,8 +13,9 @@
 // commercial license or contractual agreement.
 
 //============================================================================
-//==== Title: Standard_Character.hxx
-//==== Role : The header file of primitive type "Character" from package "Standard"
+//==== Titre: Standard_Character.hxx
+//==== Role : The header file of primitve type "Character" from package 
+//====        "Standard"
 //==== 
 //==== Implementation:  This is a primitive type implemented as typedef
 //====        typedef char Standard_Character

@@ -14,9 +14,10 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <BRepCheck_Result.hxx>
 
 #include <BRepCheck.hxx>
+#include <BRepCheck_Result.hxx>
+#include <Standard_NoSuchObject.hxx>
 #include <Standard_Type.hxx>
 #include <TopoDS_Shape.hxx>
 
@@ -24,14 +25,13 @@ IMPLEMENT_STANDARD_RTTIEXT(BRepCheck_Result,Standard_Transient)
 
 //=======================================================================
 //function : BRepCheck_Result
-//purpose  :
+//purpose  : 
 //=======================================================================
-BRepCheck_Result::BRepCheck_Result()
-: myMin (Standard_False),
-  myBlind (Standard_False)
+BRepCheck_Result::BRepCheck_Result() :
+   myMin(Standard_False),myBlind(Standard_False)
 {
-  //
 }
+
 
 //=======================================================================
 //function : Init
@@ -49,20 +49,32 @@ void BRepCheck_Result::Init(const TopoDS_Shape& S)
 
 //=======================================================================
 //function : SetFailStatus
-//purpose  :
+//purpose  : 
 //=======================================================================
-void BRepCheck_Result::SetFailStatus (const TopoDS_Shape& S)
+void BRepCheck_Result::SetFailStatus(const TopoDS_Shape& S) 
 {
-  Standard_Mutex::Sentry aLock(myMutex.get());
-  Handle(BRepCheck_HListOfStatus) aList;
-  if (!myMap.Find (S, aList))
-  {
-    aList = new BRepCheck_HListOfStatus();
-    myMap.Bind (S, aList);
+  if(!myMap.IsBound(S)) {
+    BRepCheck_ListOfStatus thelist;
+    myMap.Bind(S, thelist);
   }
-
-  BRepCheck::Add (*aList, BRepCheck_CheckFail);
+  BRepCheck::Add(myMap(S), BRepCheck_CheckFail);
 }
+
+
+//=======================================================================
+//function : StatusOnShape
+//purpose  : 
+//=======================================================================
+
+const BRepCheck_ListOfStatus& BRepCheck_Result::StatusOnShape
+   (const TopoDS_Shape& S)
+{
+  if (!myMap.IsBound(S)) {
+    InContext(S);
+  }
+  return myMap(S);
+}
+
 
 //=======================================================================
 //function : InitContextIterator
@@ -90,16 +102,4 @@ void BRepCheck_Result::NextShapeInContext()
   if (myIter.More() && myIter.Key().IsSame(myShape)) {
     myIter.Next();
   }
-}
-
-//=======================================================================
-//function : SetParallel
-//purpose  : 
-//=======================================================================
-void BRepCheck_Result::SetParallel(Standard_Boolean theIsParallel)
-{
-  if (theIsParallel && myMutex.IsNull())
-  {
-    myMutex.reset(new Standard_HMutex());
-  }
-}
+}  

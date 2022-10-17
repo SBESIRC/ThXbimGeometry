@@ -23,11 +23,7 @@
 //function : ChFiDS_CircSection
 //purpose  : 
 //=======================================================================
-ChFiDS_CircSection::ChFiDS_CircSection()
-: myF (0.0),
-  myL (0.0)
-{
-}
+ChFiDS_CircSection::ChFiDS_CircSection(){}
 
 
 //=======================================================================

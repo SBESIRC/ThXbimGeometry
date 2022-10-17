@@ -35,11 +35,7 @@ static Message_DataMapOfExtendedString& msgsDataMap ()
 }
 
 // mutex used to prevent concurrent access to message registry
-static Standard_Mutex& Message_MsgFile_Mutex()
-{
-  static Standard_Mutex theMutex;
-  return theMutex;
-}
+static Standard_Mutex theMutex;
 
 typedef enum
 {
@@ -86,17 +82,13 @@ Standard_Boolean Message_MsgFile::Load (const Standard_CString theDirName,
 //Called   : from loadFile()
 //=======================================================================
 
-template <typename CharType> struct TCollection_String;
-template <> struct TCollection_String <Standard_Character>    { typedef TCollection_AsciiString type; };
-template <> struct TCollection_String <Standard_ExtCharacter> { typedef TCollection_ExtendedString type; };
-
-template <class CharType> static inline Standard_Boolean
-getString (CharType *&                  thePtr,
+template <class _Char> static inline Standard_Boolean
+getString (_Char *&                     thePtr,
            TCollection_ExtendedString&  theString,
            Standard_Integer&            theLeftSpaces)
 {
-  CharType * anEndPtr = thePtr;
-  CharType * aPtr;
+  _Char * anEndPtr = thePtr;
+  _Char * aPtr;
   Standard_Integer aLeftSpaces;
 
   do 
@@ -106,7 +98,7 @@ getString (CharType *&                  thePtr,
     aLeftSpaces = 0;
     for (;;)
     {
-      CharType aChar = * aPtr;
+      _Char aChar = * aPtr;
       if      (aChar == ' ')  aLeftSpaces++;
       else if (aChar == '\t') aLeftSpaces += 8;
       else if (aChar == '\r' || * aPtr == '\n') aLeftSpaces = 0;
@@ -129,7 +121,7 @@ getString (CharType *&                  thePtr,
   thePtr = anEndPtr;
   if (*thePtr)
     *thePtr++ = '\0';
-  theString = typename TCollection_String<CharType>::type (aPtr);
+  theString = TCollection_ExtendedString (aPtr);
   theLeftSpaces = aLeftSpaces;
   return Standard_True;
 }
@@ -265,7 +257,7 @@ Standard_Boolean Message_MsgFile::LoadFile (const Standard_CString theFileName)
     {
       // Reverse the bytes throughout the buffer
       const Standard_ExtCharacter* const anEnd =
-        reinterpret_cast<const Standard_ExtCharacter*>(&anMsgBuffer[aFileSize]);
+        reinterpret_cast<const Standard_ExtCharacter* const>(&anMsgBuffer[aFileSize]);
 
       for (Standard_ExtCharacter* aPtr = aUnicodeBuffer; aPtr < anEnd; aPtr++)
       {
@@ -349,12 +341,13 @@ Standard_Boolean Message_MsgFile::LoadFromString (const Standard_CString theCont
 //purpose  : Add one message to the global table. Fails if the same keyword
 //           already exists in the table
 //=======================================================================
+
 Standard_Boolean Message_MsgFile::AddMsg (const TCollection_AsciiString& theKeyword,
 					  const TCollection_ExtendedString&  theMessage)
 {
   Message_DataMapOfExtendedString& aDataMap = ::msgsDataMap();
 
-  Standard_Mutex::Sentry aSentry (Message_MsgFile_Mutex());
+  Standard_Mutex::Sentry aSentry (theMutex);
   aDataMap.Bind (theKeyword, theMessage);
   return Standard_True;
 }
@@ -363,19 +356,21 @@ Standard_Boolean Message_MsgFile::AddMsg (const TCollection_AsciiString& theKeyw
 //function : getMsg
 //purpose  : retrieve the message previously defined for the given keyword
 //=======================================================================
-const TCollection_ExtendedString& Message_MsgFile::Msg (const Standard_CString theKeyword)
+
+const TCollection_ExtendedString &Message_MsgFile::Msg (const Standard_CString theKeyword)
 {
-  TCollection_AsciiString aKey (theKeyword);
+  TCollection_AsciiString aKey((char*)theKeyword);
   return Msg (aKey);
 } 
 
 //=======================================================================
 //function : HasMsg
-//purpose  :
+//purpose  : 
 //=======================================================================
+
 Standard_Boolean Message_MsgFile::HasMsg (const TCollection_AsciiString& theKeyword)
 {
-  Standard_Mutex::Sentry aSentry (Message_MsgFile_Mutex());
+  Standard_Mutex::Sentry aSentry (theMutex);
   return ::msgsDataMap().IsBound (theKeyword);
 }
 
@@ -383,26 +378,24 @@ Standard_Boolean Message_MsgFile::HasMsg (const TCollection_AsciiString& theKeyw
 //function : Msg
 //purpose  : retrieve the message previously defined for the given keyword
 //=======================================================================
-const TCollection_ExtendedString& Message_MsgFile::Msg (const TCollection_AsciiString& theKeyword)
+
+const TCollection_ExtendedString &Message_MsgFile::Msg (const TCollection_AsciiString& theKeyword)
 {
   // find message in the map
   Message_DataMapOfExtendedString& aDataMap = ::msgsDataMap();
-  Standard_Mutex::Sentry aSentry (Message_MsgFile_Mutex());
+  Standard_Mutex::Sentry aSentry (theMutex);
 
   // if message is not found, generate error message and add it to the map to minimize overhead
   // on consequent calls with the same key
-  const TCollection_ExtendedString* aValPtr = aDataMap.Seek (theKeyword);
-  if (aValPtr == NULL)
+  if (! aDataMap.IsBound(theKeyword))
   {
     // text of the error message can be itself defined in the map
     static const TCollection_AsciiString aPrefixCode("Message_Msg_BadKeyword");
     static const TCollection_ExtendedString aDefPrefix("Unknown message invoked with the keyword ");
-    const TCollection_ExtendedString* aPrefValPtr = aDataMap.Seek (aPrefixCode);
-    TCollection_AsciiString aErrorMessage = (aPrefValPtr != NULL ? *aPrefValPtr : aDefPrefix);
+    TCollection_AsciiString aErrorMessage = (aDataMap.IsBound(aPrefixCode) ? aDataMap(aPrefixCode) : aDefPrefix);
     aErrorMessage += theKeyword;
     aDataMap.Bind (theKeyword, aErrorMessage); // do not use AddMsg() here to avoid mutex deadlock
-    aValPtr = aDataMap.Seek (theKeyword);
   }
 
-  return *aValPtr;
+  return aDataMap (theKeyword);
 }

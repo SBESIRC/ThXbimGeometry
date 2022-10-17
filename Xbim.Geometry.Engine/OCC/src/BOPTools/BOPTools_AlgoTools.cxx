@@ -825,8 +825,7 @@ Standard_Boolean BOPTools_AlgoTools::IsInternalFace
       const TopoDS_Face& aF2=(*(TopoDS_Face*)(&aLF.Last()));
       iRet=BOPTools_AlgoTools::IsInternalFace(theFace, aE, aF1, aF2,
                                               theContext);
-      if (iRet != 2)
-        break;
+      break;
     }
   }//for(; aExp.More(); aExp.Next()) {
   //
@@ -902,6 +901,8 @@ Standard_Integer BOPTools_AlgoTools::IsInternalFace
    const TopoDS_Face& theFace2,
    const Handle(IntTools_Context)& theContext)
 {
+  Standard_Boolean bRet;
+  Standard_Integer iRet;
   TopoDS_Edge aE1, aE2;
   TopoDS_Face aFOff;
   BOPTools_ListOfCoupleOfShape theLCSOff;
@@ -930,15 +931,17 @@ Standard_Integer BOPTools_AlgoTools::IsInternalFace
   aCS2.SetShape2(theFace2);
   theLCSOff.Append(aCS2);
   //
-  Standard_Integer iRet = 0; // theFace is not internal
-  Standard_Boolean isDone = GetFaceOff (aE1, theFace1, theLCSOff, aFOff, theContext);
-  if (!isDone)
-    // error, unable to classify face by this edge
-    iRet = 2;
-  else if (theFace.IsEqual (aFOff))
+  bRet=GetFaceOff(aE1, theFace1, theLCSOff, aFOff, theContext);
+  //
+  iRet=0; // theFace is not internal
+  if (theFace.IsEqual(aFOff)) {
     // theFace is internal
-    iRet = 1;
-
+    iRet=1;  
+    if (!bRet) {
+      // theFace seems to be internal  
+      iRet=2;
+    }
+  }
   return iRet;
 }
 //=======================================================================
@@ -954,7 +957,7 @@ Standard_Boolean BOPTools_AlgoTools::GetFaceOff
 {
   Standard_Boolean bRet, bIsComputed;
   Standard_Real aT, aT1, aT2, aAngle, aTwoPI, aAngleMin, aDt3D;
-  Standard_Real aUmin, aUsup, aVmin, aVsup;
+  Standard_Real aUmin, aUsup, aVmin, aVsup, aPA;
   gp_Pnt aPn1, aPn2, aPx;
   gp_Dir aDN1, aDN2, aDBF, aDBF2, aDTF;
   gp_Vec aVTgt;
@@ -964,6 +967,7 @@ Standard_Boolean BOPTools_AlgoTools::GetFaceOff
   BOPTools_ListIteratorOfListOfCoupleOfShape aIt;
   GeomAPI_ProjectPointOnSurf aProjPL;
   //
+  aPA=Precision::Angular();
   aAngleMin=100.;
   aTwoPI=M_PI+M_PI;
   aC3D =BRep_Tool::Curve(theE1, aT1, aT2);
@@ -990,10 +994,6 @@ Standard_Boolean BOPTools_AlgoTools::GetFaceOff
   //
   aDTF=aDN1^aDBF;
   //
-  // The difference between faces should be obvious enough
-  // to guarantee the correctness of the classification
-  Standard_Real anAngleCriteria = Precision::Confusion();
-
   bRet=Standard_True;
   aIt.Initialize(theLCSOff);
   for (; aIt.More(); aIt.Next()) {
@@ -1012,7 +1012,11 @@ Standard_Boolean BOPTools_AlgoTools::GetFaceOff
     //Angle
     aAngle=AngleWithRef(aDBF, aDBF2, aDTF);
     //
-    if (Abs(aAngle) < Precision::Angular()) {
+    if(aAngle<0.) {
+      aAngle=aTwoPI+aAngle;
+    }
+    //
+    if (aAngle<aPA) {
       if (aF2==theF1) {
         aAngle=M_PI;
       }
@@ -1021,20 +1025,18 @@ Standard_Boolean BOPTools_AlgoTools::GetFaceOff
       }
     }
     //
-    if (Abs(aAngle) < anAngleCriteria ||
-        Abs (aAngle-aAngleMin) < anAngleCriteria) {
+    if (fabs(aAngle-aAngleMin)<aPA) {
       // the minimal angle can not be found
       bRet=Standard_False; 
-    }
-    //
-    if (aAngle < 0.)
-    {
-      aAngle = aTwoPI + aAngle;
     }
     //
     if (aAngle<aAngleMin){
       aAngleMin=aAngle;
       theFOff=aF2;
+    }
+    else if (aAngle==aAngleMin) {
+      // the minimal angle can not be found
+      bRet=Standard_False;  
     }
   }
   return bRet;
@@ -1634,7 +1636,7 @@ void BOPTools_AlgoTools::MakeEdge(const IntTools_Curve& theIC,
                                   TopoDS_Edge& theE)
 {
   BRep_Builder aBB;
-  Standard_Real aNeedTol = theTolR3D + BOPTools_AlgoTools::DTolerance();
+  Standard_Real aNeedTol = theTolR3D + 1e-12;
   //
   aBB.UpdateVertex(theV1, aNeedTol);
   aBB.UpdateVertex(theV2, aNeedTol);

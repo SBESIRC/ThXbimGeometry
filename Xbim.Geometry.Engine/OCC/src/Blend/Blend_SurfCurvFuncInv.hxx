@@ -27,6 +27,8 @@
 #include <math_Vector.hxx>
 #include <Standard_Real.hxx>
 class math_Matrix;
+class Adaptor2d_HCurve2d;
+
 
 //! Deferred   class  for a  function  used  to compute  a
 //! blending surface between a  surface and a curve, using
@@ -71,7 +73,7 @@ public:
   Standard_EXPORT virtual Standard_Boolean Values (const math_Vector& X, math_Vector& F, math_Matrix& D) = 0;
   
   //! Set the Point on which a solution has to be found.
-  Standard_EXPORT virtual void Set (const Handle(Adaptor2d_Curve2d)& Rst) = 0;
+  Standard_EXPORT virtual void Set (const Handle(Adaptor2d_HCurve2d)& Rst) = 0;
   
   //! Returns in the vector Tolerance the parametric tolerance
   //! for each of the 3 variables;

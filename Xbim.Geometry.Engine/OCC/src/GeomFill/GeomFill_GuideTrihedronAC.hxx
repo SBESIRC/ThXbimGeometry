@@ -27,6 +27,9 @@
 #include <GeomAbs_Shape.hxx>
 #include <TColStd_Array1OfReal.hxx>
 class Approx_CurvlinFunc;
+class Adaptor3d_HCurve;
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 class GeomFill_TrihedronLaw;
 class gp_Vec;
 
@@ -42,13 +45,13 @@ class GeomFill_GuideTrihedronAC : public GeomFill_TrihedronWithGuide
 public:
 
   
-  Standard_EXPORT GeomFill_GuideTrihedronAC(const Handle(Adaptor3d_Curve)& guide);
+  Standard_EXPORT GeomFill_GuideTrihedronAC(const Handle(Adaptor3d_HCurve)& guide);
   
-  Standard_EXPORT virtual void SetCurve (const Handle(Adaptor3d_Curve)& C) Standard_OVERRIDE;
+  Standard_EXPORT virtual void SetCurve (const Handle(Adaptor3d_HCurve)& C) Standard_OVERRIDE;
   
   Standard_EXPORT virtual Handle(GeomFill_TrihedronLaw) Copy() const Standard_OVERRIDE;
   
-  Standard_EXPORT virtual Handle(Adaptor3d_Curve) Guide() const Standard_OVERRIDE;
+  Standard_EXPORT virtual Handle(Adaptor3d_HCurve) Guide() const Standard_OVERRIDE;
   
   Standard_EXPORT virtual Standard_Boolean D0 (const Standard_Real Param, gp_Vec& Tangent, gp_Vec& Normal, gp_Vec& BiNormal) Standard_OVERRIDE;
   
@@ -64,7 +67,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   Standard_EXPORT virtual void Intervals (TColStd_Array1OfReal& T, const GeomAbs_Shape S) const Standard_OVERRIDE;
   
@@ -82,7 +85,7 @@ public:
   Standard_EXPORT virtual Standard_Boolean IsConstant() const Standard_OVERRIDE;
   
   //! Say if the law is defined, only by the 3d Geometry of
-  //! the set Curve
+  //! the setted Curve
   //! Return False by Default.
   Standard_EXPORT virtual Standard_Boolean IsOnlyBy3dCurve() const Standard_OVERRIDE;
   
@@ -105,7 +108,7 @@ private:
   Standard_Real Lguide;
   Handle(Approx_CurvlinFunc) myCurveAC;
   Standard_Real L;
-  Handle(Adaptor3d_Curve) myCurve;
+  Handle(Adaptor3d_HCurve) myCurve;
   Standard_Real UTol;
   Standard_Real STol;
   Standard_Real Orig1;

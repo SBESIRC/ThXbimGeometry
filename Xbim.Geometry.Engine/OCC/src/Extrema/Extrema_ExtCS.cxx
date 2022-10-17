@@ -39,22 +39,10 @@
 #include <Standard_OutOfRange.hxx>
 #include <StdFail_NotDone.hxx>
 #include <TColStd_Array1OfReal.hxx>
-#include <Extrema_ExtPS.hxx>
 
-Extrema_ExtCS::Extrema_ExtCS()
-: myS(NULL),
-  myDone(Standard_False),
-  myIsPar(Standard_False),
-  myuinf(0.0),
-  myusup(0.0),
-  myvinf(0.0),
-  myvsup(0.0),
-  mytolC(0.0),
-  mytolS(0.0),
-  myucinf(0.0),
-  myucsup(0.0),
-  myStype(GeomAbs_OtherSurface)
+Extrema_ExtCS::Extrema_ExtCS() 
 {
+  myDone = Standard_False;
 }
 
 Extrema_ExtCS::Extrema_ExtCS(const Adaptor3d_Curve&   C,
@@ -63,7 +51,9 @@ Extrema_ExtCS::Extrema_ExtCS(const Adaptor3d_Curve&   C,
   const Standard_Real    TolS)
 
 {
-  Initialize (S, TolC, TolS);
+  Initialize(S, S.FirstUParameter(), S.LastUParameter(), 
+    S.FirstVParameter(), S.LastVParameter(), 
+    TolC, TolS);
   Perform(C, C.FirstParameter(), C.LastParameter());
 }
 
@@ -83,12 +73,6 @@ Extrema_ExtCS::Extrema_ExtCS(const Adaptor3d_Curve&   C,
   Perform(C, UCinf, UCsup);
 }
 
-void Extrema_ExtCS::Initialize (const Adaptor3d_Surface& S, const Standard_Real TolC, const Standard_Real TolS)
-{
-  Initialize (S, S.FirstUParameter(), S.LastUParameter(),
-              S.FirstVParameter(), S.LastVParameter(),
-              TolC, TolS);
-}
 
 void Extrema_ExtCS::Initialize(const Adaptor3d_Surface& S,
   const Standard_Real    Uinf,	
@@ -98,7 +82,7 @@ void Extrema_ExtCS::Initialize(const Adaptor3d_Surface& S,
   const Standard_Real    TolC,
   const Standard_Real    TolS)
 {
-  myS = &S;
+  myS = (Adaptor3d_SurfacePtr)&S;
   myIsPar = Standard_False;
   myuinf  = Uinf;
   myusup  = Usup;
@@ -121,7 +105,7 @@ void Extrema_ExtCS::Perform(const Adaptor3d_Curve& C,
   mySqDist.Clear();
   Standard_Integer i, j;
   Standard_Integer NbT, NbU, NbV;
-  NbT = 12; NbU = NbV = 10;
+  NbT = NbU = NbV = 10;
   GeomAbs_CurveType myCtype  = C.GetType();
 
   myDone = Standard_False;
@@ -192,27 +176,6 @@ void Extrema_ExtCS::Perform(const Adaptor3d_Curve& C,
             NbU = 13;
           if (myS->IsVPeriodic())
             NbV = 13;
-
-          if (clast - cfirst <= Precision::Confusion())
-          {
-            Standard_Real aCPar = (cfirst + clast) / 2.;
-            gp_Pnt aPm = C.Value(aCPar);
-            Extrema_ExtPS anExtPS(aPm, *myS, ufirst, ulast,
-              vfirst, vlast, mytolS, mytolS, Extrema_ExtFlag_MIN);
-            myDone = anExtPS.IsDone();
-            if (myDone) {
-              Standard_Integer NbExt = anExtPS.NbExt();
-              Standard_Real T = aCPar, U, V;
-              Extrema_POnCurv PC;
-              Extrema_POnSurf PS;
-              for (i = 1; i <= NbExt; i++) {
-                PS = anExtPS.Point(i);
-                PS.Parameter(U, V);
-                AddSolution(C, T, U, V, PC.Value(), PS.Value(), anExtPS.SquareDistance(i));
-              }
-            }
-            return;
-          }
 
           Extrema_GenExtCS Ext(C, *myS, NbT, NbU, NbV, cfirst, clast, ufirst, ulast,
             vfirst, vlast, mytolC, mytolS);

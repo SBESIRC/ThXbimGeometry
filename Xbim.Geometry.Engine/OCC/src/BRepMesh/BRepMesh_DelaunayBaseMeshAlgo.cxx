@@ -17,8 +17,6 @@
 #include <BRepMesh_MeshTool.hxx>
 #include <BRepMesh_Delaun.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_DelaunayBaseMeshAlgo, BRepMesh_ConstrainedBaseMeshAlgo)
-
 //=======================================================================
 // Function: Constructor
 // Purpose : 
@@ -39,7 +37,7 @@ BRepMesh_DelaunayBaseMeshAlgo::~BRepMesh_DelaunayBaseMeshAlgo()
 //function : generateMesh
 //purpose  :
 //=======================================================================
-void BRepMesh_DelaunayBaseMeshAlgo::generateMesh(const Message_ProgressRange& theRange)
+void BRepMesh_DelaunayBaseMeshAlgo::generateMesh()
 {
   const Handle(BRepMesh_DataStructureOfDelaun)& aStructure = getStructure();
   const Handle(VectorOfPnt)&                    aNodesMap  = getNodesMap();
@@ -55,9 +53,5 @@ void BRepMesh_DelaunayBaseMeshAlgo::generateMesh(const Message_ProgressRange& th
   BRepMesh_MeshTool aCleaner(aStructure);
   aCleaner.EraseFreeLinks();
 
-  if (!theRange.More())
-  {
-    return;
-  }
-  postProcessMesh(aMesher, theRange);
+  postProcessMesh(aMesher);
 }

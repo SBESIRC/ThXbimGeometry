@@ -15,9 +15,9 @@
 // commercial license or contractual agreement.
 
 
-#include <Adaptor2d_Curve2d.hxx>
-#include <Adaptor3d_Curve.hxx>
-#include <Adaptor3d_Surface.hxx>
+#include <Adaptor2d_HCurve2d.hxx>
+#include <Adaptor3d_HCurve.hxx>
+#include <Adaptor3d_HSurface.hxx>
 #include <Blend_Point.hxx>
 #include <BlendFunc.hxx>
 #include <BRepBlend_SurfRstConstRad.hxx>
@@ -60,18 +60,16 @@ static void t3dto2d(Standard_Real& a,
 //=======================================================================
 
 BRepBlend_SurfRstConstRad::BRepBlend_SurfRstConstRad
-(const Handle(Adaptor3d_Surface)& Surf,
- const Handle(Adaptor3d_Surface)& SurfRst,
- const Handle(Adaptor2d_Curve2d)& Rst,
- const Handle(Adaptor3d_Curve)&   CGuide):
+(const Handle(Adaptor3d_HSurface)& Surf,
+ const Handle(Adaptor3d_HSurface)& SurfRst,
+ const Handle(Adaptor2d_HCurve2d)& Rst,
+ const Handle(Adaptor3d_HCurve)&   CGuide):
  surf(Surf), surfrst(SurfRst), rst(Rst), cons(Rst,SurfRst), 
  guide(CGuide), tguide(CGuide),
- prmrst(0.0), istangent(Standard_True),
- ray(0.0), choix(0), normtg(0.0),
- theD(0.), maxang(RealFirst()), minang(RealLast()),
- distmin(RealLast()), mySShape(BlendFunc_Rational)
-{
-}
+ istangent(Standard_True), theD(0.), maxang(RealFirst()), minang(RealLast()),
+ distmin(RealLast()),
+ mySShape(BlendFunc_Rational)
+{}
 
 //=======================================================================
 //function : NbVariables
@@ -259,8 +257,8 @@ Standard_Boolean BRepBlend_SurfRstConstRad::Values(const math_Vector& X,
 //purpose  : 
 //=======================================================================
 
-void BRepBlend_SurfRstConstRad::Set(const Handle(Adaptor3d_Surface)& SurfRef,
-				    const Handle(Adaptor2d_Curve2d)& RstRef)
+void BRepBlend_SurfRstConstRad::Set(const Handle(Adaptor3d_HSurface)& SurfRef,
+				    const Handle(Adaptor2d_HCurve2d)& RstRef)
 {
   surfref = SurfRef;
   rstref = RstRef;
@@ -880,7 +878,7 @@ Standard_Boolean BRepBlend_SurfRstConstRad::Section
   
   gp_Vec d1u1,d1v1,d2u1,d2v1,d2uv1,d1;
   gp_Vec ns,ns2,dnplan,dnw,dn2w; //,np2,dnp2;
-  gp_Vec ncrossns;
+  gp_Vec ncrossns;;
   gp_Vec resulu,resulv,temp,tgct,resul;
   gp_Vec d1urst,d1vrst;
   gp_Pnt Center,bid;

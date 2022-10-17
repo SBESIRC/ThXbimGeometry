@@ -31,8 +31,6 @@
 //  purpose  :
 //========================================================================
 MAT2d_Mat2d::MAT2d_Mat2d(const Standard_Boolean IsOpenResult)
-: semiInfinite(Standard_False),
-  isDone(Standard_False)
 {
   myIsOpenResult = IsOpenResult;
   thenumberofbisectors = 0;
@@ -185,7 +183,6 @@ void MAT2d_Mat2d::CreateMatOpen(MAT2d_Tool2d& atool)
 // du contour.
 // --------------------------------------------------------------------
   theedgelist = new MAT_ListOfEdge();
-  RemovedEdgesList = new MAT_ListOfEdge();
 
   for(i=0; i<noofedges; i++) {
     edge = new MAT_Edge();
@@ -404,8 +401,7 @@ void MAT2d_Mat2d::CreateMatOpen(MAT2d_Tool2d& atool)
 	    previousedge = currentedge;
 	    currentbisectorlist->Next();
 	  }
-
-          RemovedEdgesList->BackAdd(theedgelist->Current());
+	  
 	  theedgelist->Unlink();
 
 	  //-----------------------------------------------------------
@@ -627,7 +623,6 @@ void MAT2d_Mat2d::CreateMatOpen(MAT2d_Tool2d& atool)
 						 ->FirstBisector());
 
       for(j=0; j<noofarea(i); j++) {
-        RemovedEdgesList->BackAdd(theedgelist->Current());
 	theedgelist->Unlink();
 	theedgelist->Next();
 	shift++;
@@ -856,7 +851,6 @@ void MAT2d_Mat2d::CreateMat(MAT2d_Tool2d& atool)
   // du contour.
   // --------------------------------------------------------------------
   theedgelist = new MAT_ListOfEdge();
-  RemovedEdgesList = new MAT_ListOfEdge();
 
   for(i=0; i<noofedges; i++) {
     edge = new MAT_Edge();
@@ -1109,7 +1103,6 @@ void MAT2d_Mat2d::CreateMat(MAT2d_Tool2d& atool)
             currentbisectorlist->Next();
           }
 
-          RemovedEdgesList->BackAdd(theedgelist->Current());
           theedgelist->Unlink();
 
           //-----------------------------------------------------------
@@ -1336,7 +1329,6 @@ void MAT2d_Mat2d::CreateMat(MAT2d_Tool2d& atool)
         ->FirstBisector());
 
       for(j=0; j<noofarea(i); j++) {
-        RemovedEdgesList->BackAdd(theedgelist->Current());
         theedgelist->Unlink();
         theedgelist->Next();
         shift++;
@@ -1718,41 +1710,3 @@ Standard_Boolean MAT2d_Mat2d::IsDone() const
   return isDone;
 }
 
-//=======================================================================
-//function : ~MAT2d_Mat2d
-//purpose  : 
-//=======================================================================
-
-MAT2d_Mat2d::~MAT2d_Mat2d()
-{
-  MAT_DataMapIteratorOfDataMapOfIntegerBisector itmap(bisectormap);
-  for (; itmap.More(); itmap.Next())
-  {
-    Handle(MAT_Bisector) aBisector = itmap.Value();
-    aBisector->FirstEdge(NULL);
-    aBisector->SecondEdge(NULL);
-  }
-
-  if (!theedgelist.IsNull())
-  {
-    theedgelist->First();
-    for (Standard_Integer i = 1; i <= theedgelist->Number(); i++)
-    {
-      Handle(MAT_Edge) anEdge = theedgelist->Current();
-      anEdge->FirstBisector(NULL);
-      anEdge->SecondBisector(NULL);
-      theedgelist->Next();
-    }
-  }
-  if (!RemovedEdgesList.IsNull())
-  {
-    RemovedEdgesList->First();
-    for (Standard_Integer i = 1; i <= RemovedEdgesList->Number(); i++)
-    {
-      Handle(MAT_Edge) anEdge = RemovedEdgesList->Current();
-      anEdge->FirstBisector(NULL);
-      anEdge->SecondBisector(NULL);
-      RemovedEdgesList->Next();
-    }
-  }
-}

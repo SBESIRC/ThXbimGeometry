@@ -28,7 +28,6 @@ public:
 
   //! Constructor.
   BRepMesh_NURBSRangeSplitter()
-  : mySurfaceType(GeomAbs_OtherSurface)
   {
   }
 

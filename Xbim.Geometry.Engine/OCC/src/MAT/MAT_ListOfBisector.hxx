@@ -36,9 +36,8 @@ class MAT_ListOfBisector : public Standard_Transient
 
 public:
 
-  Standard_EXPORT MAT_ListOfBisector();
   
-  Standard_EXPORT ~MAT_ListOfBisector();
+  Standard_EXPORT MAT_ListOfBisector();
   
   Standard_EXPORT void First();
   

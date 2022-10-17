@@ -32,38 +32,12 @@
 #include <TopoDS_Vertex.hxx>
 #include <TopTools_ListIteratorOfListOfShape.hxx>
 
-namespace
-{
-  //=======================================================================
-  //function : BOPAlgo_PIOperation
-  //purpose  : List of operations to be supported by the Progress Indicator
-  //=======================================================================
-  enum BOPAlgo_PIOperation
-  {
-    PIOperation_Prepare = 0,
-    PIOperation_PerformVV,
-    PIOperation_PerformVE,
-    PIOperation_PerformEE,
-    PIOperation_PerformVF,
-    PIOperation_PerformEF,
-    PIOperation_RepeatIntersection,
-    PIOperation_ForceInterfEE,
-    PIOperation_ForceInterfEF,
-    PIOperation_PerformFF,
-    PIOperation_MakeSplitEdges,
-    PIOperation_MakeBlocks,
-    PIOperation_MakePCurves,
-    PIOperation_ProcessDE,
-    PIOperation_Last
-  };
-}
-
 //=======================================================================
 //function : 
 //purpose  : 
 //=======================================================================
 BOPAlgo_PaveFiller::BOPAlgo_PaveFiller()
-  :
+:
   BOPAlgo_Algo()
 {
   myDS = NULL;
@@ -78,13 +52,12 @@ BOPAlgo_PaveFiller::BOPAlgo_PaveFiller()
 //purpose  : 
 //=======================================================================
 BOPAlgo_PaveFiller::BOPAlgo_PaveFiller
-(const Handle (NCollection_BaseAllocator)& theAllocator)
-  :
-  BOPAlgo_Algo (theAllocator),
-  myFPBDone (1, theAllocator),
-  myIncreasedSS (1, theAllocator),
-  myVertsToAvoidExtension (1, theAllocator),
-  myDistances (1, theAllocator)
+  (const Handle(NCollection_BaseAllocator)& theAllocator)
+:
+  BOPAlgo_Algo(theAllocator),
+  myFPBDone(1, theAllocator),
+  myIncreasedSS(1, theAllocator),
+  myVertsToAvoidExtension(1, theAllocator)
 {
   myDS = NULL;
   myIterator = NULL;
@@ -105,15 +78,15 @@ BOPAlgo_PaveFiller::~BOPAlgo_PaveFiller()
 //function : SetNonDestructive
 //purpose  : 
 //=======================================================================
-void BOPAlgo_PaveFiller::SetNonDestructive (const Standard_Boolean bFlag)
+void BOPAlgo_PaveFiller::SetNonDestructive(const Standard_Boolean bFlag)
 {
-  myNonDestructive = bFlag;
+  myNonDestructive=bFlag;
 }
 //=======================================================================
 //function : NonDestructive
 //purpose  : 
 //=======================================================================
-Standard_Boolean BOPAlgo_PaveFiller::NonDestructive() const
+Standard_Boolean BOPAlgo_PaveFiller::NonDestructive()const 
 {
   return myNonDestructive;
 }
@@ -121,15 +94,15 @@ Standard_Boolean BOPAlgo_PaveFiller::NonDestructive() const
 //function : SetGlue
 //purpose  : 
 //=======================================================================
-void BOPAlgo_PaveFiller::SetGlue (const BOPAlgo_GlueEnum theGlue)
+void BOPAlgo_PaveFiller::SetGlue(const BOPAlgo_GlueEnum theGlue)
 {
-  myGlue = theGlue;
+  myGlue=theGlue;
 }
 //=======================================================================
 //function : Glue
 //purpose  : 
 //=======================================================================
-BOPAlgo_GlueEnum BOPAlgo_PaveFiller::Glue() const
+BOPAlgo_GlueEnum BOPAlgo_PaveFiller::Glue() const 
 {
   return myGlue;
 }
@@ -137,15 +110,15 @@ BOPAlgo_GlueEnum BOPAlgo_PaveFiller::Glue() const
 //function : SetIsPrimary
 //purpose  : 
 //=======================================================================
-void BOPAlgo_PaveFiller::SetIsPrimary (const Standard_Boolean bFlag)
+void BOPAlgo_PaveFiller::SetIsPrimary(const Standard_Boolean bFlag)
 {
-  myIsPrimary = bFlag;
+  myIsPrimary=bFlag;
 }
 //=======================================================================
 //function : IsPrimary
 //purpose  : 
 //=======================================================================
-Standard_Boolean BOPAlgo_PaveFiller::IsPrimary() const
+Standard_Boolean BOPAlgo_PaveFiller::IsPrimary()const 
 {
   return myIsPrimary;
 }
@@ -158,11 +131,11 @@ void BOPAlgo_PaveFiller::Clear()
   BOPAlgo_Algo::Clear();
   if (myIterator) {
     delete myIterator;
-    myIterator = NULL;
+    myIterator=NULL;
   }
   if (myDS) {
     delete myDS;
-    myDS = NULL;
+    myDS=NULL;
   }
   myIncreasedSS.Clear();
 }
@@ -186,7 +159,7 @@ BOPDS_PDS BOPAlgo_PaveFiller::PDS()
 //function : Context
 //purpose  : 
 //=======================================================================
-const Handle (IntTools_Context)& BOPAlgo_PaveFiller::Context()
+const Handle(IntTools_Context)& BOPAlgo_PaveFiller::Context()
 {
   return myContext;
 }
@@ -195,7 +168,7 @@ const Handle (IntTools_Context)& BOPAlgo_PaveFiller::Context()
 //purpose  : 
 //=======================================================================
 void BOPAlgo_PaveFiller::SetSectionAttribute
-(const BOPAlgo_SectionAttribute& theSecAttr)
+  (const BOPAlgo_SectionAttribute& theSecAttr)
 {
   mySectionAttribute = theSecAttr;
 }
@@ -203,15 +176,14 @@ void BOPAlgo_PaveFiller::SetSectionAttribute
 // function: Init
 // purpose: 
 //=======================================================================
-void BOPAlgo_PaveFiller::Init (const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::Init()
 {
   if (!myArguments.Extent()) {
     AddError (new BOPAlgo_AlertTooFewArguments);
     return;
   }
   //
-  Message_ProgressScope aPS (theRange, "Initialization of Intersection algorithm", 1);
-  TopTools_ListIteratorOfListOfShape aIt (myArguments);
+  TopTools_ListIteratorOfListOfShape aIt(myArguments);
   for (; aIt.More(); aIt.Next()) {
     if (aIt.Value().IsNull()) {
       AddError (new BOPAlgo_AlertNullInputShapes);
@@ -223,132 +195,117 @@ void BOPAlgo_PaveFiller::Init (const Message_ProgressRange& theRange)
   Clear();
   //
   // 1.myDS 
-  myDS = new BOPDS_DS (myAllocator);
-  myDS->SetArguments (myArguments);
-  myDS->Init (myFuzzyValue);
+  myDS=new BOPDS_DS(myAllocator);
+  myDS->SetArguments(myArguments);
+  myDS->Init(myFuzzyValue);
   //
   // 2 myContext
-  myContext = new IntTools_Context;
+  myContext=new IntTools_Context;
   //
   // 3.myIterator 
-  myIterator = new BOPDS_Iterator (myAllocator);
-  myIterator->SetRunParallel (myRunParallel);
-  myIterator->SetDS (myDS);
-  myIterator->Prepare (myContext, myUseOBB, myFuzzyValue);
+  myIterator=new BOPDS_Iterator(myAllocator);
+  myIterator->SetRunParallel(myRunParallel);
+  myIterator->SetDS(myDS);
+  myIterator->Prepare(myContext, myUseOBB, myFuzzyValue);
   //
   // 4 NonDestructive flag
   SetNonDestructive();
 }
-
 //=======================================================================
 // function: Perform
 // purpose: 
 //=======================================================================
-void BOPAlgo_PaveFiller::Perform (const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::Perform()
 {
   try {
     OCC_CATCH_SIGNALS
-      //
-      PerformInternal (theRange);
+    //
+    PerformInternal();
   }
   //
   catch (Standard_Failure const&) {
     AddError (new BOPAlgo_AlertIntersectionFailed);
-  }
+  } 
 }
-
 //=======================================================================
 // function: PerformInternal
 // purpose: 
 //=======================================================================
-void BOPAlgo_PaveFiller::PerformInternal (const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::PerformInternal()
 {
-  Message_ProgressScope aPS (theRange, "Performing intersection of shapes", 100);
-
-  Init (aPS.Next (5));
+  Init();
   if (HasErrors()) {
-    return;
+    return; 
   }
-
-  // Compute steps of the PI
-  BOPAlgo_PISteps aSteps (PIOperation_Last);
-  analyzeProgress (95, aSteps);
   //
-  Prepare (aPS.Next (aSteps.GetStep (PIOperation_Prepare)));
+  Prepare();
   if (HasErrors()) {
-    return;
+    return; 
   }
   // 00
-  PerformVV (aPS.Next (aSteps.GetStep (PIOperation_PerformVV)));
+  PerformVV();
   if (HasErrors()) {
-    return;
+    return; 
   }
   // 01
-  PerformVE (aPS.Next (aSteps.GetStep (PIOperation_PerformVE)));
+  PerformVE();
   if (HasErrors()) {
-    return;
+    return; 
   }
   //
   UpdatePaveBlocksWithSDVertices();
   // 11
-  PerformEE (aPS.Next (aSteps.GetStep (PIOperation_PerformEE)));
+  PerformEE();
   if (HasErrors()) {
-    return;
+    return; 
   }
   UpdatePaveBlocksWithSDVertices();
   // 02
-  PerformVF (aPS.Next (aSteps.GetStep (PIOperation_PerformVF)));
+  PerformVF();
   if (HasErrors()) {
-    return;
+    return; 
   }
   UpdatePaveBlocksWithSDVertices();
   // 12
-  PerformEF (aPS.Next (aSteps.GetStep (PIOperation_PerformEF)));
+  PerformEF();
   if (HasErrors()) {
-    return;
+    return; 
   }
   UpdatePaveBlocksWithSDVertices();
   UpdateInterfsWithSDVertices();
 
   // Repeat Intersection with increased vertices
-  RepeatIntersection (aPS.Next (aSteps.GetStep (PIOperation_RepeatIntersection)));
+  RepeatIntersection();
   if (HasErrors())
     return;
+
   // Force intersection of edges after increase
   // of the tolerance values of their vertices
-  ForceInterfEE (aPS.Next (aSteps.GetStep (PIOperation_ForceInterfEE)));
-  if (HasErrors())
-  {
-    return;
-  }
+  ForceInterfEE();
   // Force Edge/Face intersection after increase
   // of the tolerance values of their vertices
-  ForceInterfEF (aPS.Next (aSteps.GetStep (PIOperation_ForceInterfEF)));
-  if (HasErrors())
-  {
-    return;
-  }
+  ForceInterfEF();
   //
   // 22
-  PerformFF (aPS.Next (aSteps.GetStep (PIOperation_PerformFF)));
+  PerformFF();
   if (HasErrors()) {
-    return;
+    return; 
   }
   //
   UpdateBlocksWithSharedVertices();
   //
   myDS->RefineFaceInfoIn();
   //
-  MakeSplitEdges (aPS.Next (aSteps.GetStep (PIOperation_MakeSplitEdges)));
+  MakeSplitEdges();
   if (HasErrors()) {
     return;
   }
   //
   UpdatePaveBlocksWithSDVertices();
   //
-  MakeBlocks (aPS.Next (aSteps.GetStep (PIOperation_MakeBlocks)));
+  MakeBlocks();
   if (HasErrors()) {
-    return;
+    return; 
   }
   //
   CheckSelfInterference();
@@ -359,14 +316,14 @@ void BOPAlgo_PaveFiller::PerformInternal (const Message_ProgressRange& theRange)
   //
   RemoveMicroEdges();
   //
-  MakePCurves (aPS.Next (aSteps.GetStep (PIOperation_MakePCurves)));
+  MakePCurves();
   if (HasErrors()) {
-    return;
+    return; 
   }
   //
-  ProcessDE (aPS.Next (aSteps.GetStep (PIOperation_ProcessDE)));
+  ProcessDE();
   if (HasErrors()) {
-    return;
+    return; 
   }
 }
 
@@ -374,114 +331,53 @@ void BOPAlgo_PaveFiller::PerformInternal (const Message_ProgressRange& theRange)
 // function: RepeatIntersection
 // purpose: 
 //=======================================================================
-void BOPAlgo_PaveFiller::RepeatIntersection (const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::RepeatIntersection()
 {
   // Find all vertices with increased tolerance
   TColStd_MapOfInteger anExtraInterfMap;
   const Standard_Integer aNbS = myDS->NbSourceShapes();
-  Message_ProgressScope aPS (theRange, "Repeat intersection", 3);
   for (Standard_Integer i = 0; i < aNbS; ++i)
   {
-    const BOPDS_ShapeInfo& aSI = myDS->ShapeInfo (i);
+    const BOPDS_ShapeInfo& aSI = myDS->ShapeInfo(i);
     if (aSI.ShapeType() != TopAbs_VERTEX)
       continue;
     // Check if the tolerance of the original vertex has been increased
-    if (myIncreasedSS.Contains (i))
+    if (myIncreasedSS.Contains(i))
     {
-      anExtraInterfMap.Add (i);
+      anExtraInterfMap.Add(i);
       continue;
     }
 
     // Check if the vertex created a new vertex with greater tolerance
     Standard_Integer nVSD;
-    if (!myDS->HasShapeSD (i, nVSD))
+    if (!myDS->HasShapeSD(i, nVSD))
       continue;
 
-    if (myIncreasedSS.Contains (nVSD))
-      anExtraInterfMap.Add (i);
+    if (myIncreasedSS.Contains(nVSD))
+      anExtraInterfMap.Add(i);
   }
 
   if (anExtraInterfMap.IsEmpty())
     return;
 
   // Update iterator of pairs of shapes with interfering boxes
-  myIterator->IntersectExt (anExtraInterfMap);
+  myIterator->IntersectExt(anExtraInterfMap);
 
   // Perform intersections with vertices
-
-  PerformVV (aPS.Next());
+  PerformVV();
   if (HasErrors())
     return;
   UpdatePaveBlocksWithSDVertices();
 
-  PerformVE (aPS.Next());
+  PerformVE();
   if (HasErrors())
     return;
   UpdatePaveBlocksWithSDVertices();
 
-  PerformVF (aPS.Next());
+  PerformVF();
   if (HasErrors())
     return;
 
   UpdatePaveBlocksWithSDVertices();
   UpdateInterfsWithSDVertices();
-}
-
-
-//=======================================================================
-// function: fillPISteps
-// purpose: 
-//=======================================================================
-void BOPAlgo_PaveFiller::fillPIConstants (const Standard_Real theWhole,
-                                          BOPAlgo_PISteps& theSteps) const
-{
-  if (!myNonDestructive)
-  {
-    theSteps.SetStep (PIOperation_Prepare, 1 * theWhole / 100.);
-  }
-}
-
-//=======================================================================
-// function: fillPISteps
-// purpose: 
-//=======================================================================
-void BOPAlgo_PaveFiller::fillPISteps (BOPAlgo_PISteps& theSteps) const
-{
-  // Get number of all intersecting pairs
-  Standard_Integer aVVSize = 0, aVESize = 0, aEESize = 0, aVFSize = 0, aEFSize = 0, aFFSize = 0;
-
-  myIterator->Initialize (TopAbs_VERTEX, TopAbs_VERTEX);
-  aVVSize = myIterator->ExpectedLength();
-
-  myIterator->Initialize (TopAbs_VERTEX, TopAbs_EDGE);
-  aVESize = myIterator->ExpectedLength();
-
-  myIterator->Initialize (TopAbs_EDGE, TopAbs_EDGE);
-  aEESize = myIterator->ExpectedLength();
-
-  myIterator->Initialize (TopAbs_VERTEX, TopAbs_FACE);
-  aVFSize = myIterator->ExpectedLength();
-
-  if (myGlue != BOPAlgo_GlueFull)
-  {
-    myIterator->Initialize (TopAbs_EDGE, TopAbs_FACE);
-    aEFSize = myIterator->ExpectedLength();
-  }
-
-  myIterator->Initialize (TopAbs_FACE, TopAbs_FACE);
-  aFFSize = myIterator->ExpectedLength();
-
-  theSteps.SetStep (PIOperation_PerformVV, aVVSize);
-  theSteps.SetStep (PIOperation_PerformVE, 2 * aVESize);
-  theSteps.SetStep (PIOperation_PerformEE, 5 * aEESize);
-  theSteps.SetStep (PIOperation_PerformVF, 5 * aVFSize);
-  theSteps.SetStep (PIOperation_PerformEF, 10 * aEFSize);
-  theSteps.SetStep (PIOperation_RepeatIntersection, 0.2 * (aVVSize + aVESize + aVFSize));
-  theSteps.SetStep (PIOperation_ForceInterfEE, 2 * aEESize);
-  theSteps.SetStep (PIOperation_ForceInterfEF, 2 * aEFSize);
-  theSteps.SetStep (PIOperation_PerformFF, (myGlue == BOPAlgo_GlueFull ? 1 : 30) * aFFSize);
-  theSteps.SetStep (PIOperation_MakeSplitEdges, aEESize);
-  theSteps.SetStep (PIOperation_MakeBlocks, (myGlue == BOPAlgo_GlueFull ? 0 : 5) * aFFSize);
-  theSteps.SetStep (PIOperation_MakePCurves, myAvoidBuildPCurve ? 0 : 0.2 * (aEESize + aEFSize));
-  theSteps.SetStep (PIOperation_ProcessDE, 0.1 * aEESize);
 }

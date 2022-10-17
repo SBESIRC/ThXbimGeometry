@@ -61,8 +61,7 @@ static void Trans(Standard_Real parmin, IntCurveSurface_TransitionOnCurve& tran,
 //function : BRepClass3d_SClassifier
 //purpose  : 
 //=======================================================================
-BRepClass3d_SClassifier::BRepClass3d_SClassifier()
-: myState(0)
+BRepClass3d_SClassifier::BRepClass3d_SClassifier() 
 { 
 }
 
@@ -286,7 +285,14 @@ void BRepClass3d_SClassifier::Perform(BRepClass3d_SolidExplorer& SolidExplorer,
     aSelectorLine.SetCurrentLine(L, Par);
     Standard_Integer SelsEVL = 0;
     SelsEVL = aTree.Select(aSelectorLine); //SelsEE > 0 => Line/Edges & Line/Vertex intersection
-     
+
+    if (!aSelectorLine.IsCorrect())
+    {
+      // Go to the next segment
+      isFaultyLine = Standard_True;
+      continue;
+    }
+
     if (SelsEVL > 0 )
     {    
       // Line and edges / vertices interference.

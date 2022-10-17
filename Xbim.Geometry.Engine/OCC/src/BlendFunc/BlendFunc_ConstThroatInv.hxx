@@ -15,11 +15,21 @@
 #ifndef _BlendFunc_ConstThroatInv_HeaderFile
 #define _BlendFunc_ConstThroatInv_HeaderFile
 
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <Standard_Integer.hxx>
+#include <Standard_Boolean.hxx>
 #include <BlendFunc_GenChamfInv.hxx>
 #include <math_Vector.hxx>
-
+#include <Standard_Real.hxx>
+class Adaptor3d_HSurface;
+class Adaptor3d_HCurve;
+class Adaptor2d_HCurve2d;
 class math_Matrix;
+
+
 
 //! Class for a function used to compute a ConstThroat chamfer on a surface's boundary
 class BlendFunc_ConstThroatInv  : public BlendFunc_GenChamfInv
@@ -29,7 +39,7 @@ public:
   DEFINE_STANDARD_ALLOC
 
   
-  Standard_EXPORT BlendFunc_ConstThroatInv(const Handle(Adaptor3d_Surface)& S1, const Handle(Adaptor3d_Surface)& S2, const Handle(Adaptor3d_Curve)& C);
+  Standard_EXPORT BlendFunc_ConstThroatInv(const Handle(Adaptor3d_HSurface)& S1, const Handle(Adaptor3d_HSurface)& S2, const Handle(Adaptor3d_HCurve)& C);
   
   Standard_EXPORT Standard_Boolean IsSolution (const math_Vector& Sol, const Standard_Real Tol) Standard_OVERRIDE;
   

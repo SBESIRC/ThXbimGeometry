@@ -17,15 +17,38 @@
 #ifndef _GeomAdaptor_Curve_HeaderFile
 #define _GeomAdaptor_Curve_HeaderFile
 
-#include <Adaptor3d_Curve.hxx>
-#include <BSplCLib_Cache.hxx>
-#include <Geom_Curve.hxx>
-#include <GeomAbs_Shape.hxx>
-#include <GeomEvaluator_Curve.hxx>
-#include <Standard_NullObject.hxx>
-#include <Standard_ConstructionError.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
 
-DEFINE_STANDARD_HANDLE(GeomAdaptor_Curve, Adaptor3d_Curve)
+#include <GeomAbs_CurveType.hxx>
+#include <Standard_Real.hxx>
+#include <BSplCLib_Cache.hxx>
+#include <Adaptor3d_Curve.hxx>
+#include <GeomAbs_Shape.hxx>
+#include <Standard_Integer.hxx>
+#include <TColStd_Array1OfReal.hxx>
+#include <Standard_Boolean.hxx>
+#include <GeomEvaluator_Curve.hxx>
+
+class Geom_Curve;
+class Adaptor3d_HCurve;
+class Standard_NoSuchObject;
+class Standard_ConstructionError;
+class Standard_OutOfRange;
+class Standard_DomainError;
+class GeomAdaptor_Surface;
+class gp_Pnt;
+class gp_Vec;
+class gp_Lin;
+class gp_Circ;
+class gp_Elips;
+class gp_Hypr;
+class gp_Parab;
+class Geom_BezierCurve;
+class Geom_BSplineCurve;
+class Geom_OffsetCurve;
+
 
 //! This class provides an interface between the services provided by any
 //! curve from the package Geom and those required of the curve by algorithms which use it.
@@ -36,54 +59,35 @@ DEFINE_STANDARD_HANDLE(GeomAdaptor_Curve, Adaptor3d_Curve)
 //! thread-safe and parallel evaluations need to be prevented.
 class GeomAdaptor_Curve  : public Adaptor3d_Curve
 {
-  DEFINE_STANDARD_RTTIEXT(GeomAdaptor_Curve, Adaptor3d_Curve)
 public:
 
-  GeomAdaptor_Curve() : myTypeCurve (GeomAbs_OtherCurve), myFirst (0.0), myLast (0.0) {}
+  DEFINE_STANDARD_ALLOC
 
-  GeomAdaptor_Curve (const Handle(Geom_Curve)& theCurve)
-  {
-    Load (theCurve);
-  }
+  
+    GeomAdaptor_Curve();
+  
+    GeomAdaptor_Curve(const Handle(Geom_Curve)& C);
+  
+  //! ConstructionError is raised if Ufirst>Ulast
+    GeomAdaptor_Curve(const Handle(Geom_Curve)& C, const Standard_Real UFirst, const Standard_Real ULast);
 
-  //! Standard_ConstructionError is raised if theUFirst>theULast
-  GeomAdaptor_Curve (const Handle(Geom_Curve)& theCurve,
-                     const Standard_Real theUFirst,
-                     const Standard_Real theULast)
-  {
-    Load (theCurve, theUFirst, theULast);
-  }
+    //! Reset currently loaded curve (undone Load()).
+    Standard_EXPORT void Reset();
 
-  //! Shallow copy of adaptor
-  Standard_EXPORT virtual Handle(Adaptor3d_Curve) ShallowCopy() const Standard_OVERRIDE;
-
-  //! Reset currently loaded curve (undone Load()).
-  Standard_EXPORT void Reset();
-
-  void Load (const Handle(Geom_Curve)& theCurve)
-  {
-    if (theCurve.IsNull()) { throw Standard_NullObject(); }
-    load (theCurve, theCurve->FirstParameter(), theCurve->LastParameter());
-  }
-
-  //! Standard_ConstructionError is raised if theUFirst>theULast
-  void Load (const Handle(Geom_Curve)& theCurve,
-             const Standard_Real theUFirst,
-             const Standard_Real theULast)
-  {
-    if (theCurve.IsNull()) { throw Standard_NullObject(); }
-    if (theUFirst > theULast) { throw Standard_ConstructionError(); }
-    load (theCurve, theUFirst, theULast);
-  }
+    void Load (const Handle(Geom_Curve)& C);
+  
+  //! ConstructionError is raised if Ufirst>Ulast
+    void Load (const Handle(Geom_Curve)& C, const Standard_Real UFirst, const Standard_Real ULast);
+  
 
   //! Provides a curve inherited from Hcurve from Adaptor.
   //! This is inherited to provide easy to use constructors.
-  const Handle(Geom_Curve)& Curve() const { return myCurve; }
-
-  virtual Standard_Real FirstParameter() const Standard_OVERRIDE { return myFirst; }
-
-  virtual Standard_Real LastParameter() const Standard_OVERRIDE { return myLast; }
-
+    const Handle(Geom_Curve)& Curve() const;
+  
+    Standard_Real FirstParameter() const Standard_OVERRIDE;
+  
+    Standard_Real LastParameter() const Standard_OVERRIDE;
+  
   Standard_EXPORT GeomAbs_Shape Continuity() const Standard_OVERRIDE;
   
   //! Returns  the number  of  intervals for  continuity
@@ -93,7 +97,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   Standard_EXPORT void Intervals (TColStd_Array1OfReal& T, const GeomAbs_Shape S) const Standard_OVERRIDE;
   
@@ -101,7 +105,7 @@ public:
   //! parameters <First>  and <Last>. <Tol>  is used  to
   //! test for 3d points confusion.
   //! If <First> >= <Last>
-  Standard_EXPORT Handle(Adaptor3d_Curve) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
+  Standard_EXPORT Handle(Adaptor3d_HCurve) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
   
   Standard_EXPORT Standard_Boolean IsClosed() const Standard_OVERRIDE;
   
@@ -156,9 +160,9 @@ public:
   
   //! returns the parametric resolution
   Standard_EXPORT Standard_Real Resolution (const Standard_Real R3d) const Standard_OVERRIDE;
-
-  virtual GeomAbs_CurveType GetType() const Standard_OVERRIDE { return myTypeCurve; }
-
+  
+    GeomAbs_CurveType GetType() const Standard_OVERRIDE;
+  
   Standard_EXPORT gp_Lin Line() const Standard_OVERRIDE;
   
   Standard_EXPORT gp_Circ Circle() const Standard_OVERRIDE;
@@ -211,6 +215,13 @@ public:
 
 friend class GeomAdaptor_Surface;
 
+
+protected:
+
+
+
+
+
 private:
 
   Standard_EXPORT GeomAbs_Shape LocalContinuity (const Standard_Real U1, const Standard_Real U2) const;
@@ -224,7 +235,6 @@ private:
   //! \param theParameter the value on the knot axis which identifies the caching span
   void RebuildCache (const Standard_Real theParameter) const;
 
-private:
 
   Handle(Geom_Curve) myCurve;
   GeomAbs_CurveType myTypeCurve;
@@ -235,6 +245,14 @@ private:
   mutable Handle(BSplCLib_Cache) myCurveCache; ///< Cached data for B-spline or Bezier curve
   Handle(GeomEvaluator_Curve) myNestedEvaluator; ///< Calculates value of offset curve
 
+
 };
+
+
+#include <GeomAdaptor_Curve.lxx>
+
+
+
+
 
 #endif // _GeomAdaptor_Curve_HeaderFile

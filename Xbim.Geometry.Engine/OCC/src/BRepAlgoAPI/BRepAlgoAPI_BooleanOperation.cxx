@@ -138,7 +138,7 @@ BRepAlgoAPI_BooleanOperation::BRepAlgoAPI_BooleanOperation
 //function : Build
 //purpose  :
 //=======================================================================
-void BRepAlgoAPI_BooleanOperation::Build(const Message_ProgressRange& theRange)
+void BRepAlgoAPI_BooleanOperation::Build()
 {
   // Set Not Done status by default
   NotDone();
@@ -167,27 +167,6 @@ void BRepAlgoAPI_BooleanOperation::Build(const Message_ProgressRange& theRange)
     }
   }
 
-  TCollection_AsciiString aPSName;
-  switch (myOperation)
-  {
-    case BOPAlgo_COMMON:
-      aPSName = "Performing COMMON operation";
-      break;
-    case BOPAlgo_FUSE:
-      aPSName = "Performing FUSE operation";
-      break;
-    case BOPAlgo_CUT:
-    case BOPAlgo_CUT21:
-      aPSName = "Performing CUT operation";
-      break;
-    case BOPAlgo_SECTION:
-      aPSName = "Performing SECTION operation";
-      break;
-    default:
-      return;
-  }
-
-  Message_ProgressScope aPS(theRange, aPSName, myIsIntersectionNeeded ? 100 : 30);
   // If necessary perform intersection of the argument shapes
   if (myIsIntersectionNeeded)
   {
@@ -197,7 +176,7 @@ void BRepAlgoAPI_BooleanOperation::Build(const Message_ProgressRange& theRange)
       aLArgs.Append(it.Value());
 
     // Perform intersection
-    IntersectShapes(aLArgs, aPS.Next(70));
+    IntersectShapes(aLArgs);
     if (HasErrors())
     {
       if (aDumpOper.IsDump())
@@ -224,11 +203,7 @@ void BRepAlgoAPI_BooleanOperation::Build(const Message_ProgressRange& theRange)
   }
 
   // Build the result
-  BuildResult(aPS.Next(30));
-  if (HasErrors())
-  {
-    return;
-  }
+  BuildResult();
 
   if (aDumpOper.IsDump()) {
     Standard_Boolean isDumpRes = myShape.IsNull() ||
@@ -305,7 +280,7 @@ void BRepAlgoAPI_DumpOper::Dump(const TopoDS_Shape& theShape1,
     fprintf(afile,"%s\n","# Result is Null ");
   
   fprintf(afile, "%s %s %s\n","restore",  aName1.ToCString(), "arg1");
-  fprintf(afile, "%s %s %s\n","restore",  aName2.ToCString(), "arg2");
+  fprintf(afile, "%s %s %s\n","restore",  aName2.ToCString(), "arg2");;
   TCollection_AsciiString aBopString;
   switch (theOperation)
   {

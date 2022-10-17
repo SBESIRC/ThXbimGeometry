@@ -50,14 +50,14 @@ public:
 
   //! Initializes the tool.
   //! @param theReservedSize size to be reserved for vector of circles.
-  void Init(const Standard_Integer /*theReservedSize*/)
+  inline void Init(const Standard_Integer /*theReservedSize*/)
   {
     myTolerance = Precision::PConfusion();
   }
 
   //! Sets new size for cell filter.
   //! @param theSize cell size to be set for X and Y dimensions.
-  void SetCellSize(const Standard_Real theSize)
+  inline void SetCellSize(const Standard_Real theSize)
   {
     myCellFilter.Reset(theSize, myAllocator);
   }
@@ -65,8 +65,8 @@ public:
   //! Sets new size for cell filter.
   //! @param theSizeX cell size to be set for X dimension.
   //! @param theSizeY cell size to be set for Y dimension.
-  void SetCellSize(const Standard_Real theSizeX,
-                   const Standard_Real theSizeY)
+  inline void SetCellSize(const Standard_Real theSizeX,
+                          const Standard_Real theSizeY)
   {
     Standard_Real aCellSizeC[2] = { theSizeX, theSizeY };
     NCollection_Array1<Standard_Real> aCellSize(aCellSizeC[0], 1, 2);
@@ -76,15 +76,15 @@ public:
   //! Sets limits of inspection area.
   //! @param theMin bottom left corner of inspection area.
   //! @param theMax top right corner of inspection area.
-  void SetMinMaxSize(const gp_XY& theMin,
-                     const gp_XY& theMax)
+  inline void SetMinMaxSize(const gp_XY& theMin,
+                            const gp_XY& theMax)
   {
     myFaceMin = theMin;
     myFaceMax = theMax;
   }
 
-  //! Returns true if cell filter contains no circle.
-  Standard_Boolean IsEmpty () const
+  //! Retruns true if cell filter contains no circle.
+  inline Standard_Boolean IsEmpty () const
   {
     return mySelector.Circles ().IsEmpty ();
   }

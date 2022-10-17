@@ -24,6 +24,7 @@
 #include <BRepSweep_Rotation.hxx>
 #include <Standard_Boolean.hxx>
 #include <Standard_Real.hxx>
+class Standard_ConstructionError;
 class TopoDS_Shape;
 class gp_Ax1;
 class Sweep_NumShape;

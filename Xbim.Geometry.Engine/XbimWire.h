@@ -7,9 +7,6 @@
 #include <TopoDS_Edge.hxx>
 #include <vector>
 #include <NCollection_Vector.hxx>
-#include "XbimConstraints.h"
-#include <BRepBuilderAPI_MakeWire.hxx>
-
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::Ifc4::Interfaces;
@@ -33,54 +30,51 @@ namespace Xbim
 				void set(TopoDS_Wire* val)sealed { ptrContainer = IntPtr(val); }
 			}
 			void InstanceCleanup();
-			void ModifyWireAddEdge(TopoDS_Wire& resultWire,
-				const TopoDS_Edge& EE,
-				const TopoDS_Vertex& edgeVertexToJoin, gp_Pnt edgePointToJoin, 
-				const TopoDS_Vertex& nextEdgeVertex, 
-				const TopoDS_Vertex& wireVertexToJoin, gp_Pnt wirePointToJoin, 
-				double distance);
 #pragma region initialisation functions
 
 			void Init(double precision);
-			
-			void Init(IIfcCurve^ loop, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcCompositeCurve^ compCurve, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcCompositeCurveSegment^ compCurveSeg, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcPolyline^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcIndexedPolyCurve ^ pCurve, ILogger ^ logger, XbimConstraints constraints);
-			void Init(IIfcPolyLoop^ loop, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcArbitraryClosedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcArbitraryOpenProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcCenterLineProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
+			void Init(IIfcPolyline^ loop);
+			void Init(IIfcPolyline^ loop, bool attemptClosing);
+			void Init(IIfcCompositeCurve^ loop);
+			void Init(IIfcTrimmedCurve^ loop);
+			void Init(IIfcCurve^ loop);
+			void Init(IIfcIndexedPolyCurve^ pcurve);
+			void Init(IIfcBSplineCurve^ bspline);
+			void Init(IIfcBSplineCurveWithKnots^ bSpline);
+			void Init(IIfcRationalBSplineCurveWithKnots^ bSpline);
+			void Init(IIfcCompositeCurveSegment^ compCurveSeg);
+			void Init(IIfcBoundedCurve^ loop);
+			void Init(IIfcPolyLoop^ loop);
+			void Init(IIfcArbitraryClosedProfileDef^ profile);
+			void Init(IIfcArbitraryOpenProfileDef^ profile);
+			void Init(IIfcCenterLineProfileDef^ profile);
 			//parametrised profiles
-			void Init(IIfcProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcDerivedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcParameterizedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcCircleProfileDef^ circProfile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcRectangleProfileDef^ rectProfile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcRoundedRectangleProfileDef^ rectProfile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcLShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcUShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcEllipseProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcIShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcZShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcCShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			void Init(IIfcTShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
+			void Init(IIfcProfileDef^ profile);
+			void Init(IIfcDerivedProfileDef^ profile);
+			void Init(IIfcParameterizedProfileDef^ profile);
+			void Init(IIfcCircleProfileDef^ circProfile);
+			void Init(IIfcRectangleProfileDef^ rectProfile);
+			void Init(IIfcRoundedRectangleProfileDef^ rectProfile);
+			void Init(IIfcLShapeProfileDef^ profile);
+			void Init(IIfcUShapeProfileDef^ profile);
+			void Init(IIfcEllipseProfileDef^ profile);
+			void Init(IIfcIShapeProfileDef^ profile);
+			void Init(IIfcZShapeProfileDef^ profile);
+			void Init(IIfcCShapeProfileDef^ profile);
+			void Init(IIfcTShapeProfileDef^ profile);
 			//constructs a rectangle wire with the bottom left corner at 0,0,0, top right at x,y,0
 			void Init(double x, double y, double tolerance, bool centre);
 #pragma endregion
 
 			//helpers
-			static void AddNewellPoint(const gp_Pnt& previous, const gp_Pnt& current, double & x, double & y, double & z);
+			void AddNewellPoint(const gp_Pnt& previous, const gp_Pnt& current, double & x, double & y, double & z);
 			bool AreEdgesC1(const TopoDS_Edge& e1, const TopoDS_Edge& e2, double precision, double angularTolerance);
 			bool SortEdgesForWire(const NCollection_Vector<TopoDS_Edge>& oldedges, NCollection_Vector<TopoDS_Edge>& newedges, NCollection_Vector<TopoDS_Edge>& notTaken, double tol, bool *pClosed, double* pMaxGap);
 			int  GetMatchTwoPntsPair(const gp_Pnt& b1, const gp_Pnt& e1, const gp_Pnt& b2, const gp_Pnt& e2, double& minDis, double& otherDis);
-			
+		
 			
 		public:
-			// this can throw an exception in debug, if the wire is nonsense (e.g. line) and should just be dropped
-			// in release it might return an invalid normal with Nan components that needs to be checked, using XbimConvert::IsInvalid
-			static gp_Dir NormalDir(const TopoDS_Wire& wire);
+
 #pragma region destructors
 
 			~XbimWire() { InstanceCleanup(); }
@@ -90,52 +84,53 @@ namespace Xbim
 #pragma region constructors
 
 			XbimWire() {}; //an empty invalid wire
-			XbimWire(XbimEdge^ edge); 
+			XbimWire(XbimEdge^ edge);
 
 			XbimWire(double x, double y, double tolerance, bool centre);
 			XbimWire(double precision);
 			XbimWire(const std::vector<gp_Pnt>& points, double tolerance);
 			XbimWire(const TopoDS_Wire& wire);
 			XbimWire(const TopoDS_Wire& wire, Object^ tag);
-			XbimWire(IIfcCurve^ loop, ILogger^ logger, XbimConstraints constraints);
-			
-			//special case for building a composite curve as a wire and not a single edge
-			XbimWire(IIfcCompositeCurve^ compCurve, ILogger^ logger, XbimConstraints constraints);
-			//srl need to revisit this, the sense is wrong for trimmed curves, really it should not be supported at all as the segment is not a curve
-			XbimWire(IIfcCompositeCurveSegment^ compCurveSeg, ILogger^ logger, XbimConstraints constraints);
-
-			//Creates a wire of individual edges for each IfcPolyline segment, use XbimCurve for a single bspline edge
-			XbimWire(IIfcPolyline^ profile, ILogger^ logger, XbimConstraints constraints);
-			//Creates a wire of individual edges for each IfcIndexedPolyCurve segment, use XbimCurve for a single bspline edge
-			XbimWire(IIfcIndexedPolyCurve^ profile, ILogger^ logger, XbimConstraints constraints);
-
-			XbimWire(IIfcPolyLoop^ loop, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcArbitraryClosedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcArbitraryOpenProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcCenterLineProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
+			XbimWire(IIfcPolyline^ loop);
+			XbimWire(IIfcPolyline^ loop, bool attemptClosing);
+			XbimWire(IIfcBSplineCurve^ bspline);
+			XbimWire(IIfcBSplineCurveWithKnots^ bSpline);
+			XbimWire(IIfcRationalBSplineCurveWithKnots^ bSpline);
+			XbimWire(IIfcCompositeCurve^ loop);
+			XbimWire(IIfcTrimmedCurve^ loop);
+			XbimWire(IIfcCurve^ loop);
+			XbimWire(IIfcIndexedPolyCurve^ pcurve);
+			XbimWire(IIfcCompositeCurveSegment^ compCurveSeg);
+			XbimWire(IIfcBoundedCurve^ loop);
+			XbimWire(IIfcPolyLoop^ loop);
+			XbimWire(IIfcArbitraryClosedProfileDef^ profile);
+			XbimWire(IIfcArbitraryOpenProfileDef^ profile);
+			XbimWire(IIfcCenterLineProfileDef^ profile);
 			//parametrised profiles
-			XbimWire(IIfcProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcDerivedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcParameterizedProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcCircleProfileDef^ circProfile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcRectangleProfileDef^ rectProfile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcRoundedRectangleProfileDef^ rectProfile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcLShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcUShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcEllipseProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcIShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcZShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcCShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
-			XbimWire(IIfcTShapeProfileDef^ profile, ILogger^ logger, XbimConstraints constraints);
+			XbimWire(IIfcProfileDef^ profile);
+			XbimWire(IIfcDerivedProfileDef^ profile);
+			XbimWire(IIfcParameterizedProfileDef^ profile);
+			XbimWire(IIfcCircleProfileDef^ circProfile);
+			XbimWire(IIfcRectangleProfileDef^ rectProfile);
+			XbimWire(IIfcRoundedRectangleProfileDef^ rectProfile);
+			XbimWire(IIfcLShapeProfileDef^ profile);
+			XbimWire(IIfcUShapeProfileDef^ profile);
+			XbimWire(IIfcEllipseProfileDef^ profile);
+			XbimWire(IIfcIShapeProfileDef^ profile);
+			XbimWire(IIfcZShapeProfileDef^ profile);
+			XbimWire(IIfcCShapeProfileDef^ profile);
+			XbimWire(IIfcTShapeProfileDef^ profile);
 
 
 #pragma endregion
 
+			static List<XbimPoint3D>^ GetDiscretisedWire(XbimWire^ sweep, int numberOfPoints);
 
 #pragma region operators
 			operator const TopoDS_Wire& () { return *pWire; }
 			virtual operator const TopoDS_Shape& () override { return *pWire; }
-
+			virtual const TopoDS_Shape& AsShape() override { return *pWire; }
+			
 #pragma endregion
 
 
@@ -145,22 +140,20 @@ namespace Xbim
 			virtual property IXbimEdgeSet^ Edges {IXbimEdgeSet^ get(); }
 			virtual property IXbimVertexSet^ Vertices {IXbimVertexSet^ get(); }
 			virtual property IEnumerable<XbimPoint3D>^ Points {IEnumerable<XbimPoint3D>^ get(); }
-			//returns the normal of the loop using the Newell's normal algorithm. WARNING: Always check success via the IsInvalid() method of returned instance.
+			//returns the normal of the loop using the Newell's normal algorithm
 			virtual property XbimVector3D Normal {XbimVector3D get(); }
 			virtual property bool IsClosed {bool get() { return IsValid && pWire->Closed() == Standard_True; }; }
 			virtual property bool IsPlanar {bool get(); }
 			virtual property XbimPoint3D Start {XbimPoint3D get(); }
 			virtual property XbimPoint3D End {XbimPoint3D get(); }
-			virtual IXbimWire^ Trim(double first, double last, double tolerance,ILogger^ logger);
+			virtual IXbimWire^ Trim(double first, double last, double tolerance);
 
-			virtual property XbimPoint3D BaryCentre {XbimPoint3D get(); }
 			virtual property double Length {double get(); }
 			virtual property XbimRect3D BoundingBox {XbimRect3D get() override; }
 			virtual IXbimGeometryObject^ Transform(XbimMatrix3D matrix3D) override;
 			virtual IXbimGeometryObject^ TransformShallow(XbimMatrix3D matrix3D)override;
-			void FuseColinearSegments(double tolerance, double angleTolerance, ILogger^ logger);
+			void FuseColinearSegments(double tolerance, double angleTolerance);
 			virtual property double Area {double get(); }
-			virtual property double MaxTolerance {double get() {return IsValid ? BRep_Tool::MaxTolerance(*pWire, TopAbs_VERTEX) : 0; } }
 #pragma endregion
 
 #pragma region Equality Overrides
@@ -174,11 +167,9 @@ namespace Xbim
 			//properties
 			property bool IsReversed {bool get() { return IsValid && pWire->Orientation() == TopAbs_REVERSED; }; }
 
-			XbimWire^ Trim(XbimVertex^ first, XbimVertex^ last, double tolerance, ILogger^ logger);
-			virtual property gp_Pnt StartPoint {gp_Pnt get(); }
-			virtual property gp_Pnt EndPoint {gp_Pnt get(); }
-			virtual property  TopoDS_Vertex StartVertex { TopoDS_Vertex get(); }
-			virtual property  TopoDS_Vertex EndVertex { TopoDS_Vertex get(); }
+			XbimWire^ Trim(XbimVertex^ first, XbimVertex^ last, double tolerance);
+
+
 
 			//Returns the start parameter of each segment/interval of the wire
 			virtual property List<double>^ IntervalParameters {List<double>^ get(); }
@@ -197,7 +188,6 @@ namespace Xbim
 			//change the direction of the loop
 			void Reverse();
 			XbimWire^  Reversed();
-	
 			array<ContourVertex>^ Contour();
 
 			//Fillets all points with the specified radius
@@ -211,12 +201,11 @@ namespace Xbim
 			// Inherited via XbimOccShape
 			virtual XbimGeometryObject ^ Moved(IIfcPlacement ^ placement) override;
 
-			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement, ILogger^ logger) override;
+			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement) override;
 			virtual void Move(TopLoc_Location loc);
 
 			// Inherited via XbimOccShape
 			virtual void Mesh(IXbimMeshReceiver ^ mesh, double precision, double deflection, double angle) override;
-			
 		};
 
 		public ref class IfcPolylineComparer :IEqualityComparer<IIfcPolyline^>

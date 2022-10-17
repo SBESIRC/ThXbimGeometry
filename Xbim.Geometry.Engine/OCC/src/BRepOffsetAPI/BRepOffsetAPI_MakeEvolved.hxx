@@ -29,6 +29,8 @@
 #include <Standard_Real.hxx>
 #include <TopTools_ListOfShape.hxx>
 class TopoDS_Wire;
+class TopoDS_Face;
+class BRepFill_Evolved;
 class TopoDS_Shape;
 
 
@@ -104,7 +106,7 @@ public:
   Standard_EXPORT const BRepFill_Evolved& Evolved() const;
   
   //! Builds the resulting shape (redefined from MakeShape).
-  Standard_EXPORT virtual void Build(const Message_ProgressRange& theRange = Message_ProgressRange()) Standard_OVERRIDE;
+  Standard_EXPORT virtual void Build() Standard_OVERRIDE;
   
   //! Returns   the  shapes  created  from   a  subshape
   //! <SpineShape>  of     the  spine   and   a subshape

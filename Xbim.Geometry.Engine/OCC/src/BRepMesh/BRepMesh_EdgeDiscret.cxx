@@ -26,8 +26,6 @@
 #include <BRepMesh_CurveTessellator.hxx>
 #include <OSD_Parallel.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_EdgeDiscret, IMeshTools_ModelAlgo)
-
 //=======================================================================
 // Function: Constructor
 // Purpose : 
@@ -87,10 +85,8 @@ Handle(IMeshTools_CurveTessellator) BRepMesh_EdgeDiscret::CreateEdgeTessellation
 //=======================================================================
 Standard_Boolean BRepMesh_EdgeDiscret::performInternal (
   const Handle (IMeshData_Model)& theModel,
-  const IMeshTools_Parameters&    theParameters,
-  const Message_ProgressRange&    theRange)
+  const IMeshTools_Parameters&    theParameters)
 {
-  (void )theRange;
   myModel      = theModel;
   myParameters = theParameters;
 
@@ -159,10 +155,8 @@ void BRepMesh_EdgeDiscret::process (const Standard_Integer theEdgeIndex) const
       const Handle (Poly_Polygon3D)& aPoly3D = BRep_Tool::Polygon3D (aDEdge->GetEdge (), aLoc);
       if (!aPoly3D.IsNull ())
       {
-        if (aPoly3D->HasParameters() &&
-            BRepMesh_Deflection::IsConsistent (aPoly3D->Deflection(),
-                                               aDEdge->GetDeflection(),
-                                               myParameters.AllowQualityDecrease))
+        if (aPoly3D->HasParameters () &&
+            aPoly3D->Deflection () < 1.1 * aDEdge->GetDeflection ())
         {
           // Edge already has suitable 3d polygon.
           aDEdge->SetStatus(IMeshData_Reused);
@@ -215,10 +209,8 @@ Standard_Real BRepMesh_EdgeDiscret::checkExistingPolygonAndUpdateStatus(
 
   if (!aPolygon.IsNull ())
   {
-    Standard_Boolean isConsistent = aPolygon->HasParameters() &&
-      BRepMesh_Deflection::IsConsistent (aPolygon->Deflection(),
-                                         theDEdge->GetDeflection(),
-                                         myParameters.AllowQualityDecrease);
+    Standard_Boolean isConsistent = aPolygon->HasParameters () &&
+      aPolygon->Deflection () < 1.1 * theDEdge->GetDeflection ();
 
     if (!isConsistent)
     {
@@ -308,7 +300,7 @@ void BRepMesh_EdgeDiscret::Tessellate2d(
     BRepMesh_EdgeParameterProvider<IMeshData::ICurveArrayAdaptorHandle> aProvider(
       theDEdge, aPCurve->GetOrientation(), aDFace, aCurveArray);
 
-    const Handle(Adaptor2d_Curve2d)& aGeomPCurve = aProvider.GetPCurve();
+    const Handle(Adaptor2d_HCurve2d)& aGeomPCurve = aProvider.GetPCurve();
 
     Standard_Integer aParamIdx, aParamNb;
     if (theUpdateEnds)

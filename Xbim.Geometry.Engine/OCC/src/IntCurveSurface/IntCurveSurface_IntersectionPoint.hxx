@@ -24,6 +24,7 @@
 #include <gp_Pnt.hxx>
 #include <Standard_Real.hxx>
 #include <IntCurveSurface_TransitionOnCurve.hxx>
+class gp_Pnt;
 
 
 //! Definition of an interserction point between a

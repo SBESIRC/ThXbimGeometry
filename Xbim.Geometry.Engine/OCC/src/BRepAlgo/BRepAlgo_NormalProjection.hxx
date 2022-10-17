@@ -29,6 +29,10 @@
 #include <TopTools_DataMapOfShapeShape.hxx>
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+class Standard_ConstructionError;
+class Standard_NoSuchObject;
+class StdFail_NotDone;
+class TopoDS_Shape;
 class TopoDS_Edge;
 class Adaptor3d_Curve;
 
@@ -52,7 +56,7 @@ public:
   Standard_EXPORT void Add (const TopoDS_Shape& ToProj);
   
   //! Set the parameters  used  for computation
-  //! Tol3d is the required  tolerance between the  3d projected
+  //! Tol3d is the requiered  tolerance between the  3d projected
   //! curve  and its 2d representation
   //! InternalContinuity  is the order of constraints
   //! used for  approximation.

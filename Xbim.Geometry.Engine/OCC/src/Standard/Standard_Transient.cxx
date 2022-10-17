@@ -75,11 +75,11 @@ Standard_Transient* Standard_Transient::This() const
 // Increment reference counter
 void Standard_Transient::IncrementRefCounter() const
 {
-  Standard_Atomic_Increment (&myRefCount_);
+  Standard_Atomic_Increment (&count);
 }
 
 // Decrement reference counter
 Standard_Integer Standard_Transient::DecrementRefCounter() const
 {
-  return Standard_Atomic_Decrement(&myRefCount_);
+  return Standard_Atomic_Decrement (&count);
 }

@@ -149,6 +149,9 @@ static void TrimEdge (const TopoDS_Edge&              Edge,
   TColStd_SequenceOfReal&   ThePar,
   TopTools_SequenceOfShape& S);
 
+static TopAbs_Orientation OriEdgeInFace (const TopoDS_Edge&     E,
+  const TopoDS_Face&     F);
+
 static Standard_Integer PosOnFace (Standard_Real d1,
   Standard_Real d2,
   Standard_Real d3);
@@ -983,8 +986,8 @@ void BRepFill_Evolved::ElementaryPerform (const TopoDS_Face&              Sp,
         // skin => same orientation E[0] , inverted orientation E[2]
         // if contreskin it is inverted.
         //--------------------------------------------------------------
-        E[0].Orientation(BRepTools::OriEdgeInFace(E[0],F[0]));
-        E[2].Orientation(BRepTools::OriEdgeInFace(E[2],F[1]));
+        E[0].Orientation(OriEdgeInFace(E[0],F[0]));
+        E[2].Orientation(OriEdgeInFace(E[2],F[1]));
 
         if (DistanceToOZ(VF) < DistanceToOZ(VL)  ) { 
           // Skin
@@ -1084,7 +1087,7 @@ void BRepFill_Evolved::ElementaryPerform (const TopoDS_Face&              Sp,
         // Find if one of two faces connected to the edge
         // belongs to volevo. The edges on this face serve
         // to eliminate certain vertices that can appear twice
-        // on the parallel edge. These Vertices correspond to the
+        // on the parallel edge. These Vertices corespond to the
         // nodes of the map.
         //---------------------------------------------------------
         TopoDS_Shape     FaceControle;
@@ -1196,14 +1199,14 @@ void BRepFill_Evolved::ElementaryPerform (const TopoDS_Face&              Sp,
         TopTools_ListIteratorOfListOfShape itl;
         const TopTools_ListOfShape& LF = myMap(CurrentSpine)(VCF);
 
-        TopAbs_Orientation Ori = BRepTools::OriEdgeInFace(TopoDS::Edge(LF.First()),
+        TopAbs_Orientation Ori = OriEdgeInFace(TopoDS::Edge(LF.First()),
           CurrentFace);
         for (itl.Initialize(LF), itl.Next(); itl.More(); itl.Next()) {
           TopoDS_Edge RE = TopoDS::Edge(itl.Value());
           MapBis(CurrentFace).Append(RE.Oriented(Ori));
         }
         const TopTools_ListOfShape& LL = myMap(CurrentSpine)(VCL);	  
-        Ori = BRepTools::OriEdgeInFace(TopoDS::Edge(LL.First()),CurrentFace);
+        Ori = OriEdgeInFace(TopoDS::Edge(LL.First()),CurrentFace);
         for (itl.Initialize(LL), itl.Next() ; itl.More(); itl.Next()) {	 
           TopoDS_Edge RE = TopoDS::Edge(itl.Value());
           MapBis(CurrentFace).Append(RE.Oriented(Ori));
@@ -1618,7 +1621,7 @@ void BRepFill_Evolved::PrepareProfile(TopTools_ListOfShape&         WorkProf,
     }
 
     if (YaModif) {
-      //Status = 0 for the beginning
+      //Status = 0 for the begining
       //         3 vertical
       //         2 horizontal
       //         1 other
@@ -2824,7 +2827,7 @@ void ComputeIntervals (const TopTools_SequenceOfShape& VOnF,
   while ( IOnF <= VOnF.Length() || IOnL <= VOnL.Length()) {
     //---------------------------------------------------------
     // Return the smallest parameter on the bissectrice
-    // corresponding to the current positions IOnF,IOnL.
+    // correponding to the current positions IOnF,IOnL.
     //---------------------------------------------------------
     if ( IOnL > VOnL.Length() ||
       (IOnF <= VOnF.Length() &&
@@ -2917,6 +2920,26 @@ static TopAbs_Orientation Relative (const TopoDS_Wire&   W1,
 
   return TopAbs_REVERSED;
 }
+//=======================================================================
+//function : OriEdgeInFace
+//purpose  : 
+//=======================================================================
+
+TopAbs_Orientation OriEdgeInFace (const TopoDS_Edge& E,
+  const TopoDS_Face& F )
+
+{
+  TopExp_Explorer Exp(F.Oriented(TopAbs_FORWARD),TopAbs_EDGE);
+
+  for (; Exp.More() ;Exp.Next()) {
+    if (Exp.Current().IsSame(E)) {
+      return Exp.Current().Orientation();
+    }
+  }
+  throw Standard_ConstructionError("BRepFill_Evolved::OriEdgeInFace");
+}
+
+
 
 //=======================================================================
 //function : IsOnFace

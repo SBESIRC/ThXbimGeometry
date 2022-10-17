@@ -86,13 +86,13 @@ public:
 
   
 
-  //! Empty constructor
+  //! Empty contructor
   Standard_EXPORT BOPDS_DS();
+Standard_EXPORT virtual ~BOPDS_DS();
+  
 
-  Standard_EXPORT virtual ~BOPDS_DS();
-
-  //! Constructor
-  //! @param theAllocator the allocator to manage the memory
+  //! Contructor
+  //! theAllocator - the allocator to manage the memory
   Standard_EXPORT BOPDS_DS(const Handle(NCollection_BaseAllocator)& theAllocator);
   
 

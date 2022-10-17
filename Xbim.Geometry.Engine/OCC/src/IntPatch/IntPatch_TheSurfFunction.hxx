@@ -17,17 +17,30 @@
 #ifndef _IntPatch_TheSurfFunction_HeaderFile
 #define _IntPatch_TheSurfFunction_HeaderFile
 
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <Standard_Address.hxx>
+#include <Standard_Real.hxx>
 #include <gp_Pnt.hxx>
+#include <Standard_Boolean.hxx>
 #include <gp_Vec.hxx>
 #include <gp_Dir2d.hxx>
 #include <math_FunctionSetWithDerivatives.hxx>
+#include <Standard_Integer.hxx>
 #include <math_Vector.hxx>
-
+class StdFail_UndefinedDerivative;
+class Adaptor3d_HSurface;
 class Adaptor3d_HSurfaceTool;
 class IntSurf_Quadric;
 class IntSurf_QuadricTool;
 class math_Matrix;
+class gp_Pnt;
+class gp_Vec;
+class gp_Dir2d;
+
+
 
 class IntPatch_TheSurfFunction  : public math_FunctionSetWithDerivatives
 {
@@ -38,11 +51,11 @@ public:
   
   Standard_EXPORT IntPatch_TheSurfFunction();
   
-  Standard_EXPORT IntPatch_TheSurfFunction(const Handle(Adaptor3d_Surface)& PS, const IntSurf_Quadric& IS);
+  Standard_EXPORT IntPatch_TheSurfFunction(const Handle(Adaptor3d_HSurface)& PS, const IntSurf_Quadric& IS);
   
   Standard_EXPORT IntPatch_TheSurfFunction(const IntSurf_Quadric& IS);
   
-    void Set (const Handle(Adaptor3d_Surface)& PS);
+    void Set (const Handle(Adaptor3d_HSurface)& PS);
   
     void SetImplicitSurface (const IntSurf_Quadric& IS);
   
@@ -72,7 +85,7 @@ public:
   
     const gp_Dir2d& Direction2d();
   
-    const Handle(Adaptor3d_Surface)& PSurface() const;
+    const Handle(Adaptor3d_HSurface)& PSurface() const;
   
     const IntSurf_Quadric& ISurface() const;
 
@@ -110,8 +123,8 @@ private:
 
 };
 
-#define ThePSurface Handle(Adaptor3d_Surface)
-#define ThePSurface_hxx <Adaptor3d_Surface.hxx>
+#define ThePSurface Handle(Adaptor3d_HSurface)
+#define ThePSurface_hxx <Adaptor3d_HSurface.hxx>
 #define ThePSurfaceTool Adaptor3d_HSurfaceTool
 #define ThePSurfaceTool_hxx <Adaptor3d_HSurfaceTool.hxx>
 #define TheISurface IntSurf_Quadric

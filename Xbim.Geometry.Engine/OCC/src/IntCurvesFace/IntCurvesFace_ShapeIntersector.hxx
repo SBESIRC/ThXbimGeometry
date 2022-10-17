@@ -30,12 +30,13 @@
 #include <Standard_Real.hxx>
 #include <IntCurveSurface_TransitionOnCurve.hxx>
 #include <TopAbs_State.hxx>
-
-class Adaptor3d_Curve;
 class TopoDS_Shape;
 class gp_Lin;
+class Adaptor3d_HCurve;
 class gp_Pnt;
 class TopoDS_Face;
+
+
 
 class IntCurvesFace_ShapeIntersector 
 {
@@ -70,7 +71,7 @@ public:
   
   //! same method for a HCurve from Adaptor3d.
   //! PInf an PSup can also be - and + INF.
-  Standard_EXPORT void Perform (const Handle(Adaptor3d_Curve)& HCu, const Standard_Real PInf, const Standard_Real PSup);
+  Standard_EXPORT void Perform (const Handle(Adaptor3d_HCurve)& HCu, const Standard_Real PInf, const Standard_Real PSup);
   
   //! True is returned when the intersection have been computed.
     Standard_Boolean IsDone() const;
@@ -100,7 +101,7 @@ public:
   //! The values can be either TopAbs_IN
   //! ( the point is in the face)
   //! or TopAbs_ON
-  //! ( the point is on a boundary of the face).
+  //! ( the point is on a boudary of the face).
     TopAbs_State State (const Standard_Integer I) const;
   
   //! Returns the significant face used to determine

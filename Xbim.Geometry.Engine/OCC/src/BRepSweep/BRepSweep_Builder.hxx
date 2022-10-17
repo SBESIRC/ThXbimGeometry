@@ -23,6 +23,7 @@
 
 #include <BRep_Builder.hxx>
 #include <TopAbs_Orientation.hxx>
+class BRep_Builder;
 class TopoDS_Shape;
 
 

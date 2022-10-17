@@ -159,7 +159,7 @@ void math_NewtonMinimum::Perform(math_MultipleVarFunctionWithHessian& F,
 
     if (myIsBoundsDefined)
     {
-      // Project point on bounds or nullify TheStep coords if point lies on boundary.
+      // Project point on bounds or nullify TheStep coords if point lies on boudary.
 
       *suivant = *precedent - TheStep;
       Standard_Real aMult = RealLast();

@@ -23,6 +23,8 @@
 
 #include <Standard_Integer.hxx>
 #include <gp_Vec.hxx>
+class GeomPlate_BuildAveragePlane;
+class gp_Vec;
 
 
 //! A structure containing indexes of two normals and its cross product

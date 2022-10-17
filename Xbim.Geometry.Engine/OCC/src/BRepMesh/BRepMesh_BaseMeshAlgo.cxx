@@ -24,8 +24,6 @@
 #include <BRepMesh_ShapeTool.hxx>
 #include <Standard_ErrorHandler.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_BaseMeshAlgo, IMeshTools_MeshAlgo)
-
 //=======================================================================
 // Function: Constructor
 // Purpose : 
@@ -48,8 +46,7 @@ BRepMesh_BaseMeshAlgo::~BRepMesh_BaseMeshAlgo()
 //=======================================================================
 void BRepMesh_BaseMeshAlgo::Perform(
   const IMeshData::IFaceHandle& theDFace,
-  const IMeshTools_Parameters&  theParameters,
-  const Message_ProgressRange&  theRange)
+  const IMeshTools_Parameters&  theParameters)
 {
   try
   {
@@ -64,15 +61,11 @@ void BRepMesh_BaseMeshAlgo::Perform(
 
     if (initDataStructure())
     {
-      if (!theRange.More())
-      {
-        return;
-      }
-      generateMesh(theRange);
+      generateMesh();
       commitSurfaceTriangulation();
     }
   }
-  catch (Standard_Failure const& /*theException*/)
+  catch (Standard_Failure const& /*theExeption*/)
   {
   }
 
@@ -243,6 +236,7 @@ void BRepMesh_BaseMeshAlgo::commitSurfaceTriangulation()
 
   collectNodes(aTriangulation);
 
+  aTriangulation->Deflection(myDFace->GetDeflection());
   BRepMesh_ShapeTool::AddInFace(myDFace->GetFace(), aTriangulation);
 }
 
@@ -258,8 +252,7 @@ Handle(Poly_Triangulation) BRepMesh_BaseMeshAlgo::collectTriangles()
     return Handle(Poly_Triangulation)();
   }
 
-  Handle(Poly_Triangulation) aRes = new Poly_Triangulation();
-  aRes->ResizeTriangles (aTriangles.Extent(), false);
+  Poly_Array1OfTriangle aPolyTrianges(1, aTriangles.Extent());
   IMeshData::IteratorOfMapOfInteger aTriIt(aTriangles);
   for (Standard_Integer aTriangeId = 1; aTriIt.More(); aTriIt.Next(), ++aTriangeId)
   {
@@ -278,11 +271,14 @@ Handle(Poly_Triangulation) BRepMesh_BaseMeshAlgo::collectTriangles()
       aNode[i] = myUsedNodes->Find(aNode[i]);
     }
 
-    aRes->SetTriangle (aTriangeId, Poly_Triangle (aNode[0], aNode[1], aNode[2]));
+    aPolyTrianges(aTriangeId).Set(aNode[0], aNode[1], aNode[2]);
   }
-  aRes->ResizeNodes (myUsedNodes->Extent(), false);
-  aRes->AddUVNodes();
-  return aRes;
+
+  Handle(Poly_Triangulation) aTriangulation = new Poly_Triangulation(
+    myUsedNodes->Extent(), aTriangles.Extent(), Standard_True);
+
+  aTriangulation->ChangeTriangles() = aPolyTrianges;
+  return aTriangulation;
 }
 
 //=======================================================================
@@ -292,6 +288,10 @@ Handle(Poly_Triangulation) BRepMesh_BaseMeshAlgo::collectTriangles()
 void BRepMesh_BaseMeshAlgo::collectNodes(
   const Handle(Poly_Triangulation)& theTriangulation)
 {
+  // Store mesh nodes
+  TColgp_Array1OfPnt&   aNodes   = theTriangulation->ChangeNodes();
+  TColgp_Array1OfPnt2d& aNodes2d = theTriangulation->ChangeUVNodes();
+
   for (Standard_Integer i = 1; i <= myNodesMap->Size(); ++i)
   {
     if (myUsedNodes->IsBound(i))
@@ -299,8 +299,8 @@ void BRepMesh_BaseMeshAlgo::collectNodes(
       const BRepMesh_Vertex& aVertex = myStructure->GetNode(i);
 
       const Standard_Integer aNodeIndex = myUsedNodes->Find(i);
-      theTriangulation->SetNode  (aNodeIndex, myNodesMap->Value (aVertex.Location3d()));
-      theTriangulation->SetUVNode(aNodeIndex, getNodePoint2d (aVertex));
+      aNodes(aNodeIndex) = myNodesMap->Value(aVertex.Location3d());
+      aNodes2d(aNodeIndex) = getNodePoint2d(aVertex);
     }
   }
 }

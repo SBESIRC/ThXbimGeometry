@@ -16,16 +16,25 @@
 #ifndef _IntTools_FaceFace_HeaderFile
 #define _IntTools_FaceFace_HeaderFile
 
-#include <GeomAdaptor_Surface.hxx>
-#include <GeomInt_LineConstructor.hxx>
-#include <IntPatch_Intersection.hxx>
-#include <IntSurf_ListOfPntOn2S.hxx>
-#include <IntTools_SequenceOfCurves.hxx>
-#include <IntTools_SequenceOfPntOn2Faces.hxx>
-#include <TopoDS_Face.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
 
+#include <Standard_Boolean.hxx>
+#include <IntPatch_Intersection.hxx>
+#include <GeomInt_LineConstructor.hxx>
+#include <Standard_Integer.hxx>
+#include <Standard_Real.hxx>
+#include <IntTools_SequenceOfCurves.hxx>
+#include <TopoDS_Face.hxx>
+#include <IntTools_SequenceOfPntOn2Faces.hxx>
+#include <IntSurf_ListOfPntOn2S.hxx>
+class GeomAdaptor_HSurface;
 class IntTools_Context;
+class StdFail_NotDone;
+class TopoDS_Face;
 class Adaptor3d_TopolTool;
+
 
 //! This class provides the intersection of
 //! face's underlying surfaces.
@@ -48,9 +57,7 @@ public:
   //! Intersects underliing surfaces of F1 and F2
   //! Use sum of tolerance of F1 and F2 as intersection
   //! criteria
-  Standard_EXPORT void Perform (const TopoDS_Face& F1,
-                                const TopoDS_Face& F2,
-                                const Standard_Boolean theToRunParallel = Standard_False);
+  Standard_EXPORT void Perform (const TopoDS_Face& F1, const TopoDS_Face& F2);
   
 
   //! Returns True if the intersection was successful
@@ -75,15 +82,18 @@ public:
   //! Returns True if faces are tangent
   Standard_EXPORT Standard_Boolean TangentFaces() const;
 
-  //! Provides post-processing the result lines.
-  //! @param bToSplit [in] split the closed 3D-curves on parts when TRUE,
-  //!                      remain untouched otherwise
-  Standard_EXPORT void PrepareLines3D (const Standard_Boolean bToSplit = Standard_True);
 
+  //! Provides post-processing the result lines.
+  //! <bToSplit> - the flag.
+  //! In case of <bToSplit> is true the closed 3D-curves will be splitted
+  //! on parts.
+  //! In case of <bToSplit> is false the closed 3D-curves remain untouched.
+  Standard_EXPORT void PrepareLines3D (const Standard_Boolean bToSplit = Standard_True);
+  
   Standard_EXPORT void SetList (IntSurf_ListOfPntOn2S& ListOfPnts);
   
 
-  //! Sets the intersection context
+  //! Sets the intersecton context
   Standard_EXPORT void SetContext (const Handle(IntTools_Context)& aContext);
 
   //! Sets the Fuzzy value
@@ -93,7 +103,7 @@ public:
   //! Returns Fuzzy value
   Standard_EXPORT Standard_Real FuzzyValue() const;
 
-  //! Gets the intersection context
+  //! Gets the intersecton context
   Standard_EXPORT const Handle(IntTools_Context)& Context() const;
 
 protected:
@@ -108,15 +118,15 @@ protected:
   //! as a maximal deviation between 3D curve and 2D curves on faces.<br>
   //! If there are no 2D curves the maximal deviation between 3D curves
   //! and surfaces is computed.
-  Standard_EXPORT void ComputeTolReached3d (const Standard_Boolean theToRunParallel);
+  Standard_EXPORT void ComputeTolReached3d();
 
-protected:
+private:
 
   Standard_Boolean myIsDone;
   IntPatch_Intersection myIntersector;
   GeomInt_LineConstructor myLConstruct;
-  Handle(GeomAdaptor_Surface) myHS1;
-  Handle(GeomAdaptor_Surface) myHS2;
+  Handle(GeomAdaptor_HSurface) myHS1;
+  Handle(GeomAdaptor_HSurface) myHS2;
   Standard_Integer myNbrestr;
   Standard_Boolean myApprox;
   Standard_Boolean myApprox1;

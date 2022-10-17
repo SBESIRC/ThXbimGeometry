@@ -18,6 +18,7 @@
 
 #include <BRepTools_Modification.hxx>
 #include <BRepTools_Modifier.hxx>
+#include <Message_ProgressIndicator.hxx>
 #include <Standard_NoSuchObject.hxx>
 #include <Standard_NullObject.hxx>
 #include <TColStd_ListIteratorOfListOfTransient.hxx>
@@ -53,7 +54,7 @@
 #include <Standard_NullObject.hxx>
 #include <gp_Trsf.hxx>
 #include <BRepTools_TrsfModification.hxx>
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressSentry.hxx>
 #include <Geom_Surface.hxx>
 
 static void SetShapeFlags(const TopoDS_Shape& theInSh, TopoDS_Shape& theOutSh);
@@ -115,8 +116,7 @@ void BRepTools_Modifier::Init(const TopoDS_Shape& S)
 static TopTools_IndexedMapOfShape MapE, MapF;
 #endif
 
-void BRepTools_Modifier::Perform(const Handle(BRepTools_Modification)& M,
-                                 const Message_ProgressRange& theProgress)
+void BRepTools_Modifier::Perform(const Handle(BRepTools_Modification)& M, const Handle(Message_ProgressIndicator) & aProgress)
 {
   if (myShape.IsNull()) {
     throw Standard_NullObject();
@@ -128,7 +128,7 @@ void BRepTools_Modifier::Perform(const Handle(BRepTools_Modification)& M,
 #endif
   TopTools_DataMapIteratorOfDataMapOfShapeShape theIter(myMap);
 
-  Message_ProgressScope aPS(theProgress, "Converting Shape", 2);
+  Message_ProgressSentry aPSentry(aProgress, "Converting Shape", 0, 2, 1);
 
   TopTools_IndexedDataMapOfShapeListOfShape aMVE, aMEF;
   TopExp::MapShapesAndAncestors(myShape, TopAbs_VERTEX, TopAbs_EDGE, aMVE);
@@ -144,13 +144,15 @@ void BRepTools_Modifier::Perform(const Handle(BRepTools_Modification)& M,
     CreateOtherVertices(aMVE, aMEF, M);
 
   Standard_Boolean aNewGeom;
-  Rebuild(myShape, M, aNewGeom, aPS.Next());
+  Rebuild(myShape, M, aNewGeom, aProgress);
 
-  if (!aPS.More())
+  if (!aPSentry.More())
   {
     // The processing was broken
     return;
   }
+
+  aPSentry.Next();
 
   if (myShape.ShapeType() == TopAbs_FACE) {
     if (myShape.Orientation() == TopAbs_REVERSED) {
@@ -240,7 +242,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
   (const TopoDS_Shape& S,
    const Handle(BRepTools_Modification)& M,
    Standard_Boolean& theNewGeom,
-   const Message_ProgressRange& theProgress)
+   const Handle(Message_ProgressIndicator)& aProgress)
 {
 #ifdef DEBUG_Modifier
   int iF = MapF.Contains(S) ? MapF.FindIndex(S) : 0;
@@ -272,7 +274,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
         RevWires = aNSinfo.myRevWires;
         B.MakeFace(TopoDS::Face(result),aNSinfo.mySurface,
           aNSinfo.myLoc.Predivided(S.Location()),aNSinfo.myToler);
-        result.Location(S.Location(), Standard_False);
+        result.Location(S.Location());
         if (aNSinfo.myRevFace) 
           ResOr = TopAbs_REVERSED;
         // set specifics flags of a Face
@@ -288,7 +290,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
         else
         { // create new face with bare triangulation
           B.MakeFace(TopoDS::Face(result), aTriangulation);
-          result.Location(S.Location(), Standard_False);
+          result.Location(S.Location());
         }
         rebuild = Standard_True;
       }
@@ -313,7 +315,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
             aNCinfo.myLoc.Predivided(S.Location()),aNCinfo.myToler);
 	  No3DCurve = Standard_False;
 	}
-	result.Location(S.Location(), Standard_False);
+	result.Location(S.Location());
 //	result.Orientation(S.Orientation());
 
 	// set specifics flags of an Edge
@@ -332,7 +334,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
         else
         { // create new edge with bare polygon
           B.MakeEdge(TopoDS::Edge(result), aPolygon);
-          result.Location(S.Location(), Standard_False);
+          result.Location(S.Location());
         }
         rebuild = Standard_True;
       }
@@ -355,16 +357,16 @@ Standard_Boolean BRepTools_Modifier::Rebuild
       for (it.Initialize(S, Standard_False); it.More(); it.Next()) ++aShapeCount;
     }
     
-    Message_ProgressScope aPS(theProgress, "Converting SubShapes", aShapeCount);
+    Message_ProgressSentry aPSentry(aProgress, "Converting SubShapes", 0, aShapeCount, 1);
     //
-    for (it.Initialize(S, Standard_False); it.More() && aPS.More(); it.Next()) {
+    for (it.Initialize(S, Standard_False); it.More() && aPSentry.More(); it.Next(), aPSentry.Next()) {
       // always call Rebuild
       Standard_Boolean isSubNewGeom = Standard_False;
-      Standard_Boolean subrebuilt = Rebuild(it.Value(), M, isSubNewGeom, aPS.Next());
+      Standard_Boolean subrebuilt = Rebuild(it.Value(), M, isSubNewGeom, aProgress);
       rebuild =  subrebuilt || rebuild ;
       theNewGeom = theNewGeom || isSubNewGeom;
     }
-    if (!aPS.More())
+    if (!aPSentry.More())
     {
       // The processing was broken
       return Standard_False;
@@ -412,7 +414,7 @@ Standard_Boolean BRepTools_Modifier::Rebuild
         {
           // rem dub 16/09/97 : Make constant topology or not make at all.
           // Do not make if CopySurface = 1
-          // Attention, TRUE sewing edges (ReallyClosed)
+          // Atention, TRUE sewing edges (RealyClosed)  
           // stay even if  CopySurface is true.
     
           // check that edge contains two pcurves on this surface:

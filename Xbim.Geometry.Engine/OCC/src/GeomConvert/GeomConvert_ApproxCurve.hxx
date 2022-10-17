@@ -17,12 +17,21 @@
 #ifndef _GeomConvert_ApproxCurve_HeaderFile
 #define _GeomConvert_ApproxCurve_HeaderFile
 
-#include <Adaptor3d_Curve.hxx>
-#include <GeomAbs_Shape.hxx>
-#include <Standard_OStream.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
 
+#include <Standard_Boolean.hxx>
+#include <Standard_Real.hxx>
+#include <GeomAbs_Shape.hxx>
+#include <Standard_Integer.hxx>
+#include <Standard_OStream.hxx>
 class Geom_BSplineCurve;
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 class Geom_Curve;
+class Adaptor3d_HCurve;
+
 
 //! A framework to convert a 3D curve to a 3D BSpline.
 //! This is done by approximation to a BSpline curve within a given tolerance.
@@ -51,13 +60,13 @@ public:
   //! MaxSegments allowed in the resulting BSpline curve, and
   //! -      the highest degree MaxDeg which the
   //! polynomial defining the BSpline curve may have.
-  Standard_EXPORT GeomConvert_ApproxCurve(const Handle(Adaptor3d_Curve)& Curve, const Standard_Real Tol3d, const GeomAbs_Shape Order, const Standard_Integer MaxSegments, const Standard_Integer MaxDegree);
+  Standard_EXPORT GeomConvert_ApproxCurve(const Handle(Adaptor3d_HCurve)& Curve, const Standard_Real Tol3d, const GeomAbs_Shape Order, const Standard_Integer MaxSegments, const Standard_Integer MaxDegree);
   
   //! Returns the BSpline curve resulting from the approximation algorithm.
   Standard_EXPORT Handle(Geom_BSplineCurve) Curve() const;
   
   //! returns  Standard_True  if  the  approximation  has
-  //! been  done  within  required tolerance
+  //! been  done  within  requiered tolerance
   Standard_EXPORT Standard_Boolean IsDone() const;
   
   //! Returns  Standard_True if the approximation did come out
@@ -86,7 +95,7 @@ private:
 
   
   //! Converts a curve to B-spline
-  Standard_EXPORT void Approximate (const Handle(Adaptor3d_Curve)& theCurve, const Standard_Real theTol3d, const GeomAbs_Shape theOrder, const Standard_Integer theMaxSegments, const Standard_Integer theMaxDegree);
+  Standard_EXPORT void Approximate (const Handle(Adaptor3d_HCurve)& theCurve, const Standard_Real theTol3d, const GeomAbs_Shape theOrder, const Standard_Integer theMaxSegments, const Standard_Integer theMaxDegree);
 
 
   Standard_Boolean myIsDone;

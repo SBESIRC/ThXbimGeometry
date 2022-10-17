@@ -27,8 +27,9 @@
 #include <Standard_Boolean.hxx>
 #include <math_Vector.hxx>
 #include <Standard_Real.hxx>
-
+class Adaptor3d_HCurve;
 class math_Matrix;
+class gp_Pnt;
 
 
 //! Function of reframing between a point and a curve.
@@ -48,7 +49,7 @@ public:
   DEFINE_STANDARD_ALLOC
 
   
-  Standard_EXPORT BRepBlend_CurvPointRadInv(const Handle(Adaptor3d_Curve)& C1, const Handle(Adaptor3d_Curve)& C2);
+  Standard_EXPORT BRepBlend_CurvPointRadInv(const Handle(Adaptor3d_HCurve)& C1, const Handle(Adaptor3d_HCurve)& C2);
   
   Standard_EXPORT void Set (const Standard_Integer Choix);
   
@@ -104,8 +105,8 @@ private:
 
 
 
-  Handle(Adaptor3d_Curve) curv1;
-  Handle(Adaptor3d_Curve) curv2;
+  Handle(Adaptor3d_HCurve) curv1;
+  Handle(Adaptor3d_HCurve) curv2;
   gp_Pnt point;
   Standard_Integer choix;
 

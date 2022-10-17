@@ -26,6 +26,9 @@
 #include <Standard_Boolean.hxx>
 #include <gp_TrsfForm.hxx>
 #include <Standard_Integer.hxx>
+class Standard_ConstructionError;
+class Standard_OutOfRange;
+class gp_Trsf2d;
 class gp_Pnt2d;
 class gp_Ax2d;
 class gp_Vec2d;
@@ -148,7 +151,7 @@ public:
   Standard_EXPORT gp_Trsf2d Trsf2d() const;
   
 
-  //! Returns the coefficients of the global matrix of transformation.
+  //! Returns the coefficients of the global matrix of tranformation.
   //! It is a 2 rows X 3 columns matrix.
   //!
   //! Raised if  Row < 1 or Row > 2  or  Col < 1 or Col > 2
@@ -159,21 +162,21 @@ public:
   //! Computes the inverse of this transformation.
   //! and  assigns the result to this transformatio
   //!
-  //! Raised if the transformation is singular. This means that
+  //! Raised if the the transformation is singular. This means that
   //! the ScaleFactor is lower or equal to Resolution from
   //! package gp.
   Standard_EXPORT void Invert();
   
   //! Computes the inverse of this transformation and creates a new one.
-  //! Raises ConstructionError  if the transformation is singular. This means that
+  //! Raises ConstructionError  if the the transformation is singular. This means that
   //! the ScaleFactor is lower or equal to Resolution from package gp.
-  Standard_NODISCARD Standard_EXPORT Handle(Geom2d_Transformation) Inverted() const;
+  Standard_EXPORT Standard_NODISCARD Handle(Geom2d_Transformation) Inverted() const;
   
 
   //! Computes the transformation composed with Other and <me>.
   //! <me> * Other.
   //! Returns a new transformation
-  Standard_NODISCARD Standard_EXPORT
+  Standard_EXPORT Standard_NODISCARD
 	Handle(Geom2d_Transformation) Multiplied (const Handle(Geom2d_Transformation)& Other) const;
 Standard_NODISCARD Handle(Geom2d_Transformation) operator * (const Handle(Geom2d_Transformation)& Other) const
 {

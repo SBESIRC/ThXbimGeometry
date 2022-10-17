@@ -20,6 +20,7 @@
 #include <AdvApp2Var_Node.hxx>
 #include <NCollection_Sequence.hxx>
 
-typedef NCollection_Sequence<Handle(AdvApp2Var_Node)> AdvApp2Var_SequenceOfNode;
+typedef NCollection_Sequence<AdvApp2Var_Node> AdvApp2Var_SequenceOfNode;
+
 
 #endif

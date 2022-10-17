@@ -24,6 +24,7 @@
 #include <Standard_Boolean.hxx>
 #include <Standard_Integer.hxx>
 #include <Intf_Interference.hxx>
+class Standard_OutOfRange;
 class Intf_Polygon2d;
 class gp_Pnt2d;
 

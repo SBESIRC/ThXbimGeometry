@@ -17,13 +17,26 @@
 #ifndef _Approx_CurvlinFunc_HeaderFile
 #define _Approx_CurvlinFunc_HeaderFile
 
-#include <Adaptor2d_Curve2d.hxx>
-#include <Adaptor3d_Curve.hxx>
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_Type.hxx>
+
+#include <Standard_Integer.hxx>
+#include <Standard_Real.hxx>
+#include <TColStd_HArray1OfReal.hxx>
+#include <Standard_Transient.hxx>
 #include <GeomAbs_Shape.hxx>
 #include <TColStd_Array1OfReal.hxx>
-#include <TColStd_HArray1OfReal.hxx>
+#include <Standard_Boolean.hxx>
+class Adaptor3d_HCurve;
+class Adaptor2d_HCurve2d;
+class Adaptor3d_HSurface;
+class Standard_OutOfRange;
+class Standard_DomainError;
+class Standard_ConstructionError;
+class Adaptor3d_Curve;
 
+
+class Approx_CurvlinFunc;
 DEFINE_STANDARD_HANDLE(Approx_CurvlinFunc, Standard_Transient)
 
 //! defines an abstract curve with
@@ -34,11 +47,11 @@ class Approx_CurvlinFunc : public Standard_Transient
 public:
 
   
-  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor3d_Curve)& C, const Standard_Real Tol);
+  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor3d_HCurve)& C, const Standard_Real Tol);
   
-  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor2d_Curve2d)& C2D, const Handle(Adaptor3d_Surface)& S, const Standard_Real Tol);
+  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor2d_HCurve2d)& C2D, const Handle(Adaptor3d_HSurface)& S, const Standard_Real Tol);
   
-  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor2d_Curve2d)& C2D1, const Handle(Adaptor2d_Curve2d)& C2D2, const Handle(Adaptor3d_Surface)& S1, const Handle(Adaptor3d_Surface)& S2, const Standard_Real Tol);
+  Standard_EXPORT Approx_CurvlinFunc(const Handle(Adaptor2d_HCurve2d)& C2D1, const Handle(Adaptor2d_HCurve2d)& C2D2, const Handle(Adaptor3d_HSurface)& S1, const Handle(Adaptor3d_HSurface)& S2, const Standard_Real Tol);
   
   //! ---Purpose Update the tolerance to used
   Standard_EXPORT void SetTol (const Standard_Real Tol);
@@ -54,7 +67,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   Standard_EXPORT void Intervals (TColStd_Array1OfReal& T, const GeomAbs_Shape S) const;
   
@@ -69,12 +82,12 @@ public:
   
   Standard_EXPORT Standard_Real GetLength() const;
   
-  //! returns  original parameter corresponding S.  if
+  //! returns  original parameter correponding S.  if
   //! Case == 1 computation is performed on myC2D1 and mySurf1,
   //! otherwise it is done on myC2D2 and mySurf2.
   Standard_EXPORT Standard_Real GetUParameter (Adaptor3d_Curve& C, const Standard_Real S, const Standard_Integer NumberOfCurve) const;
   
-  //! returns original parameter corresponding S.
+  //! returns original parameter correponding S.
   Standard_EXPORT Standard_Real GetSParameter (const Standard_Real U) const;
   
   //! if myCase != 1
@@ -103,16 +116,16 @@ private:
   
   Standard_EXPORT void Init (Adaptor3d_Curve& C, Handle(TColStd_HArray1OfReal)& Si, Handle(TColStd_HArray1OfReal)& Ui) const;
   
-  //! returns curvilinear parameter corresponding U.
+  //! returns curvilinear parameter correponding U.
   Standard_EXPORT Standard_Real GetSParameter (Adaptor3d_Curve& C, const Standard_Real U, const Standard_Real Length) const;
   
   Standard_EXPORT Standard_Boolean EvalCurOnSur (const Standard_Real S, const Standard_Integer Order, TColStd_Array1OfReal& Result, const Standard_Integer NumberOfCurve) const;
 
-  Handle(Adaptor3d_Curve) myC3D;
-  Handle(Adaptor2d_Curve2d) myC2D1;
-  Handle(Adaptor2d_Curve2d) myC2D2;
-  Handle(Adaptor3d_Surface) mySurf1;
-  Handle(Adaptor3d_Surface) mySurf2;
+  Handle(Adaptor3d_HCurve) myC3D;
+  Handle(Adaptor2d_HCurve2d) myC2D1;
+  Handle(Adaptor2d_HCurve2d) myC2D2;
+  Handle(Adaptor3d_HSurface) mySurf1;
+  Handle(Adaptor3d_HSurface) mySurf2;
   Standard_Integer myCase;
   Standard_Real myFirstS;
   Standard_Real myLastS;

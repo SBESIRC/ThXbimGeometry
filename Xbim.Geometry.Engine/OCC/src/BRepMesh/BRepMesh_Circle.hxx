@@ -44,26 +44,26 @@ public:
   
   //! Sets location of a circle.
   //! @param theLocation location of a circle.
-  void SetLocation(const gp_XY& theLocation)
+  inline void SetLocation(const gp_XY& theLocation)
   {
     myLocation = theLocation;
   }
   
   //! Sets radius of a circle.
   //! @param theRadius radius of a circle.
-  void SetRadius(const Standard_Real theRadius)
+  inline void SetRadius(const Standard_Real theRadius)
   {
     myRadius = theRadius;
   }
   
   //! Returns location of a circle.
-  const gp_XY& Location() const
+  inline const gp_XY& Location() const
   {
     return myLocation;
   }
 
   //! Returns radius of a circle.
-  const Standard_Real& Radius() const
+  inline const Standard_Real& Radius() const
   {
     return myRadius;
   }

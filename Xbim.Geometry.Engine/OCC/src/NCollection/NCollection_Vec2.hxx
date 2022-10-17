@@ -12,12 +12,10 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef NCollection_Vec2_HeaderFile
-#define NCollection_Vec2_HeaderFile
+#ifndef _NCollection_Vec2_H__
+#define _NCollection_Vec2_H__
 
 #include <cmath> // std::sqrt()
-
-#include <Standard_Dump.hxx>
 
 //! Auxiliary macros to define couple of similar access components as vector methods.
 //! @return 2 components by their names in specified order
@@ -102,9 +100,11 @@ public:
   }
 
   //! Check this vector with another vector for equality (without tolerance!).
+  bool operator== (const NCollection_Vec2& theOther)       { return IsEqual (theOther); }
   bool operator== (const NCollection_Vec2& theOther) const { return IsEqual (theOther); }
 
   //! Check this vector with another vector for non-equality (without tolerance!).
+  bool operator!= (const NCollection_Vec2& theOther)       { return !IsEqual (theOther); }
   bool operator!= (const NCollection_Vec2& theOther) const { return !IsEqual (theOther); }
 
   //! Raw access to the data (for OpenGL exchange).
@@ -277,23 +277,16 @@ public:
     return x() * x() + y() * y();
   }
 
-  //! Construct DX unit vector.
+  //! Constuct DX unit vector.
   static NCollection_Vec2 DX()
   {
     return NCollection_Vec2 (Element_t(1), Element_t(0));
   }
 
-  //! Construct DY unit vector.
+  //! Constuct DY unit vector.
   static NCollection_Vec2 DY()
   {
     return NCollection_Vec2 (Element_t(0), Element_t(1));
-  }
-
-  //! Dumps the content of me into the stream
-  void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const
-  {
-    (void)theDepth;
-    OCCT_DUMP_FIELD_VALUES_NUMERICAL (theOStream, "Vec2", 2, v[0], v[1])
   }
 
 private:

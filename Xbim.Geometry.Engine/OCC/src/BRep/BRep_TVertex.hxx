@@ -24,6 +24,7 @@
 #include <Standard_Real.hxx>
 #include <BRep_ListOfPointRepresentation.hxx>
 #include <TopoDS_TVertex.hxx>
+class gp_Pnt;
 class TopoDS_TShape;
 
 
@@ -60,9 +61,6 @@ public:
   
   //! Returns a copy  of the  TShape  with no sub-shapes.
   Standard_EXPORT Handle(TopoDS_TShape) EmptyCopy() const Standard_OVERRIDE;
-
-  //! Dumps the content of me into the stream
-  Standard_EXPORT virtual void DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth = -1) const Standard_OVERRIDE;
 
 
 

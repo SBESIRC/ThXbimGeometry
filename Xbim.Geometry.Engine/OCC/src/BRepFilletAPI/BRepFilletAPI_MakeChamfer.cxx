@@ -391,7 +391,7 @@ Handle(TopOpeBRepBuild_HBuilder) BRepFilletAPI_MakeChamfer::Builder()const
 //purpose  : 
 //=======================================================================
 
-void BRepFilletAPI_MakeChamfer::Build(const Message_ProgressRange& /*theRange*/)
+void BRepFilletAPI_MakeChamfer::Build()
 {
   myBuilder.Compute();
   if (myBuilder.IsDone()){

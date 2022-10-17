@@ -24,10 +24,9 @@
 #include <Standard_Integer.hxx>
 #include <Standard_OStream.hxx>
 #include <Standard_IStream.hxx>
+class Standard_OutOfRange;
 class TopLoc_Location;
 
-//! Operator for writing transformation into the stream
-Standard_OStream& operator << (Standard_OStream& OS, const gp_Trsf& T);
 
 //! The class LocationSet stores a set of location in
 //! a relocatable state.
@@ -68,6 +67,9 @@ public:
   //! Reads the content of me from the  stream  <IS>. me
   //! is first cleared.
   Standard_EXPORT void Read (Standard_IStream& IS);
+
+
+
 
 protected:
 

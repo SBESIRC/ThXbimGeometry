@@ -16,9 +16,14 @@
 #ifndef _IntTools_TopolTool_HeaderFile
 #define _IntTools_TopolTool_HeaderFile
 
-#include <Adaptor3d_TopolTool.hxx>
-#include <Adaptor3d_Surface.hxx>
+#include <Standard.hxx>
+#include <Standard_Type.hxx>
 
+#include <Standard_Integer.hxx>
+#include <Standard_Real.hxx>
+#include <Adaptor3d_TopolTool.hxx>
+class Standard_DomainError;
+class Adaptor3d_HSurface;
 class gp_Pnt2d;
 class gp_Pnt;
 
@@ -40,7 +45,7 @@ public:
   
 
   //! Initializes me by surface
-  Standard_EXPORT IntTools_TopolTool(const Handle(Adaptor3d_Surface)& theSurface);
+  Standard_EXPORT IntTools_TopolTool(const Handle(Adaptor3d_HSurface)& theSurface);
   
 
   //! Redefined empty initializer
@@ -51,7 +56,7 @@ public:
   
 
   //! Initializes me by surface
-  Standard_EXPORT virtual void Initialize (const Handle(Adaptor3d_Surface)& theSurface) Standard_OVERRIDE;
+  Standard_EXPORT virtual void Initialize (const Handle(Adaptor3d_HSurface)& theSurface) Standard_OVERRIDE;
   
   Standard_EXPORT virtual void ComputeSamplePoints() Standard_OVERRIDE;
   
@@ -78,7 +83,7 @@ public:
   //! by adaptive algorithm for BSpline surfaces. For other surfaces algorithm
   //! is the same as in method ComputeSamplePoints(), but only fill arrays of U
   //! and V sample parameters;
-  //! theDefl is a required deflection
+  //! theDefl is a requred deflection
   //! theNUmin, theNVmin are minimal nb points for U and V.
   Standard_EXPORT virtual void SamplePnts (const Standard_Real theDefl, const Standard_Integer theNUmin, const Standard_Integer theNVmin) Standard_OVERRIDE;
 

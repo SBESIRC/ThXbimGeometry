@@ -62,7 +62,7 @@ void BOPAlgo_Splitter::CheckData()
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Splitter::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_Splitter::Perform()
 {
   GetReport()->Clear();
   //
@@ -89,17 +89,16 @@ void BOPAlgo_Splitter::Perform(const Message_ProgressRange& theRange)
   BOPAlgo_PaveFiller *pPF = new BOPAlgo_PaveFiller();
   pPF->SetArguments(aLS);
   pPF->SetRunParallel(myRunParallel);
-  
+  pPF->SetProgressIndicator(myProgressIndicator);
   pPF->SetFuzzyValue(myFuzzyValue);
   pPF->SetNonDestructive(myNonDestructive);
   pPF->SetGlue(myGlue);
   pPF->SetUseOBB(myUseOBB);
   //
-  Message_ProgressScope aPS(theRange, "Performing Split operation", 10);
-  pPF->Perform(aPS.Next(9));
+  pPF->Perform();
   //
   myEntryPoint = 1;
-  PerformInternal(*pPF, aPS.Next(1));
+  PerformInternal(*pPF);
 }
 
 //=======================================================================

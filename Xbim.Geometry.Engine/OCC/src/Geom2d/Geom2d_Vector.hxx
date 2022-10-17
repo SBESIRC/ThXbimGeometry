@@ -23,6 +23,9 @@
 #include <gp_Vec2d.hxx>
 #include <Geom2d_Geometry.hxx>
 #include <Standard_Real.hxx>
+class Standard_DomainError;
+class gp_VectorWithNullMagnitude;
+class gp_Vec2d;
 
 
 class Geom2d_Vector;
@@ -43,7 +46,7 @@ public:
   Standard_EXPORT void Reverse();
   
   //! Returns a copy of <me> reversed.
-  Standard_NODISCARD Standard_EXPORT Handle(Geom2d_Vector) Reversed() const;
+  Standard_EXPORT Standard_NODISCARD Handle(Geom2d_Vector) Reversed() const;
   
   //! Computes the angular value, in radians, between this
   //! vector and vector Other. The result is a value

@@ -21,6 +21,8 @@
 #include <Standard_DefineAlloc.hxx>
 #include <Standard_Handle.hxx>
 
+#include <Adaptor3d_CurvePtr.hxx>
+#include <Adaptor3d_SurfacePtr.hxx>
 #include <gp_Pnt.hxx>
 #include <Standard_Real.hxx>
 #include <TColStd_SequenceOfReal.hxx>
@@ -30,6 +32,7 @@
 #include <math_FunctionSetWithDerivatives.hxx>
 #include <Standard_Integer.hxx>
 #include <math_Vector.hxx>
+class Standard_OutOfRange;
 class Adaptor3d_Curve;
 class Adaptor3d_Surface;
 class math_Matrix;
@@ -81,26 +84,25 @@ public:
   //! Return the Nth extremum on S.
   Standard_EXPORT const Extrema_POnSurf& PointOnSurface (const Standard_Integer N) const;
 
-  //! Change Sequence of SquareDistance
-  TColStd_SequenceOfReal& SquareDistances()
-  {
-    return mySqDist;
-  }
-  //! Change Sequence of PointOnCurv
-  Extrema_SequenceOfPOnCurv& PointsOnCurve()
-  {
-    return myPoint1;
-  }
-  //! Change Sequence of PointOnSurf
-  Extrema_SequenceOfPOnSurf& PointsOnSurf()
-  {
-    return myPoint2;
-  }
+
+
+
+protected:
+
+
+
+
 
 private:
 
-  const Adaptor3d_Curve* myC;
-  const Adaptor3d_Surface* myS;
+  
+  Standard_EXPORT Adaptor3d_SurfacePtr Bidon1() const;
+  
+  Standard_EXPORT Adaptor3d_CurvePtr Bidon2() const;
+
+
+  Adaptor3d_CurvePtr myC;
+  Adaptor3d_SurfacePtr myS;
   gp_Pnt myP1;
   gp_Pnt myP2;
   Standard_Real myt;
@@ -112,6 +114,13 @@ private:
   Standard_Boolean myCinit;
   Standard_Boolean mySinit;
 
+
 };
+
+
+
+
+
+
 
 #endif // _Extrema_FuncExtCS_HeaderFile

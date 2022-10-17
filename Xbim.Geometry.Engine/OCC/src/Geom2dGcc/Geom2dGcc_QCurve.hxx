@@ -24,6 +24,7 @@
 #include <GccEnt_Position.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
 #include <Standard_Boolean.hxx>
+class Geom2dAdaptor_Curve;
 
 
 //! Creates a qualified 2d line.

@@ -29,6 +29,9 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <Standard_Real.hxx>
 #include <GccEnt_Position.hxx>
+class StdFail_NotDone;
+class GccEnt_BadQualifier;
+class Standard_OutOfRange;
 class Geom2dGcc_QualifiedCurve;
 class gp_Pnt2d;
 class gp_Lin2d;
@@ -63,7 +66,7 @@ public:
   Standard_EXPORT Geom2dGcc_Lin2d2Tan(const Geom2dGcc_QualifiedCurve& Qualified1, const Geom2dGcc_QualifiedCurve& Qualified2, const Standard_Real Tolang);
   
   //! This class implements the algorithms used to create 2d
-  //! lines passing through a point and tangent to a curve.
+  //! lines passing thrue a point and tangent to a curve.
   //! Tolang is used to determine the tolerance for the tangency points.
   Standard_EXPORT Geom2dGcc_Lin2d2Tan(const Geom2dGcc_QualifiedCurve& Qualified1, const gp_Pnt2d& ThePoint, const Standard_Real Tolang);
   
@@ -75,7 +78,7 @@ public:
   Standard_EXPORT Geom2dGcc_Lin2d2Tan(const Geom2dGcc_QualifiedCurve& Qualified1, const Geom2dGcc_QualifiedCurve& Qualified2, const Standard_Real Tolang, const Standard_Real Param1, const Standard_Real Param2);
   
   //! This class implements the algorithms used to create 2d
-  //! lines passing through a point and tangent to a curve.
+  //! lines passing thrue a point and tangent to a curve.
   //! Tolang is used to determine the tolerance for the tangency points.
   //! Param2 is used for the initial guess on the curve.
   Standard_EXPORT Geom2dGcc_Lin2d2Tan(const Geom2dGcc_QualifiedCurve& Qualified1, const gp_Pnt2d& ThePoint, const Standard_Real Tolang, const Standard_Real Param1);
@@ -119,7 +122,7 @@ public:
   //! StdFail_NotDone if the construction fails.
   Standard_EXPORT void WhichQualifier (const Standard_Integer Index, GccEnt_Position& Qualif1, GccEnt_Position& Qualif2) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol on
   //! the solution curv.
@@ -130,7 +133,7 @@ public:
   //! StdFail_NotDone if the construction fails.
   Standard_EXPORT void Tangency1 (const Standard_Integer Index, Standard_Real& ParSol, Standard_Real& ParArg, gp_Pnt2d& PntSol) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol on the solution curv.
   //! ParArg is the intrinsic parameter of the point PntSol on the argument curv.

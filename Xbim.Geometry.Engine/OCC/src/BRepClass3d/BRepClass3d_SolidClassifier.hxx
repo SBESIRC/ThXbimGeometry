@@ -25,6 +25,7 @@
 #include <BRepClass3d_SolidExplorer.hxx>
 #include <BRepClass3d_SClassifier.hxx>
 #include <Standard_Real.hxx>
+class Standard_DomainError;
 class TopoDS_Shape;
 class gp_Pnt;
 

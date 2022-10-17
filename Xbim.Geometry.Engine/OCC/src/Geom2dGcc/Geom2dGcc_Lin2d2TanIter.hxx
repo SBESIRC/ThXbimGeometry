@@ -26,8 +26,12 @@
 #include <GccEnt_Position.hxx>
 #include <gp_Pnt2d.hxx>
 #include <Standard_Real.hxx>
+class GccEnt_BadQualifier;
+class StdFail_NotDone;
 class Geom2dGcc_QCurve;
+class gp_Pnt2d;
 class GccEnt_QualifiedCirc;
+class gp_Lin2d;
 
 
 //! This class implements the algorithms used to
@@ -47,14 +51,14 @@ public:
 
   
   //! This class implements the algorithms used to create 2d
-  //! lines passing through a point and tangent to a curve.
+  //! lines passing thrue a point and tangent to a curve.
   //! Tolang is used to determine the tolerance for the
   //! tangency points.
   //! Param2 is used for the initial guess on the curve.
   Standard_EXPORT Geom2dGcc_Lin2d2TanIter(const Geom2dGcc_QCurve& Qualified1, const gp_Pnt2d& ThePoint, const Standard_Real Param1, const Standard_Real Tolang);
   
   //! This class implements the algorithms used to create 2d
-  //! line tangent to a circle and to a curve.
+  //! line tangent to a circle and to a cuve.
   //! Tolang is used to determine the tolerance for the
   //! tangency points.
   //! Param2 is used for the initial guess on the curve.
@@ -79,7 +83,7 @@ public:
   
   Standard_EXPORT void WhichQualifier (GccEnt_Position& Qualif1, GccEnt_Position& Qualif2) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol on
   //! the solution curv.

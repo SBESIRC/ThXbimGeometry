@@ -31,6 +31,7 @@
 
 class Adaptor2d_Curve2d;
 class Extrema_POnCurv2d;
+class gp_Pnt2d;
 class Extrema_ExtElC2d;
 class Extrema_ECC2d;
 
@@ -106,7 +107,7 @@ private:
   TColStd_SequenceOfReal mySqDist;
   Standard_Integer mynbext;
   Standard_Boolean inverse;
-  const Adaptor2d_Curve2d* myC;
+  Standard_Address myC;
   Standard_Real myv1;
   Standard_Real myv2;
   Standard_Real mytolc1;

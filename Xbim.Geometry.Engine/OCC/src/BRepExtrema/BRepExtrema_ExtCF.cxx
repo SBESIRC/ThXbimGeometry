@@ -22,7 +22,9 @@
 #include <BRepTopAdaptor_FClass2d.hxx>
 #include <gp_Pnt2d.hxx>
 #include <BRepAdaptor_Surface.hxx>
+#include <BRepAdaptor_HSurface.hxx>
 #include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_HCurve.hxx>
 
 //=======================================================================
 //function : BRepExtrema_ExtCF
@@ -47,7 +49,7 @@ void BRepExtrema_ExtCF::Initialize(const TopoDS_Edge& E, const TopoDS_Face& F)
       !BRep_Tool::IsGeometric(E))
     return; // protect against non-geometric type (e.g. triangulation)
   BRepAdaptor_Curve aC(E);
-  myHS = new BRepAdaptor_Surface(Surf);
+  myHS = new BRepAdaptor_HSurface(Surf);
   Standard_Real aTolC, aTolS;
   //
   aTolS = Min(BRep_Tool::Tolerance(F), Precision::Confusion());
@@ -60,7 +62,7 @@ void BRepExtrema_ExtCF::Initialize(const TopoDS_Edge& E, const TopoDS_Face& F)
   //
   Standard_Real U1, U2, V1, V2;
   BRepTools::UVBounds(F, U1, U2, V1, V2);
-  myExtCS.Initialize (*myHS, U1, U2, V1, V2, aTolC, aTolS);
+  myExtCS.Initialize(myHS->Surface(), U1, U2, V1, V2, aTolC, aTolS);
 }
 
 //=======================================================================
@@ -81,7 +83,7 @@ void BRepExtrema_ExtCF::Perform(const TopoDS_Edge& E, const TopoDS_Face& F2)
   BRep_Tool::Range(E, U1, U2);
 
   BRepAdaptor_Curve Curv(E);
-  Handle(BRepAdaptor_Curve) HC = new BRepAdaptor_Curve(Curv);
+  Handle(BRepAdaptor_HCurve) HC = new BRepAdaptor_HCurve(Curv);
   myExtCS.Perform(HC->Curve(), U1, U2);
 
   if(!myExtCS.IsDone())

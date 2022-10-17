@@ -19,36 +19,28 @@
 //              On Unix platforms:
 //              ------------------
 //                In method Read(Standard_IStream &IS), during the version 
-//                authentication we cut last '\r' in the line (which will
+//                authentification we cut last '\r' in the line (which will
 //                be present if file is in DOS coding)
 
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressIndicator.hxx>
+#include <Message_ProgressSentry.hxx>
 #include <TCollection_AsciiString.hxx>
 #include <TopoDS_Iterator.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopTools_LocationSet.hxx>
 #include <TopTools_ShapeSet.hxx>
-#include <Standard_Assert.hxx>
-
-#include <BRep_TFace.hxx>
 
 #include <locale.h>
 #include <string.h>
-
-const Standard_CString TopTools_ShapeSet::THE_ASCII_VERSIONS[TopTools_FormatVersion_UPPER + 1] =
-{
-  "",
-  "CASCADE Topology V1, (c) Matra-Datavision",
-  "CASCADE Topology V2, (c) Matra-Datavision",
-  "CASCADE Topology V3, (c) Open Cascade"
-};
+static const char* Version  = "CASCADE Topology V1, (c) Matra-Datavision";
+static const char* Version2 = "CASCADE Topology V2, (c) Matra-Datavision";
 
 //=======================================================================
 //function : TopTools_ShapeSet
 //purpose  : 
 //=======================================================================
-TopTools_ShapeSet::TopTools_ShapeSet()
-: myFormatNb (TopTools_FormatVersion_CURRENT)
+
+TopTools_ShapeSet::TopTools_ShapeSet() : myFormatNb(1)
 {
 }
 
@@ -61,10 +53,6 @@ TopTools_ShapeSet::~TopTools_ShapeSet()
 //=======================================================================
 void TopTools_ShapeSet::SetFormatNb(const Standard_Integer theFormatNb)
 {
-  Standard_ASSERT_RETURN(theFormatNb >= TopTools_FormatVersion_LOWER &&
-                         theFormatNb <= TopTools_FormatVersion_UPPER,
-    "Error: unsupported TopTools version.", );
-
   myFormatNb = theFormatNb;
 }
 
@@ -455,7 +443,7 @@ void  TopTools_ShapeSet::Dump(Standard_OStream& OS)const
 //purpose  : 
 //=======================================================================
 
-void  TopTools_ShapeSet::Write(Standard_OStream& OS, const Message_ProgressRange& theProgress)
+void  TopTools_ShapeSet::Write(Standard_OStream& OS)
 {
   // always use C locale for writing shapes
   std::locale anOldLocale = OS.imbue (std::locale::classic());
@@ -464,17 +452,25 @@ void  TopTools_ShapeSet::Write(Standard_OStream& OS, const Message_ProgressRange
   std::streamsize prec = OS.precision(15);
 
   // write the copyright
-  OS << "\n" << THE_ASCII_VERSIONS[myFormatNb] << "\n";
+  if (myFormatNb == 2)
+    OS << "\n" << Version2 << "\n";
+  else
+    OS << "\n" << Version << "\n";
 
   //-----------------------------------------
   // write the locations
   //-----------------------------------------
 
-  Message_ProgressScope aPS(theProgress, "Writing", 100);
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 10, "Locations" );
+  myLocations.SetProgress(myProgress);
+  myLocations.Write(OS);
+  if ( !myProgress.IsNull() ) {
+    myProgress->EndScope();
+    myProgress->Show();
+  }
 
-  myLocations.Write(OS, aPS.Next(10));
-
-  if (aPS.UserBreak()) {
+  if (!myProgress.IsNull() && myProgress->UserBreak()) {
     OS << "Interrupted by the user\n";
     OS.imbue (anOldLocale);
     return;
@@ -484,12 +480,12 @@ void  TopTools_ShapeSet::Write(Standard_OStream& OS, const Message_ProgressRange
   // write the geometry
   //-----------------------------------------
 
-  WriteGeometry(OS, aPS.Next(75));
-
-  if (aPS.UserBreak()) {
-    OS << "Interrupted by the user\n";
-    OS.imbue(anOldLocale);
-    return;
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 75, "Geometry" );
+  WriteGeometry(OS);
+  if ( !myProgress.IsNull() ) {
+    myProgress->EndScope();
+    myProgress->Show();
   }
 
   //-----------------------------------------
@@ -501,8 +497,11 @@ void  TopTools_ShapeSet::Write(Standard_OStream& OS, const Message_ProgressRange
   OS << "\nTShapes " << nbShapes << "\n";
 
   // subshapes are written first
-  Message_ProgressScope aPS1 (aPS.Next(15), "Shapes", nbShapes);
-  for (i = 1; i <= nbShapes && aPS1.More(); i++, aPS1.Next()) {
+  //OCC19559
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 15, "Shapes" );
+  Message_ProgressSentry PS(myProgress, "Shapes", 0, nbShapes, 1);
+  for (i = 1; i <= nbShapes && PS.More(); i++, PS.Next()) {
     const TopoDS_Shape& S = myShapes(i);
     
     // Type
@@ -544,9 +543,14 @@ void  TopTools_ShapeSet::Write(Standard_OStream& OS, const Message_ProgressRange
   OS.precision(prec);
   OS.imbue (anOldLocale);
 
-  if (aPS.UserBreak())
+  PS.Relieve();
+  if (!myProgress.IsNull()) {
+    myProgress->EndScope();
+    myProgress->Show();
+    if (myProgress->UserBreak())
       OS << "Interrupted by the user\n";
   }
+}
 
 //=======================================================================
 //function : ReadShapeEnum
@@ -593,7 +597,7 @@ static TopAbs_ShapeEnum ReadShapeEnum(Standard_IStream& IS)
 //purpose  : 
 //=======================================================================
 
-void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange& theProgress)
+void  TopTools_ShapeSet::Read(Standard_IStream& IS)
 {
   // always use C locale for reading shapes
   std::locale anOldLocale = IS.imbue (std::locale::classic());
@@ -602,7 +606,6 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
 
   // Check the version
   char vers[101];
-  Standard_Boolean anIsSetFormat = Standard_False;
   do {
     IS.getline(vers,100,'\n');
     // BUC60769 PTV 18.10.2000: remove possible '\r' at the end of the line
@@ -616,37 +619,37 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
       for (lv--; lv > 0 && (vers[lv] == '\r' || vers[lv] == '\n') ;lv--) 
         vers[lv] = '\0';
     }
-    for (Standard_Integer i = TopTools_FormatVersion_LOWER;
-         i <= TopTools_FormatVersion_UPPER; ++i)
-    {
-      if (!strcmp(vers, THE_ASCII_VERSIONS[i]))
-      {
-        SetFormatNb(i);
-        anIsSetFormat = Standard_True;
-        break;
-      }
-    }
-    if (anIsSetFormat)
-    {
-      break;
-    }
     
-  } while (!IS.fail());
+  } while ( ! IS.fail() && strcmp(vers,Version) && strcmp(vers,Version2) );
   if (IS.fail()) {
     std::cout << "File was not written with this version of the topology"<<std::endl;
     IS.imbue (anOldLocale);
     return;
   }
+  if (strcmp(vers,Version2) == 0) SetFormatNb(2);
+  else SetFormatNb(1);
 
   //-----------------------------------------
   // read the locations
   //-----------------------------------------
 
-  Message_ProgressScope aPS(theProgress, "Reading", 100);
-
-  myLocations.Read(IS, aPS.Next(10));
-
-  if (aPS.UserBreak()) {
+  //OCC19559
+  if (!myProgress.IsNull() && myProgress->UserBreak()) {
+    std::cout << "Interrupted by the user"<<std::endl;
+    // on remet le LC_NUMERIC a la precedente valeur
+    IS.imbue (anOldLocale);
+    return;
+  }
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 10, "Locations" );
+  myLocations.SetProgress(myProgress);
+  myLocations.Read(IS);
+  if ( !myProgress.IsNull() ) {
+    myProgress->EndScope();
+    myProgress->Show();
+  }
+  //OCC19559
+  if (!myProgress.IsNull() && myProgress->UserBreak()) {
     std::cout << "Interrupted by the user"<<std::endl;
     // on remet le LC_NUMERIC a la precedente valeur
     IS.imbue (anOldLocale);
@@ -656,12 +659,12 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
   //-----------------------------------------
   // read the geometry
   //-----------------------------------------
-  ReadGeometry(IS, aPS.Next(75));
-
-  if (aPS.UserBreak()) {
-    std::cout << "Interrupted by the user"<<std::endl;
-    IS.imbue(anOldLocale);
-    return;
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 75, "Geometry" );
+  ReadGeometry(IS);
+  if ( !myProgress.IsNull() ) {
+    myProgress->EndScope();
+    myProgress->Show();
   }
 
   //-----------------------------------------
@@ -681,8 +684,10 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
   IS >> nbShapes;
 
   //OCC19559
-  Message_ProgressScope aPS1 (aPS.Next(15), "Shapes", nbShapes);
-  for (i = 1; i <= nbShapes && aPS1.More(); i++, aPS1.Next() ) {
+  if ( !myProgress.IsNull() ) 
+    myProgress->NewScope ( 15, "Shapes" );
+  Message_ProgressSentry PS(myProgress, "Shapes", 0, nbShapes, 1);
+  for (i = 1; i <= nbShapes && PS.More(); i++, PS.Next() ) {
     TopoDS_Shape S;
     
     //Read type and create empty shape.
@@ -704,9 +709,10 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
     S.Free      (buffer[0] == '1');
     S.Modified  (buffer[1] == '1');
 
-    const bool isChecked = myFormatNb == TopTools_FormatVersion_VERSION_2
-                        && buffer[2] == '1';
-    S.Checked (isChecked);
+    if (myFormatNb == 2)
+      S.Checked   (buffer[2] == '1');
+    else
+      S.Checked   (Standard_False);     // force check at reading.. 
 
     S.Orientable(buffer[3] == '1');
     S.Closed    (buffer[4] == '1');
@@ -715,17 +721,18 @@ void  TopTools_ShapeSet::Read(Standard_IStream& IS, const Message_ProgressRange&
 
     // check
 
-    if (myFormatNb == TopTools_FormatVersion_VERSION_1)
+    if (myFormatNb == 1)
       Check(T,S);
 
     myShapes.Add(S);
   }
+  if (!myProgress.IsNull()) {
+    myProgress->EndScope();
+    myProgress->Show();
+  }
 
   // on remet le LC_NUMERIC a la precedente valeur
   IS.imbue (anOldLocale);
-
-  if (aPS.UserBreak())
-    std::cout << "Interrupted by the user" << std::endl;
 }
 
 //=======================================================================
@@ -814,7 +821,7 @@ void  TopTools_ShapeSet::Read(TopoDS_Shape& S,
 
     Standard_Integer l;
     IS >> l;
-    S.Location(myLocations.Location(l), Standard_False);
+    S.Location(myLocations.Location(l));
   }
 }
 
@@ -842,7 +849,7 @@ void  TopTools_ShapeSet::DumpGeometry(Standard_OStream&) const
 //purpose  : 
 //=======================================================================
 
-void  TopTools_ShapeSet::WriteGeometry(Standard_OStream&, const Message_ProgressRange&)
+void  TopTools_ShapeSet::WriteGeometry(Standard_OStream&) 
 {
 }
 
@@ -852,7 +859,7 @@ void  TopTools_ShapeSet::WriteGeometry(Standard_OStream&, const Message_Progress
 //purpose  : 
 //=======================================================================
 
-void  TopTools_ShapeSet::ReadGeometry(Standard_IStream&, const Message_ProgressRange&)
+void  TopTools_ShapeSet::ReadGeometry(Standard_IStream&)
 {
 }
 
@@ -924,3 +931,25 @@ Standard_Integer  TopTools_ShapeSet::NbShapes() const
 {
   return myShapes.Extent();
 }
+
+//=======================================================================
+//function : GetProgress
+//purpose  : 
+//=======================================================================
+
+Handle(Message_ProgressIndicator) TopTools_ShapeSet::GetProgress() const
+{
+  return myProgress;
+}
+
+//=======================================================================
+//function : SetProgress
+//purpose  : 
+//=======================================================================
+
+void TopTools_ShapeSet::SetProgress(const Handle(Message_ProgressIndicator)& PR)
+{
+  myProgress = PR;
+}
+
+

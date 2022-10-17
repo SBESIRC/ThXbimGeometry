@@ -17,12 +17,19 @@
 #ifndef _IntCurveSurface_TheQuadCurvFuncOfTheQuadCurvExactHInter_HeaderFile
 #define _IntCurveSurface_TheQuadCurvFuncOfTheQuadCurvExactHInter_HeaderFile
 
-#include <Adaptor3d_Curve.hxx>
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
 #include <IntSurf_Quadric.hxx>
 #include <math_FunctionWithDerivative.hxx>
-
+#include <Standard_Boolean.hxx>
+#include <Standard_Real.hxx>
+class Adaptor3d_HCurve;
 class IntSurf_Quadric;
 class IntCurveSurface_TheHCurveTool;
+
+
 
 class IntCurveSurface_TheQuadCurvFuncOfTheQuadCurvExactHInter  : public math_FunctionWithDerivative
 {
@@ -32,7 +39,7 @@ public:
 
   
   //! Create the function.
-  Standard_EXPORT IntCurveSurface_TheQuadCurvFuncOfTheQuadCurvExactHInter(const IntSurf_Quadric& Q, const Handle(Adaptor3d_Curve)& C);
+  Standard_EXPORT IntCurveSurface_TheQuadCurvFuncOfTheQuadCurvExactHInter(const IntSurf_Quadric& Q, const Handle(Adaptor3d_HCurve)& C);
   
   //! Computes the value of the signed  distance between
   //! the  implicit surface and  the point  at parameter
@@ -63,7 +70,7 @@ private:
 
 
   IntSurf_Quadric myQuadric;
-  Handle(Adaptor3d_Curve) myCurve;
+  Handle(Adaptor3d_HCurve) myCurve;
 
 
 };

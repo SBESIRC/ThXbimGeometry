@@ -28,9 +28,8 @@
 
 // ============================================================
 IntSurf_Quadric::IntSurf_Quadric ():typ(GeomAbs_OtherSurface),
-   prm1(0.), prm2(0.), prm3(0.), prm4(0.), ax3direc(Standard_False)
-{
-}
+   prm1(0.), prm2(0.), prm3(0.), prm4(0.)
+{}
 // ============================================================
 IntSurf_Quadric::IntSurf_Quadric (const gp_Pln& P):
       ax3(P.Position()),typ(GeomAbs_Plane)

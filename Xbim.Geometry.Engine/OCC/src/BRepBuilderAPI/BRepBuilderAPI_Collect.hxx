@@ -24,6 +24,7 @@
 #include <TopoDS_Shape.hxx>
 #include <TopTools_MapOfShape.hxx>
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
+class TopoDS_Shape;
 class BRepBuilderAPI_MakeShape;
 
 

@@ -119,41 +119,12 @@ static void FindSolid(const TopoDS_Shape& theSolIn,
                       BOPAlgo_Builder& theBuilder,
                       TopoDS_Shape& theSolOut);
 
-namespace
-{
-  //=======================================================================
-  //function : BOPAlgo_PIOperation
-  //purpose  : List of operations to be supported by the Progress Indicator
-  //=======================================================================
-  enum BOPAlgo_PIOperation
-  {
-    PIOperation_PrepareFeatures = 0,
-    PIOperation_RemoveFeatures,
-    PIOperation_UpdateHistory,
-    PIOperation_SimplifyResult,
-
-    PIOperation_Last
-  };
-}
-
-//=======================================================================
-// function: fillPISteps
-// purpose: 
-//=======================================================================
-void BOPAlgo_RemoveFeatures::fillPIConstants (const Standard_Real theWhole,
-                                              BOPAlgo_PISteps& theSteps) const
-{
-  theSteps.SetStep(PIOperation_PrepareFeatures, 0.05 * theWhole);
-  theSteps.SetStep(PIOperation_RemoveFeatures, 0.8 * theWhole);
-  theSteps.SetStep(PIOperation_UpdateHistory, 0.05 * theWhole);
-  theSteps.SetStep(PIOperation_SimplifyResult, 0.1 * theWhole);
-}
 
 //=======================================================================
 // function: Perform
 // purpose: Performs the removal of the requested faces from the input shape
 //=======================================================================
-void BOPAlgo_RemoveFeatures::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_RemoveFeatures::Perform()
 {
   try
   {
@@ -166,36 +137,21 @@ void BOPAlgo_RemoveFeatures::Perform(const Message_ProgressRange& theRange)
     CheckData();
     if (HasErrors())
       return;
-    Message_ProgressScope aPS(theRange, "Removing features", 100);
-    BOPAlgo_PISteps aSteps(PIOperation_Last);
-    analyzeProgress(100., aSteps);
 
     // Prepare the faces to remove.
-    PrepareFeatures(aPS.Next(aSteps.GetStep(PIOperation_PrepareFeatures)));
+    PrepareFeatures();
     if (HasErrors())
-    {
       return;
-    }
 
     // Remove the features and fill the created gaps
-    RemoveFeatures(aPS.Next(aSteps.GetStep(PIOperation_RemoveFeatures)));
-    if (HasErrors())
-    {
-      return;
-    }
+    RemoveFeatures();
 
     // Update history with the removed features
-    UpdateHistory(aPS.Next(aSteps.GetStep(PIOperation_UpdateHistory)));
-    if (HasErrors())
-    {
-      return;
-    }
+    UpdateHistory();
+
     // Simplify the result
-    SimplifyResult(aPS.Next(aSteps.GetStep(PIOperation_SimplifyResult)));
-    if (HasErrors())
-    {
-      return;
-    }
+    SimplifyResult();
+
     // Post treatment
     PostTreat();
   }
@@ -225,7 +181,7 @@ void BOPAlgo_RemoveFeatures::CheckData()
     TopTools_ListOfShape aShapes;
     TopTools_MapOfShape aMFence;
     // Extract all shapes from the compound
-    BOPTools_AlgoTools::TreatCompound(myInputShape, aShapes, &aMFence);
+    BOPAlgo_Tools::TreatCompound(myInputShape, aMFence, aShapes);
     if (aShapes.IsEmpty())
     {
       // Add error of empty input shape
@@ -287,7 +243,7 @@ void BOPAlgo_RemoveFeatures::CheckData()
 // function: PrepareFeatures
 // purpose: Prepares the features to remove
 //=======================================================================
-void BOPAlgo_RemoveFeatures::PrepareFeatures(const Message_ProgressRange& theRange)
+void BOPAlgo_RemoveFeatures::PrepareFeatures()
 {
   // Map all sub-shapes of the input solids
   TopExp::MapShapes(myInputShape, myInputsMap);
@@ -295,18 +251,12 @@ void BOPAlgo_RemoveFeatures::PrepareFeatures(const Message_ProgressRange& theRan
   // Collect all faces of the input shape requested for removal
   TopTools_ListOfShape aFacesToRemove;
   TopTools_ListIteratorOfListOfShape aIt(myFacesToRemove);
-  Message_ProgressScope aPSOuter(theRange, "Preparing features", 2);
-  Message_ProgressScope aPS(aPSOuter.Next(), "Preparing the faces to remove", myFacesToRemove.Size());
-  for (; aIt.More(); aIt.Next(),aPS.Next())
+  for (; aIt.More(); aIt.Next())
   {
     const TopoDS_Shape& aS = aIt.Value();
     TopExp_Explorer anExpF(aS, TopAbs_FACE);
     for (; anExpF.More(); anExpF.Next())
     {
-      if (UserBreak(aPS))
-      {
-        return;
-      }
       const TopoDS_Shape& aF = anExpF.Current();
       if (myInputsMap.Contains(aF))
         aFacesToRemove.Append(aF);
@@ -377,11 +327,6 @@ public: //! @name Setters/Getters
     return myHistory;
   }
 
-  void SetRange(const Message_ProgressRange& theRange)
-  {
-    myRange = theRange;
-  }
-
 public: //! @name Perform the operation
 
   //! Performs the extension of the adjacent faces and
@@ -392,17 +337,11 @@ public: //! @name Perform the operation
 
     try
     {
-      Message_ProgressScope aPS(myRange, NULL, 3);
-
       myHistory = new BRepTools_History();
 
       // Find the faces adjacent to the faces of the feature
       TopTools_IndexedMapOfShape aMFAdjacent;
-      FindAdjacentFaces(aMFAdjacent, aPS.Next());
-      if (!aPS.More())
-      {
-        return;
-      }
+      FindAdjacentFaces(aMFAdjacent);
 
       myHasAdjacentFaces = (aMFAdjacent.Extent() > 0);
       if (!myHasAdjacentFaces)
@@ -410,14 +349,10 @@ public: //! @name Perform the operation
 
       // Extend the adjacent faces keeping the connection to the original faces
       TopTools_IndexedDataMapOfShapeShape aFaceExtFaceMap;
-      ExtendAdjacentFaces(aMFAdjacent, aFaceExtFaceMap, aPS.Next());
-      if (!aPS.More())
-      {
-        return;
-      }
+      ExtendAdjacentFaces(aMFAdjacent, aFaceExtFaceMap);
 
       // Trim the extended faces
-      TrimExtendedFaces(aFaceExtFaceMap, aPS.Next());
+      TrimExtendedFaces(aFaceExtFaceMap);
     }
     catch (Standard_Failure const&)
     {
@@ -445,22 +380,17 @@ public: //! @name Obtain the result
 private: //! @name Private methods performing the operation
 
   //! Finds the faces adjacent to the feature and stores them into outgoing map.
-  void FindAdjacentFaces(TopTools_IndexedMapOfShape& theMFAdjacent, const Message_ProgressRange& theRange)
+  void FindAdjacentFaces(TopTools_IndexedMapOfShape& theMFAdjacent)
   {
     // Map the faces of the feature to avoid them in the map of adjacent faces
     TopoDS_Iterator aIt(myFeature);
     for (; aIt.More(); aIt.Next())
       myFeatureFacesMap.Add(aIt.Value());
-    Message_ProgressScope aPSOuter(theRange, NULL, 2);
+
     // Find faces adjacent to the feature using the connection map
     aIt.Initialize(myFeature);
-    Message_ProgressScope aPSF(aPSOuter.Next(), "Looking for adjacent faces", 1, Standard_True);
-    for (; aIt.More(); aIt.Next(), aPSF.Next())
+    for (; aIt.More(); aIt.Next())
     {
-      if (!aPSF.More())
-      {
-        return;
-      }
       const TopoDS_Shape& aF = aIt.Value();
       TopExp_Explorer anExpE(aF, TopAbs_EDGE);
       for (; anExpE.More(); anExpE.Next())
@@ -490,13 +420,8 @@ private: //! @name Private methods performing the operation
 
     // Find solids containing the edges of adjacent faces
     const Standard_Integer aNbFA = theMFAdjacent.Extent();
-    Message_ProgressScope aPSS(aPSOuter.Next(), "Looking for adjacent solids", aNbFA);
-    for (Standard_Integer i = 1; i <= aNbFA; ++i, aPSS.Next())
+    for (Standard_Integer i = 1; i <= aNbFA; ++i)
     {
-      if (!aPSS.More())
-      {
-        return;
-      }
       TopExp_Explorer anExpEA(theMFAdjacent(i), TopAbs_EDGE);
       for (; anExpEA.More(); anExpEA.Next())
       {
@@ -523,8 +448,7 @@ private: //! @name Private methods performing the operation
 
   //! Extends the found adjacent faces and binds them to the original faces.
   void ExtendAdjacentFaces(const TopTools_IndexedMapOfShape& theMFAdjacent,
-                           TopTools_IndexedDataMapOfShapeShape& theFaceExtFaceMap,
-                           const Message_ProgressRange& theRange)
+                           TopTools_IndexedDataMapOfShapeShape& theFaceExtFaceMap)
   {
     // Get the extension value for the faces - half of the diagonal of bounding box of the feature
     Bnd_Box aFeatureBox;
@@ -533,8 +457,7 @@ private: //! @name Private methods performing the operation
     const Standard_Real anExtLength = sqrt(aFeatureBox.SquareExtent());
 
     const Standard_Integer aNbFA = theMFAdjacent.Extent();
-    Message_ProgressScope aPS(theRange, "Extending adjacent faces", aNbFA);
-    for (Standard_Integer i = 1; i <= aNbFA && aPS.More(); ++i, aPS.Next())
+    for (Standard_Integer i = 1; i <= aNbFA; ++i)
     {
       const TopoDS_Face& aF = TopoDS::Face(theMFAdjacent(i));
       // Extend the face
@@ -550,8 +473,7 @@ private: //! @name Private methods performing the operation
 
   //! Trims the extended adjacent faces by intersection with each other
   //! and following intersection with the bounds of original faces.
-  void TrimExtendedFaces(const TopTools_IndexedDataMapOfShapeShape& theFaceExtFaceMap,
-                         const Message_ProgressRange& theRange)
+  void TrimExtendedFaces(const TopTools_IndexedDataMapOfShapeShape& theFaceExtFaceMap)
   {
     // Intersect the extended faces first
     BOPAlgo_Builder aGFInter;
@@ -564,10 +486,9 @@ private: //! @name Private methods performing the operation
 
     // Intersection result
     TopoDS_Shape anIntResult;
-    Message_ProgressScope aPSOuter(theRange, NULL, (aGFInter.Arguments().Extent() > 1) ? 2 : 1);
     if (aGFInter.Arguments().Extent() > 1)
     {
-      aGFInter.Perform(aPSOuter.Next());
+      aGFInter.Perform();
       if (aGFInter.HasErrors())
         return;
 
@@ -590,8 +511,7 @@ private: //! @name Private methods performing the operation
     TopTools_IndexedMapOfShape aFeatureEdgesMap;
     TopExp::MapShapes(myFeature, TopAbs_EDGE, aFeatureEdgesMap);
 
-    Message_ProgressScope aPS(aPSOuter.Next(), "Trimming faces", aNbF);
-    for (Standard_Integer i = 1; i <= aNbF && aPS.More(); ++i, aPS.Next())
+    for (Standard_Integer i = 1; i <= aNbF; ++i)
     {
       const TopoDS_Face& aFOriginal = TopoDS::Face(theFaceExtFaceMap.FindKey(i));
       const TopoDS_Face& aFExt = TopoDS::Face(theFaceExtFaceMap(i));
@@ -785,7 +705,6 @@ private: //! @name Fields
   TopoDS_Shape myFeature;                             //!< Feature to remove
   TopTools_IndexedDataMapOfShapeListOfShape* myEFMap; //!< EF Connection map to find adjacent faces
   TopTools_IndexedDataMapOfShapeListOfShape* myFSMap; //!< FS Connection map to find solids participating in the feature removal
-  Message_ProgressRange                      myRange; //!< Indication of progress
 
   // Results
   TopTools_MapOfShape myFeatureFacesMap;              //!< Faces of the feature
@@ -802,7 +721,7 @@ typedef NCollection_Vector<FillGap> VectorOfFillGap;
 // purpose: Remove features by filling the gaps by extension of the
 //          adjacent faces
 //=======================================================================
-void BOPAlgo_RemoveFeatures::RemoveFeatures(const Message_ProgressRange& theRange)
+void BOPAlgo_RemoveFeatures::RemoveFeatures()
 {
   // For each feature:
   // - Find the faces adjacent to the feature;
@@ -810,8 +729,6 @@ void BOPAlgo_RemoveFeatures::RemoveFeatures(const Message_ProgressRange& theRang
   // - Trim the extended faces to fill the gap;
   // - Rebuild the solids with reconstructed adjacent faces
   //   and avoiding the feature faces.
-
-  Message_ProgressScope aPSOuter(theRange, "Removing features", 2);
 
   // Make Edge-Face connection map of the input
   // shape to find faces adjacent to the feature
@@ -838,19 +755,9 @@ void BOPAlgo_RemoveFeatures::RemoveFeatures(const Message_ProgressRange& theRang
     aFG.SetRunParallel(myRunParallel);
   }
 
-  const Standard_Integer aNbF = aVFG.Length();
-  Message_ProgressScope aPS(aPSOuter.Next(), "Filling gaps", aNbF);
-  for (Standard_Integer i = 0; i < aNbF; ++i)
-  {
-    FillGap& aFG = aVFG.ChangeValue(i);
-    aFG.SetRange(aPS.Next());
-  }
   // Perform the reconstruction of the adjacent faces
   BOPTools_Parallel::Perform (myRunParallel, aVFG);
-  if (UserBreak(aPSOuter))
-  {
-    return;
-  }
+
   // Even if the history is not requested, it is necessary to track:
   // - The solids modification after each feature removal to find
   //   the necessary solids to rebuild on the next step.
@@ -862,13 +769,9 @@ void BOPAlgo_RemoveFeatures::RemoveFeatures(const Message_ProgressRange& theRang
   // Remove the features one by one.
   // It will allow removing the features even if there were
   // some problems with removal of the previous features.
-  Message_ProgressScope aPSLoop(aPSOuter.Next(), "Removing features one by one", aNbF);
+  const Standard_Integer aNbF = aVFG.Length();
   for (Standard_Integer i = 0; i < aNbF; ++i)
   {
-    if (UserBreak(aPSLoop))
-    {
-      return;
-    }
     FillGap& aFG = aVFG(i);
 
     // No need to fill the history for solids if the history is not
@@ -878,7 +781,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeatures(const Message_ProgressRange& theRang
     // Perform removal of the single feature
     RemoveFeature(aFG.Feature(), aFG.Solids(), aFG.FeatureFacesMap(),
                   aFG.HasAdjacentFaces(), aFG.Faces(), aFG.History(),
-                  isSolidsHistoryNeeded, aPSLoop.Next());
+                  isSolidsHistoryNeeded);
   }
 }
 
@@ -893,8 +796,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
    const Standard_Boolean theHasAdjacentFaces,
    const TopTools_IndexedDataMapOfShapeListOfShape& theAdjFaces,
    const Handle(BRepTools_History)& theAdjFacesHistory,
-   const Standard_Boolean theSolidsHistoryNeeded,
-   const Message_ProgressRange& theRange)
+   const Standard_Boolean theSolidsHistoryNeeded)
 {
   Standard_Boolean bFuseShapes = Standard_True;
   const Standard_Integer aNbAF = theAdjFaces.Extent();
@@ -915,7 +817,6 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
     bFuseShapes = Standard_False;
   }
 
-  Message_ProgressScope aPS(theRange, NULL, 100);
   // Rebuild the shape using MakerVolume algorithm avoiding the faces of the
   // feature and replacing the adjacent faces with their images
 
@@ -947,8 +848,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
   GetOriginalFaces(myShape, theSolids, theFeatureFacesMap, theAdjFaces, myHistory,
                    aFacesToBeKept, anInternalShapes, aFacesToCheckOri,
                    aSolidsToRebuild, aSharedFaces, anUnTouchedSolids);
-  
-  aPS.Next(3);
+
   // To avoid excessive intersection of the faces collect the faces
   // of the input shape into a compound
   TopoDS_Compound anOrigF;
@@ -998,7 +898,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
   }
 
   // Build solids
-  aMV.Perform(aPS.Next(90));
+  aMV.Perform();
   if (aMV.HasErrors())
   {
     // Add warning for the feature
@@ -1026,10 +926,6 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
   TopTools_MapOfShape anAdjFacesSplits;
   for (Standard_Integer i = 1; i <= aNbAF; ++i)
   {
-    if (!aPS.More())
-    {
-      return;
-    }
     const TopoDS_Shape& aF = theAdjFaces.FindKey(i);
     const TopTools_ListOfShape& aLFIm = myHistory->Modified(aF);
     if (aLFIm.IsEmpty())
@@ -1047,14 +943,9 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
   aNbFK = aFacesToBeKept.Extent();
   for (Standard_Integer i = 1; i <= aNbFK && bValid; ++i)
   {
-
     const TopoDS_Shape& aS = aFacesToBeKept(i);
     if (anAdjFacesSplits.Contains(aS))
       continue;
-    if (!aPS.More())
-    {
-      return;
-    }
     TopExp_Explorer anExpF(aS, TopAbs_FACE);
     for (; anExpF.More(); anExpF.Next())
     {
@@ -1085,7 +976,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
     AddWarning(new BOPAlgo_AlertUnableToRemoveTheFeature(theFeature));
     return;
   }
-  aPS.Next(3);
+
   // Remove internal wires from the faces, possibly appeared after intersection
   RemoveInternalWires(aLSRes, &anInternalShapes);
 
@@ -1109,7 +1000,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
     MakeRemoved(anInternalShapes, aRemHist, aMSRes);
     myHistory->Merge(aRemHist);
   }
-  aPS.Next(3);
+
   // Fill the history for the solids
   if (theSolidsHistoryNeeded)
   {
@@ -1138,7 +1029,7 @@ void BOPAlgo_RemoveFeatures::RemoveFeature
 // function: UpdateHistory
 // purpose: Update history with the removed features
 //=======================================================================
-void BOPAlgo_RemoveFeatures::UpdateHistory(const Message_ProgressRange& theRange)
+void BOPAlgo_RemoveFeatures::UpdateHistory()
 {
   if (!HasHistory())
     return;
@@ -1151,8 +1042,7 @@ void BOPAlgo_RemoveFeatures::UpdateHistory(const Message_ProgressRange& theRange
   BRepTools_History aHistory;
 
   const Standard_Integer aNbS = myInputsMap.Extent();
-  Message_ProgressScope aPS(theRange, "Updating history", aNbS);
-  for (Standard_Integer i = 1; i <= aNbS; ++i, aPS.Next())
+  for (Standard_Integer i = 1; i <= aNbS; ++i)
   {
     const TopoDS_Shape& aS = myInputsMap(i);
     if (!BRepTools_History::IsSupportedType(aS))
@@ -1161,10 +1051,6 @@ void BOPAlgo_RemoveFeatures::UpdateHistory(const Message_ProgressRange& theRange
     if (myHistory->IsRemoved(aS))
       continue;
 
-    if (UserBreak(aPS))
-    {
-      return;
-    }
     // Check if the shape has any trace in the result
     const TopTools_ListOfShape& aLSIm = myHistory->Modified(aS);
     if (aLSIm.IsEmpty())
@@ -1189,11 +1075,10 @@ void BOPAlgo_RemoveFeatures::UpdateHistory(const Message_ProgressRange& theRange
 // purpose: Simplifies the result by removing extra edges and vertices
 //          created during operation
 //=======================================================================
-void BOPAlgo_RemoveFeatures::SimplifyResult(const Message_ProgressRange& theRange)
+void BOPAlgo_RemoveFeatures::SimplifyResult()
 {
   if (myShape.IsSame(myInputShape))
     return;
-  Message_ProgressScope aPSOuter(theRange, "Simplifyingthe result", 2);
   ShapeUpgrade_UnifySameDomain aSDTool;
   aSDTool.Initialize(myShape, Standard_True, Standard_True);
   // Do not allow producing internal edges
@@ -1203,20 +1088,14 @@ void BOPAlgo_RemoveFeatures::SimplifyResult(const Message_ProgressRange& theRang
     TopExp::MapShapes(myShape, myMapShape);
 
   const Standard_Integer aNbS = myInputsMap.Extent();
-  Message_ProgressScope aPS(aPSOuter.Next(), NULL, aNbS);
-  for (Standard_Integer i = 1; i <= aNbS; ++i, aPS.Next())
+  for (Standard_Integer i = 1; i <= aNbS; ++i)
   {
-    if (UserBreak(aPS))
-    {
-      return;
-    }
     if (myMapShape.Contains(myInputsMap(i)))
       aSDTool.KeepShape(myInputsMap(i));
   }
 
   // Perform unification
   aSDTool.Build();
-  aPSOuter.Next();
   myShape = aSDTool.Shape();
   if (HasHistory())
     myHistory->Merge(aSDTool.History());

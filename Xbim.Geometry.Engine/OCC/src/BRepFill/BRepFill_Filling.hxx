@@ -17,20 +17,30 @@
 #ifndef _BRepFill_Filling_HeaderFile
 #define _BRepFill_Filling_HeaderFile
 
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <GeomPlate_BuildPlateSurface.hxx>
 #include <BRepFill_SequenceOfEdgeFaceAndOrder.hxx>
 #include <BRepFill_SequenceOfFaceAndOrder.hxx>
-#include <GeomAbs_Shape.hxx>
-#include <GeomPlate_BuildPlateSurface.hxx>
 #include <GeomPlate_SequenceOfPointConstraint.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopTools_DataMapOfShapeShape.hxx>
+#include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <TopTools_ListOfShape.hxx>
+#include <TopoDS_Face.hxx>
+#include <Standard_Real.hxx>
+#include <Standard_Integer.hxx>
+#include <Standard_Boolean.hxx>
+#include <GeomAbs_Shape.hxx>
 #include <TopTools_SequenceOfShape.hxx>
-
-#include <memory>
-
+class StdFail_NotDone;
+class Standard_OutOfRange;
+class Standard_ConstructionError;
+class TopoDS_Face;
 class TopoDS_Edge;
 class gp_Pnt;
+class TopoDS_Shape;
+
 
 //! N-Side Filling
 //! This algorithm avoids to build a face from:
@@ -53,8 +63,8 @@ class gp_Pnt;
 //! Limitations:
 //! * If some constraints are not compatible
 //! The algorithm does not take them into account.
-//! So the constraints will not be satisfied in an area containing
-//! the incompatibilities.
+//! So the constraints will not be satisfyed in an area containing
+//! the incompatibilitries.
 //! * The constraints defining the bound of the face have to be
 //! entered in order to have a continuous wire.
 //!
@@ -88,7 +98,7 @@ public:
   //! Degree:      it is the order of energy criterion to minimize for computing
   //! the deformation of the surface.
   //! The default value is 3
-  //! The recommended value is i+2 where i is the maximum order of the
+  //! The recommanded value is i+2 where i is the maximum order of the
   //! constraints.
   //! NbPtsOnCur:  it is the average number of points for discretisation
   //! of the edges.
@@ -169,8 +179,18 @@ public:
   
   Standard_EXPORT Standard_Real G2Error (const Standard_Integer Index);
 
+
+
+
+protected:
+
+
+
+
+
 private:
 
+  
   //! Adds constraints to builder
   Standard_EXPORT void AddConstraints (const BRepFill_SequenceOfEdgeFaceAndOrder& SeqOfConstraints);
   
@@ -181,14 +201,13 @@ private:
   //! Can properly operate only with convex contour
   Standard_EXPORT void FindExtremitiesOfHoles (const TopTools_ListOfShape& WireList, TopTools_SequenceOfShape& VerSeq) const;
 
-private:
 
-  opencascade::std::shared_ptr<GeomPlate_BuildPlateSurface> myBuilder;
+  GeomPlate_BuildPlateSurface myBuilder;
   BRepFill_SequenceOfEdgeFaceAndOrder myBoundary;
   BRepFill_SequenceOfEdgeFaceAndOrder myConstraints;
   BRepFill_SequenceOfFaceAndOrder myFreeConstraints;
   GeomPlate_SequenceOfPointConstraint myPoints;
-  TopTools_DataMapOfShapeShape myOldNewMap;
+  TopTools_DataMapOfShapeListOfShape myOldNewMap;
   TopTools_ListOfShape myGenerated;
   TopoDS_Face myFace;
   TopoDS_Face myInitFace;
@@ -205,6 +224,13 @@ private:
   Standard_Boolean myIsInitFaceGiven;
   Standard_Boolean myIsDone;
 
+
 };
+
+
+
+
+
+
 
 #endif // _BRepFill_Filling_HeaderFile

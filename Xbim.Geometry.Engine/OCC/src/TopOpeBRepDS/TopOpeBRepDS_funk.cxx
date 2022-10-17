@@ -52,7 +52,10 @@
 #include <Geom_Surface.hxx>
 #include <BRepAdaptor_Surface.hxx>
 #include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_HSurface.hxx>
+#include <BRepAdaptor_HCurve.hxx>
 #include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
 
 Standard_EXPORT Handle(Geom2d_Curve) MakePCurve(const ProjLib_ProjectedCurve& PC);
 
@@ -112,9 +115,9 @@ Standard_EXPORT void FUN_UNKFstasta(const TopoDS_Face& FF,const TopoDS_Face& FS,
     if (CEE.IsNull()) {
       Standard_Boolean compminmaxUV = Standard_False;
       BRepAdaptor_Surface BAS(FS,compminmaxUV);
-      Handle(BRepAdaptor_Surface) BAHS = new BRepAdaptor_Surface(BAS);
+      Handle(BRepAdaptor_HSurface) BAHS = new BRepAdaptor_HSurface(BAS);
       BRepAdaptor_Curve AC(EE,FS);
-      Handle(BRepAdaptor_Curve) AHC = new BRepAdaptor_Curve(AC);
+      Handle(BRepAdaptor_HCurve) AHC = new BRepAdaptor_HCurve(AC);
       Standard_Real tolin; FTOL_FaceTolerances3d(FF,FS,tolin);
       ProjLib_ProjectedCurve projcurv(BAHS,AHC,tolin);
       CEEFFx = MakePCurve(projcurv);

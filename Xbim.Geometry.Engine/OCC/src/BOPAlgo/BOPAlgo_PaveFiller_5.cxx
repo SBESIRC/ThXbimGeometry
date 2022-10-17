@@ -59,14 +59,14 @@
 //=======================================================================
 class BOPAlgo_EdgeFace : 
   public IntTools_EdgeFace,
-  public BOPAlgo_ParallelAlgo {
+  public BOPAlgo_Algo {
  
  public:
   DEFINE_STANDARD_ALLOC
   
   BOPAlgo_EdgeFace() : 
     IntTools_EdgeFace(), 
-    BOPAlgo_ParallelAlgo(),
+    BOPAlgo_Algo(),
     myIE(-1), myIF(-1) {
   };
   //
@@ -105,53 +105,17 @@ class BOPAlgo_EdgeFace :
     IntTools_EdgeFace::SetFuzzyValue(theFuzz);
   }
   //
-  void SetBoxes (const Bnd_Box& theBox1,
-                 const Bnd_Box& theBox2)
-  {
-    myBox1 = theBox1;
-    myBox2 = theBox2;
-  }
-  //
   virtual void Perform() {
-    Message_ProgressScope aPS(myProgressRange, NULL, 1);
-    if (UserBreak(aPS))
-    {
-      return;
-    }
-    TopoDS_Face aFace = myFace;
-    TopoDS_Edge anEdge = myEdge;
-    Standard_Boolean hasTrsf = false;
+    BOPAlgo_Algo::UserBreak();
     try
     {
       OCC_CATCH_SIGNALS
-
-      gp_Trsf aTrsf;
-      if (BOPAlgo_Tools::TrsfToPoint (myBox1, myBox2, aTrsf))
-      {
-        // Shapes are located far from origin, move the shapes to the origin,
-        // to increase the accuracy of intersection.
-        TopLoc_Location aLoc (aTrsf);
-        myEdge.Move (aLoc);
-        myFace.Move (aLoc);
-        hasTrsf = Standard_True;
-      }
 
       IntTools_EdgeFace::Perform();
     }
     catch (Standard_Failure const&)
     {
       AddError(new BOPAlgo_AlertIntersectionFailed);
-    }
-    myFace = aFace;
-    myEdge = anEdge;
-
-    if (hasTrsf)
-    {
-      for (Standard_Integer i = 1; i <= mySeqOfCommonPrts.Length(); ++i)
-      {
-        IntTools_CommonPrt& aCPart = mySeqOfCommonPrts (i);
-        aCPart.SetEdge1 (myEdge);
-      }
     }
   }
   //
@@ -160,8 +124,6 @@ class BOPAlgo_EdgeFace :
   Standard_Integer myIF;
   IntTools_Range myNewSR;
   Handle(BOPDS_PaveBlock) myPB;
-  Bnd_Box myBox1;
-  Bnd_Box myBox2;
 };
 //
 //=======================================================================
@@ -171,12 +133,11 @@ typedef NCollection_Vector<BOPAlgo_EdgeFace> BOPAlgo_VectorOfEdgeFace;
 //function : PerformEF
 //purpose  : 
 //=======================================================================
-void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::PerformEF()
 {
   FillShrunkData(TopAbs_EDGE, TopAbs_FACE);
   //
   myIterator->Initialize(TopAbs_EDGE, TopAbs_FACE);
-  Message_ProgressScope aPSOuter(theRange, NULL, 10);
   Standard_Integer iSize = myIterator->ExpectedLength();
   if (!iSize) {
     return; 
@@ -219,10 +180,6 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
   aEFs.SetIncrement(iSize);
   //
   for (; myIterator->More(); myIterator->Next()) {
-    if (UserBreak(aPSOuter))
-    {
-      return;
-    }
     myIterator->Value(nE, nF);
     //
     const BOPDS_ShapeInfo& aSIE=myDS->ShapeInfo(nE);
@@ -246,10 +203,6 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
     BOPDS_ListOfPaveBlock& aLPB=myDS->ChangePaveBlocks(nE);
     aIt.Initialize(aLPB);
     for (; aIt.More(); aIt.Next()) {
-      if (UserBreak(aPSOuter))
-      {
-        return;
-      }
       Handle(BOPDS_PaveBlock)& aPB=aIt.ChangeValue();
       //
       const Handle(BOPDS_PaveBlock) aPBR=myDS->RealPaveBlock(aPB);
@@ -278,20 +231,19 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
       //
       aEdgeFace.SetEdge (aE);
       aEdgeFace.SetFace (aF);
-      aEdgeFace.SetBoxes (myDS->ShapeInfo(nE).Box(), myDS->ShapeInfo (nF).Box());
       aEdgeFace.SetFuzzyValue(myFuzzyValue);
       aEdgeFace.UseQuickCoincidenceCheck(bExpressCompute);
-
+      //
       IntTools_Range aSR(aTS1, aTS2);
-      IntTools_Range anewSR = aSR;
+      IntTools_Range anewSR=aSR;
       BOPTools_AlgoTools::CorrectRange(aE, aF, aSR, anewSR);
       aEdgeFace.SetNewSR(anewSR);
       //
       IntTools_Range aPBRange(aT1, aT2);
       aSR = aPBRange;
       BOPTools_AlgoTools::CorrectRange(aE, aF, aSR, aPBRange);
-      aEdgeFace.SetRange(aPBRange);
-      //
+      aEdgeFace.SetRange (aPBRange);
+      aEdgeFace.SetProgressIndicator(myProgressIndicator);
       // Save the pair to avoid their forced intersection
       BOPDS_MapOfPaveBlock* pMPB = myFPBDone.ChangeSeek(nF);
       if (!pMPB)
@@ -301,29 +253,21 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
   }//for (; myIterator->More(); myIterator->Next()) {
   //
   aNbEdgeFace=aVEdgeFace.Length();
-  Message_ProgressScope aPS(aPSOuter.Next(9), "Performing Edge-Face intersection", aNbEdgeFace);
-  for (Standard_Integer index = 0; index < aNbEdgeFace; index++)
-  {
-    BOPAlgo_EdgeFace& aEdgeFace = aVEdgeFace.ChangeValue(index);
-    aEdgeFace.SetProgressRange(aPS.Next());
-  }
   //=================================================================
   BOPTools_Parallel::Perform (myRunParallel, aVEdgeFace, myContext);
   //=================================================================
-  if (UserBreak(aPSOuter))
-  {
-    return;
-  }
   //
   for (k=0; k < aNbEdgeFace; ++k) {
-    if (UserBreak(aPSOuter))
-    {
-      return;
-    }
     BOPAlgo_EdgeFace& aEdgeFace=aVEdgeFace(k);
     if (!aEdgeFace.IsDone() || aEdgeFace.HasErrors()) {
       // Warn about failed intersection of sub-shapes
       AddIntersectionFailedWarning(aEdgeFace.Edge(), aEdgeFace.Face());
+      continue;
+    }
+    //
+    const IntTools_SequenceOfCommonPrts& aCPrts=aEdgeFace.CommonParts();
+    aNbCPrts = aCPrts.Length();
+    if (!aNbCPrts) {
       continue;
     }
     //
@@ -334,23 +278,6 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
     //
     aTolE=BRep_Tool::Tolerance(aE);
     aTolF=BRep_Tool::Tolerance(aF);
-    //
-    const IntTools_SequenceOfCommonPrts& aCPrts=aEdgeFace.CommonParts();
-    aNbCPrts = aCPrts.Length();
-    if (!aNbCPrts) {
-      if (aEdgeFace.MinimalDistance() < RealLast() &&
-          aEdgeFace.MinimalDistance() > aTolE + aTolF)
-      {
-        const Handle(BOPDS_PaveBlock)& aPB=aEdgeFace.PaveBlock();
-        aPB->Range(aT1, aT2);
-        NCollection_List<EdgeRangeDistance>* pList = myDistances.ChangeSeek (BOPDS_Pair (nE, nF));
-        if (!pList)
-          pList = myDistances.Bound (BOPDS_Pair (nE, nF), NCollection_List<EdgeRangeDistance>());
-        pList->Append (EdgeRangeDistance (aT1, aT2, aEdgeFace.MinimalDistance()));
-      }
-      continue;
-    }
-    //
     const IntTools_Range& anewSR=aEdgeFace.NewSR();
     Handle(BOPDS_PaveBlock)& aPB=aEdgeFace.PaveBlock();
     //
@@ -382,10 +309,6 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
     }
     //
     for (i=1; i<=aNbCPrts; ++i) {
-      if (UserBreak(aPSOuter))
-      {
-        return;
-      }
       const IntTools_CommonPrt& aCPart=aCPrts(i);
       aType=aCPart.Type();
       switch (aType) {
@@ -466,17 +389,8 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
                 const TopoDS_Vertex& aV = TopoDS::Vertex(myDS->Shape(nV[j]));
                 const gp_Pnt aP = BRep_Tool::Pnt(aV);
                 Standard_Real aDistPP = aP.Distance(aPnew);
-                Standard_Real aTol = BRep_Tool::Tolerance(aV);
-                Standard_Real aMaxDist = 1.e4 * aTol;
-                if (aTol < .01)
-                {
-                  aMaxDist = Min(aMaxDist, 0.1);
-                }
-                if (aDistPP < aMaxDist)
-                {
-                  UpdateVertex(nV[j], aDistPP);
-                  myVertsToAvoidExtension.Add(nV[j]);
-                }
+                UpdateVertex(nV[j], aDistPP);
+                myVertsToAvoidExtension.Add(nV[j]);
               }
             }
             continue;
@@ -552,11 +466,7 @@ void BOPAlgo_PaveFiller::PerformEF(const Message_ProgressRange& theRange)
   //=========================================
   BOPAlgo_Tools::PerformCommonBlocks(aMPBLI, aAllocator, myDS, myContext);
   UpdateVerticesOfCB();
-  PerformNewVertices(aMVCPB, aAllocator, aPSOuter.Next(1), Standard_False);
-  if (HasErrors())
-  {
-    return;
-  }
+  PerformNewVertices(aMVCPB, aAllocator, Standard_False);
   //
   // Update FaceInfoIn for all faces having EF common parts
   myDS->UpdateFaceInfoIn (aMIEFC);
@@ -765,9 +675,8 @@ void BOPAlgo_PaveFiller::ReduceIntersectionRange(const Standard_Integer theV1,
 //function : ForceInterfEF
 //purpose  : 
 //=======================================================================
-void BOPAlgo_PaveFiller::ForceInterfEF(const Message_ProgressRange& theRange)
+void BOPAlgo_PaveFiller::ForceInterfEF()
 {
-  Message_ProgressScope aPS(theRange, NULL, 1);
   if (!myIsPrimary)
     return;
 
@@ -795,10 +704,6 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const Message_ProgressRange& theRange)
       // Degenerated edge
       continue;
 
-    if (UserBreak(aPS))
-    {
-      return;
-    }
     const BOPDS_ListOfPaveBlock& aLPB = myDS->PaveBlocks(nE);
     BOPDS_ListIteratorOfListOfPaveBlock aItLPB(aLPB);
     for (; aItLPB.More(); aItLPB.Next())
@@ -810,8 +715,7 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const Message_ProgressRange& theRange)
   }
 
   // Perform intersection of collected pave blocks with faces
-
-  ForceInterfEF(aMPB, aPS.Next(), Standard_True);
+  ForceInterfEF(aMPB, Standard_True);
 }
 
 //=======================================================================
@@ -819,13 +723,11 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const Message_ProgressRange& theRange)
 //purpose  : 
 //=======================================================================
 void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB,
-                                       const Message_ProgressRange& theRange,
                                        const Standard_Boolean theAddInterf)
 {
-  // Split progress on preparation, intersection and post-treatment stages
-  Message_ProgressScope aPSOuter(theRange, NULL, 10);
   if (theMPB.IsEmpty())
     return;
+
   // Fill the tree with bounding boxes of the pave blocks
   BOPTools_BoxTree aBBTree;
 
@@ -842,10 +744,6 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
       if (!aPB->HasShrunkData())
         continue;
     }
-    if (UserBreak(aPSOuter))
-    {
-      return;
-    }
 
     Standard_Real f, l;
     Bnd_Box aPBBox;
@@ -857,8 +755,6 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
 
   // Shake the tree
   aBBTree.Build();
-
-  const Standard_Boolean bSICheckMode = (myArguments.Extent() == 1);
 
   // Find pairs of Face/PaveBlock containing the same vertices
   // and prepare those pairs for intersection.
@@ -875,11 +771,6 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
     if (!aSI.HasReference())
       // Face has no face info
       continue;
-
-    if (UserBreak(aPSOuter))
-    {
-      return;
-    }
 
     const Bnd_Box& aBoxF = aSI.Box();
     BOPTools_BoxTreeSelector aSelector;
@@ -919,7 +810,6 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
 
     // Projection tool
     GeomAPI_ProjectPointOnSurf& aProjPS = myContext->ProjPS(aF);
-    BRepAdaptor_Surface& aSurfAdaptor = myContext->SurfaceAdaptor (aF);
 
     // Iterate on pave blocks and combine pairs containing
     // the same vertices
@@ -959,7 +849,7 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
       // Check directions coincidence at middle point on the edge
       // and projection of that point on the face.
       // If the angle between tangent vector to the curve and normal
-      // of the face is not in the range of 65 - 115 degrees, do not use the additional
+      // of the face is not in the range of 80 - 100 degrees, do not use the additional
       // tolerance, as it may lead to undesired unification of edge with the face.
       Standard_Boolean bUseAddTol = Standard_True;
 
@@ -984,12 +874,8 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
       // tolerance as the criteria.
       const TopoDS_Vertex& aV1 = TopoDS::Vertex(myDS->Shape(nV1));
       const TopoDS_Vertex& aV2 = TopoDS::Vertex(myDS->Shape(nV2));
-
-      // In the Self-Interference check mode we are interested in real
-      // intersections only, so use only the real tolerance of edges,
-      // no need to use the extended tolerance.
-      Standard_Real aTolCheck = (bSICheckMode ? myFuzzyValue :
-        2 * Max(BRep_Tool::Tolerance(aV1), BRep_Tool::Tolerance(aV2)));
+      Standard_Real aTolCheck = 2 * Max(BRep_Tool::Tolerance(aV1),
+                                        BRep_Tool::Tolerance(aV2));
 
       if (aProjPS.LowerDistance() > aTolCheck + myFuzzyValue)
         continue;
@@ -999,19 +885,15 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
       if (!myContext->IsPointInFace(aF, gp_Pnt2d(U, V)))
         continue;
 
-      if (aSurfAdaptor.GetType() != GeomAbs_Plane ||
-          aBAC.GetType() != GeomAbs_Line)
+      gp_Pnt aPOnS = aProjPS.NearestPoint();
+      gp_Vec aVFNorm(aPOnS, aPOnE);
+      if (aVFNorm.SquareMagnitude() > gp::Resolution())
       {
-        gp_Pnt aPOnS = aProjPS.NearestPoint();
-        gp_Vec aVFNorm(aPOnS, aPOnE);
-        if (aVFNorm.SquareMagnitude() > gp::Resolution())
-        {
-          // Angle between vectors should be close to 90 degrees.
-          // We allow deviation of 25 degrees.
-          Standard_Real aCos = aVFNorm.Normalized().Dot (aVETgt.Normalized());
-          if (Abs(aCos) > 0.4226)
-            bUseAddTol = Standard_False;
-        }
+        // Angle between vectors should be close to 90 degrees.
+        // We allow deviation of 10 degrees.
+        Standard_Real aCos = aVFNorm.Dot(aVETgt);
+        if (Abs(aCos) > 0.174)
+          bUseAddTol = Standard_False;
       }
 
       // Compute an addition to Fuzzy value
@@ -1058,38 +940,23 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
         aEdgeFace.SetPaveBlock(aPB);
         aEdgeFace.SetEdge(aE);
         aEdgeFace.SetFace(aF);
-        aEdgeFace.SetBoxes (myDS->ShapeInfo(nE).Box(), myDS->ShapeInfo (nF).Box());
         aEdgeFace.SetFuzzyValue(myFuzzyValue + aTolAdd);
         aEdgeFace.UseQuickCoincidenceCheck(Standard_True);
         aEdgeFace.SetRange(IntTools_Range(aPB->Pave1().Parameter(), aPB->Pave2().Parameter()));
+        aEdgeFace.SetProgressIndicator(myProgressIndicator);
       }
     }
   }
 
   Standard_Integer aNbEFs = aVEdgeFace.Length();
   if (!aNbEFs)
-  {
     return;
-  }
-
-  // close preparation step
-  aPSOuter.Next(0.7);
 
   aPBMap.Clear();
   anAlloc->Reset();
 
-  Message_ProgressScope aPS(aPSOuter.Next(9), "Checking for edges coinciding with faces", aNbEFs);
-  for (Standard_Integer i = 0; i < aNbEFs; i++)
-  {
-    BOPAlgo_EdgeFace& aEdgeFace = aVEdgeFace.ChangeValue(i);
-    aEdgeFace.SetProgressRange(aPS.Next());
-  }
   // Perform intersection of the found pairs
   BOPTools_Parallel::Perform (myRunParallel, aVEdgeFace, myContext);
-  if (UserBreak(aPSOuter))
-  {
-    return;
-  }
 
   BOPDS_VectorOfInterfEF& aEFs = myDS->InterfEF();
   if (theAddInterf && aEFs.IsEmpty())
@@ -1100,12 +967,9 @@ void BOPAlgo_PaveFiller::ForceInterfEF(const BOPDS_IndexedMapOfPaveBlock& theMPB
 
   // Collect all pairs for common block creation
   BOPDS_IndexedDataMapOfPaveBlockListOfInteger aMPBLI(1, anAlloc);
+
   for (Standard_Integer i = 0; i < aNbEFs; ++i)
   {
-    if (UserBreak(aPSOuter))
-    {
-      return;
-    }
     BOPAlgo_EdgeFace& anEdgeFace = aVEdgeFace(i);
     if (!anEdgeFace.IsDone() || anEdgeFace.HasErrors())
     {

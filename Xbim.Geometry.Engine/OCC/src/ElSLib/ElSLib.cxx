@@ -1480,19 +1480,10 @@ void ElSLib::TorusParameters(const gp_Ax3& Pos,
   Standard_Real cosu = cos(U);
   Standard_Real sinu = sin(U);
   gp_Dir dx(cosu,sinu,0.);
-  gp_XYZ dPV(x - MajorRadius * cosu,
-    y - MajorRadius * sinu,
-    z);
-  Standard_Real aMag = dPV.Modulus();
-  if (aMag <= gp::Resolution())
-  {
-    V = 0.;
-  }
-  else
-  {
-    gp_Dir dP(dPV);
-    V = dx.AngleWithRef(dP, dx^gp::DZ());
-  }
+  gp_Dir dP(x - MajorRadius * cosu,
+	    y - MajorRadius * sinu,
+	    z);
+  V = dx.AngleWithRef(dP,dx^gp::DZ());
   if      (V < -1.e-16)  V += PIPI;
   else if (V < 0)        V = 0;
 }

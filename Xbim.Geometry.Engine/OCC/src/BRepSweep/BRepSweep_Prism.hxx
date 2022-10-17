@@ -23,6 +23,7 @@
 
 #include <BRepSweep_Translation.hxx>
 #include <Standard_Boolean.hxx>
+class Standard_ConstructionError;
 class TopoDS_Shape;
 class gp_Vec;
 class gp_Dir;

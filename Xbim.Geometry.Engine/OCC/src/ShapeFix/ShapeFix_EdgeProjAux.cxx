@@ -14,8 +14,6 @@
 //:r5 abv 06.04.99: ec_turbine-A.stp, #4313: protect against null curve
 //    abv 09.04.99  S4136: add parameter preci (to eliminate BRepAPI::Precision)
 
-#include <ShapeFix_EdgeProjAux.hxx>
-
 #include <Adaptor3d_CurveOnSurface.hxx>
 #include <BRep_Tool.hxx>
 #include <ElCLib.hxx>
@@ -25,9 +23,11 @@
 #include <Geom2d_Curve.hxx>
 #include <Geom2d_Line.hxx>
 #include <Geom2dAdaptor_Curve.hxx>
+#include <Geom2dAdaptor_HCurve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_SphericalSurface.hxx>
 #include <Geom_Surface.hxx>
+#include <GeomAdaptor_HSurface.hxx>
 #include <GeomAdaptor_Surface.hxx>
 #include <gp_Pnt.hxx>
 #include <Precision.hxx>
@@ -35,6 +35,7 @@
 #include <ShapeAnalysis_Curve.hxx>
 #include <ShapeAnalysis_Edge.hxx>
 #include <ShapeAnalysis_Surface.hxx>
+#include <ShapeFix_EdgeProjAux.hxx>
 #include <Standard_ErrorHandler.hxx>
 #include <Standard_Failure.hxx>
 #include <Standard_Type.hxx>
@@ -42,7 +43,7 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <TopoDS_Vertex.hxx>
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
 #include <BSplCLib.hxx>
 
 IMPLEMENT_STANDARD_RTTIEXT(ShapeFix_EdgeProjAux,Standard_Transient)
@@ -52,11 +53,8 @@ IMPLEMENT_STANDARD_RTTIEXT(ShapeFix_EdgeProjAux,Standard_Transient)
 //purpose  : 
 //=======================================================================
 ShapeFix_EdgeProjAux::ShapeFix_EdgeProjAux ()
-: myFirstParam(0.0),
-  myLastParam(0.0),
-  myFirstDone(Standard_False),
-  myLastDone(Standard_False)
 {
+  myFirstDone = myLastDone = Standard_False;
 }
 
 //=======================================================================
@@ -278,11 +276,11 @@ void ShapeFix_EdgeProjAux::Init2d (const Standard_Real preci)
 
   Standard_Boolean parU = Standard_False, parV = Standard_False;
   GeomAdaptor_Surface          SA     = GeomAdaptor_Surface(theSurface);
-  Handle(GeomAdaptor_Surface) myHSur = new GeomAdaptor_Surface(SA);
+  Handle(GeomAdaptor_HSurface) myHSur = new GeomAdaptor_HSurface(SA);
 
   cf = theCurve2d->FirstParameter();
   cl = theCurve2d->LastParameter();
-  //pdn cutting pcurve by surface bounds
+  //pdn cutting pcurve by suface bounds
   if (Precision::IsInfinite(cf)||Precision::IsInfinite(cl)) {
     if(theCurve2d->IsKind(STANDARD_TYPE(Geom2d_Line))) {
       Standard_Real uf,ul,vf,vl;
@@ -357,7 +355,7 @@ void ShapeFix_EdgeProjAux::Init2d (const Standard_Real preci)
       else {
         cf=-10000;
         cl= 10000;
-        //pdn not cut by bounds
+        //pdn not cutted by bounds
 #ifdef OCCT_DEBUG
         std::cout<<"Infinite Surface"<<std::endl;
 #endif	
@@ -385,7 +383,7 @@ void ShapeFix_EdgeProjAux::Init2d (const Standard_Real preci)
   }
 
   Geom2dAdaptor_Curve          CA     = Geom2dAdaptor_Curve(theCurve2d,cf,cl);
-  Handle(Geom2dAdaptor_Curve) myHCur = new Geom2dAdaptor_Curve(CA);
+  Handle(Geom2dAdaptor_HCurve) myHCur = new Geom2dAdaptor_HCurve(CA);
 
   Adaptor3d_CurveOnSurface COnS = Adaptor3d_CurveOnSurface(myHCur, myHSur);
 
@@ -510,10 +508,10 @@ void ShapeFix_EdgeProjAux::Init3d (const Standard_Real preci)
 
 
   GeomAdaptor_Surface          SA     = GeomAdaptor_Surface(theSurface);  
-  Handle(GeomAdaptor_Surface) myHSur = new GeomAdaptor_Surface(SA);
+  Handle(GeomAdaptor_HSurface) myHSur = new GeomAdaptor_HSurface(SA);
 
   Geom2dAdaptor_Curve          CA     = Geom2dAdaptor_Curve(theCurve2d);
-  Handle(Geom2dAdaptor_Curve) myHCur = new Geom2dAdaptor_Curve(CA);
+  Handle(Geom2dAdaptor_HCurve) myHCur = new Geom2dAdaptor_HCurve(CA);
 
   Adaptor3d_CurveOnSurface COnS = Adaptor3d_CurveOnSurface(myHCur, myHSur);
   

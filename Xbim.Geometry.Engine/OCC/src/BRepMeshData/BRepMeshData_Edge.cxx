@@ -19,8 +19,6 @@
 #include <BRepMesh_OrientedEdge.hxx>
 #include <BRepMesh_Vertex.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMeshData_Edge, IMeshData_Edge)
-
 //=======================================================================
 // Function: Constructor
 // Purpose : 

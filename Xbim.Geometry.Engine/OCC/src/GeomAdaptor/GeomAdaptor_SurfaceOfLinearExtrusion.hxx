@@ -17,9 +17,21 @@
 #ifndef _GeomAdaptor_SurfaceOfLinearExtrusion_HeaderFile
 #define _GeomAdaptor_SurfaceOfLinearExtrusion_HeaderFile
 
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
 #include <gp_Dir.hxx>
 #include <GeomAdaptor_Surface.hxx>
 
+class Adaptor3d_HCurve;
+class Standard_OutOfRange;
+class Standard_NoSuchObject;
+class Standard_DomainError;
+class gp_Dir;
+class Adaptor3d_HSurface;
+class gp_Pnt;
+class gp_Vec;
 class gp_Pln;
 class gp_Cylinder;
 class gp_Cone;
@@ -29,7 +41,6 @@ class Geom_BezierSurface;
 class Geom_BSplineSurface;
 class gp_Ax1;
 
-DEFINE_STANDARD_HANDLE(GeomAdaptor_SurfaceOfLinearExtrusion, GeomAdaptor_Surface)
 
 //! Generalised cylinder. This surface is obtained  by sweeping a  curve in  a given
 //! direction. The parametrization range  for the parameter U is defined
@@ -40,22 +51,21 @@ DEFINE_STANDARD_HANDLE(GeomAdaptor_SurfaceOfLinearExtrusion, GeomAdaptor_Surface
 //! The continuity of the surface is CN in the V direction.
 class GeomAdaptor_SurfaceOfLinearExtrusion  : public GeomAdaptor_Surface
 {
-  DEFINE_STANDARD_RTTIEXT(GeomAdaptor_SurfaceOfLinearExtrusion, GeomAdaptor_Surface)
 public:
 
+  DEFINE_STANDARD_ALLOC
+
+  
   Standard_EXPORT GeomAdaptor_SurfaceOfLinearExtrusion();
   
   //! The Curve is loaded.
-  Standard_EXPORT GeomAdaptor_SurfaceOfLinearExtrusion(const Handle(Adaptor3d_Curve)& C);
+  Standard_EXPORT GeomAdaptor_SurfaceOfLinearExtrusion(const Handle(Adaptor3d_HCurve)& C);
   
   //! Thew Curve and the Direction are loaded.
-  Standard_EXPORT GeomAdaptor_SurfaceOfLinearExtrusion(const Handle(Adaptor3d_Curve)& C, const gp_Dir& V);
+  Standard_EXPORT GeomAdaptor_SurfaceOfLinearExtrusion(const Handle(Adaptor3d_HCurve)& C, const gp_Dir& V);
   
-  //! Shallow copy of adaptor
-  Standard_EXPORT virtual Handle(Adaptor3d_Surface) ShallowCopy() const Standard_OVERRIDE;
-
   //! Changes the Curve
-  Standard_EXPORT void Load (const Handle(Adaptor3d_Curve)& C);
+  Standard_EXPORT void Load (const Handle(Adaptor3d_HCurve)& C);
   
   //! Changes the Direction
   Standard_EXPORT void Load (const gp_Dir& V);
@@ -94,13 +104,13 @@ public:
   //! parameters <First>  and <Last>. <Tol>  is used  to
   //! test for 3d points confusion.
   //! If <First> >= <Last>
-  Standard_EXPORT Handle(Adaptor3d_Surface) UTrim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
+  Standard_EXPORT Handle(Adaptor3d_HSurface) UTrim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
   
   //! Returns    a  surface trimmed in the V direction  between
   //! parameters <First>  and <Last>. <Tol>  is used  to
   //! test for 3d points confusion.
   //! If <First> >= <Last>
-  Standard_EXPORT Handle(Adaptor3d_Surface) VTrim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
+  Standard_EXPORT Handle(Adaptor3d_HSurface) VTrim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
   
   Standard_EXPORT Standard_Boolean IsUClosed() const Standard_OVERRIDE;
   
@@ -154,12 +164,27 @@ public:
   
   Standard_EXPORT gp_Dir Direction() const Standard_OVERRIDE;
   
-  Standard_EXPORT Handle(Adaptor3d_Curve) BasisCurve() const Standard_OVERRIDE;
+  Standard_EXPORT Handle(Adaptor3d_HCurve) BasisCurve() const Standard_OVERRIDE;
+
+
+
+
+protected:
+
+
+
+
 
 private:
-  Handle(Adaptor3d_Curve) myBasisCurve; ///< extruded curve
+  Handle(Adaptor3d_HCurve) myBasisCurve; ///< extruded curve
   gp_Dir                   myDirection;  ///< direction of extrusion
   Standard_Boolean         myHaveDir;    ///< whether the direction of extrusion is initialized
 };
+
+
+
+
+
+
 
 #endif // _GeomAdaptor_SurfaceOfLinearExtrusion_HeaderFile

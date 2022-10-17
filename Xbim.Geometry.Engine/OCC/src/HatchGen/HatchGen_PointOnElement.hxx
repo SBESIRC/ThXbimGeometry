@@ -40,6 +40,9 @@ public:
   //! ---Purpose; Creates an empty point on element
   Standard_EXPORT HatchGen_PointOnElement();
   
+  //! Creates a point from an other.
+  Standard_EXPORT HatchGen_PointOnElement(const HatchGen_PointOnElement& Point);
+  
   //! Creates a point from an intersection point.
   Standard_EXPORT HatchGen_PointOnElement(const IntRes2d_IntersectionPoint& Point);
   

@@ -50,14 +50,14 @@
 //=======================================================================
 class BOPAlgo_FaceSelfIntersect : 
   public IntTools_FaceFace,
-  public BOPAlgo_ParallelAlgo {
+  public BOPAlgo_Algo {
 
  public:
   DEFINE_STANDARD_ALLOC
 
   BOPAlgo_FaceSelfIntersect() : 
     IntTools_FaceFace(),  
-    BOPAlgo_ParallelAlgo(),
+    BOPAlgo_Algo(),
     myIF(-1), myTolF(1.e-7) {
   }
   //
@@ -89,12 +89,8 @@ class BOPAlgo_FaceSelfIntersect :
   }
   //
   virtual void Perform() {
-    Message_ProgressScope aPS(myProgressRange, NULL, 1);
-    if (UserBreak(aPS))
-    {
-      return;
-    }
-    IntTools_FaceFace::Perform (myF, myF, myRunParallel);
+    BOPAlgo_Algo::UserBreak();
+    IntTools_FaceFace::Perform(myF, myF);
   }
   //
  protected:
@@ -144,7 +140,7 @@ void BOPAlgo_CheckerSI::SetLevelOfCheck(const Standard_Integer theLevel)
 //function : Init
 //purpose  : 
 //=======================================================================
-void BOPAlgo_CheckerSI::Init(const Message_ProgressRange& /*theRange*/)
+void BOPAlgo_CheckerSI::Init()
 {
   Clear();
   //
@@ -168,7 +164,7 @@ void BOPAlgo_CheckerSI::Init(const Message_ProgressRange& /*theRange*/)
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BOPAlgo_CheckerSI::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_CheckerSI::Perform()
 {
   try {
     OCC_CATCH_SIGNALS
@@ -178,33 +174,24 @@ void BOPAlgo_CheckerSI::Perform(const Message_ProgressRange& theRange)
       return;
     }
     //
-    Message_ProgressScope aPS(theRange, "Checking shape on self-intersection", 10);
     // Perform intersection of sub shapes
-    BOPAlgo_PaveFiller::Perform(aPS.Next(8));
-    if (UserBreak(aPS))
-    {
-      return;
-    }
+    BOPAlgo_PaveFiller::Perform();
     //
-    CheckFaceSelfIntersection(aPS.Next());
+    CheckFaceSelfIntersection();
     
-    Message_ProgressScope aPSZZ(aPS.Next(), NULL, 4);
     // Perform intersection with solids
     if (!HasErrors())
-      PerformVZ(aPSZZ.Next());
+      PerformVZ();
     //
     if (!HasErrors())
-      PerformEZ(aPSZZ.Next());
+      PerformEZ();
     //
     if (!HasErrors())
-      PerformFZ(aPSZZ.Next());
+      PerformFZ();
     //
     if (!HasErrors())
-      PerformZZ(aPSZZ.Next());
+      PerformZZ();
     //
-    if (HasErrors())
-      return;
-
     // Treat the intersection results
     PostTreat();
   }
@@ -397,7 +384,7 @@ void BOPAlgo_CheckerSI::PostTreat()
 //function : CheckFaceSelfIntersection
 //purpose  : 
 //=======================================================================
-void BOPAlgo_CheckerSI::CheckFaceSelfIntersection(const Message_ProgressRange& theRange)
+void BOPAlgo_CheckerSI::CheckFaceSelfIntersection()
 {
   if (myLevelOfCheck < 5)
     return;
@@ -411,8 +398,6 @@ void BOPAlgo_CheckerSI::CheckFaceSelfIntersection(const Message_ProgressRange& t
   BOPAlgo_VectorOfFaceSelfIntersect aVFace;
   
   Standard_Integer aNbS=myDS->NbSourceShapes();
-
-  Message_ProgressScope aPSOuter(theRange, NULL, 1);
   
   //
   for (Standard_Integer i = 0; i < aNbS; i++)
@@ -443,25 +428,17 @@ void BOPAlgo_CheckerSI::CheckFaceSelfIntersection(const Message_ProgressRange& t
     
     BOPAlgo_FaceSelfIntersect& aFaceSelfIntersect = aVFace.Appended();
     //
-    aFaceSelfIntersect.SetRunParallel (myRunParallel);
     aFaceSelfIntersect.SetIndex(i);
     aFaceSelfIntersect.SetFace(aF);
     aFaceSelfIntersect.SetTolF(aTolF);
+    //
+    aFaceSelfIntersect.SetProgressIndicator(myProgressIndicator);
   }
   
   Standard_Integer aNbFace = aVFace.Length();
-  Message_ProgressScope aPSParallel(aPSOuter.Next(), "Checking surface on self-intersection", aNbFace);
-  for (Standard_Integer iF = 0; iF < aNbFace; ++iF)
-  {
-    aVFace.ChangeValue(iF).SetProgressRange(aPSParallel.Next());
-  }
   //======================================================
   BOPTools_Parallel::Perform (myRunParallel, aVFace);
   //======================================================
-  if (UserBreak(aPSOuter))
-  {
-    return;
-  }
   //
   for (Standard_Integer k = 0; k < aNbFace; k++)
   {

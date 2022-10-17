@@ -18,11 +18,7 @@
 #include <gp_Vec2d.hxx>
 #include <IntSurf_InteriorPoint.hxx>
 
-IntSurf_InteriorPoint::IntSurf_InteriorPoint ()
-: paramu(0.0),
-  paramv(0.0)
-{
-}
+IntSurf_InteriorPoint::IntSurf_InteriorPoint () {}
 
 
 IntSurf_InteriorPoint::IntSurf_InteriorPoint (const gp_Pnt& P,

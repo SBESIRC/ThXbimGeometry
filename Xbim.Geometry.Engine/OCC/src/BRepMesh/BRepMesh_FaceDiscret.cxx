@@ -21,8 +21,6 @@
 #include <IMeshTools_MeshAlgo.hxx>
 #include <OSD_Parallel.hxx>
 
-IMPLEMENT_STANDARD_RTTIEXT(BRepMesh_FaceDiscret, IMeshTools_ModelAlgo)
-
 //=======================================================================
 // Function: Constructor
 // Purpose : 
@@ -41,46 +39,13 @@ BRepMesh_FaceDiscret::~BRepMesh_FaceDiscret()
 {
 }
 
-//! Auxiliary functor for parallel processing of Faces.
-class BRepMesh_FaceDiscret::FaceListFunctor
-{
-public:
-  FaceListFunctor (BRepMesh_FaceDiscret* theAlgo,
-                   const Message_ProgressRange& theRange)
-  : myAlgo (theAlgo),
-    myScope (theRange, "Face Discret", theAlgo->myModel->FacesNb())
-  {
-    myRanges.reserve (theAlgo->myModel->FacesNb());
-    for (Standard_Integer aFaceIter = 0; aFaceIter < theAlgo->myModel->FacesNb(); ++aFaceIter)
-    {
-      myRanges.push_back (myScope.Next());
-    }
-  }
-
-  void operator() (const Standard_Integer theFaceIndex) const
-  {
-    if (!myScope.More())
-    {
-      return;
-    }
-    Message_ProgressScope aFaceScope(myRanges[theFaceIndex], NULL, 1);
-    myAlgo->process(theFaceIndex, aFaceScope.Next());
-  }
-
-private:
-  mutable BRepMesh_FaceDiscret* myAlgo;
-  Message_ProgressScope myScope;
-  std::vector<Message_ProgressRange> myRanges;
-};
-
 //=======================================================================
 // Function: Perform
 // Purpose : 
 //=======================================================================
 Standard_Boolean BRepMesh_FaceDiscret::performInternal(
   const Handle(IMeshData_Model)& theModel,
-  const IMeshTools_Parameters&   theParameters,
-  const Message_ProgressRange&   theRange)
+  const IMeshTools_Parameters&   theParameters)
 {
   myModel      = theModel;
   myParameters = theParameters;
@@ -89,12 +54,7 @@ Standard_Boolean BRepMesh_FaceDiscret::performInternal(
     return Standard_False;
   }
 
-  FaceListFunctor aFunctor(this, theRange);
-  OSD_Parallel::For(0, myModel->FacesNb(), aFunctor, !(myParameters.InParallel && myModel->FacesNb() > 1));
-  if (!theRange.More())
-  {
-    return Standard_False;
-  }
+  OSD_Parallel::For(0, myModel->FacesNb(), *this, !(myParameters.InParallel && myModel->FacesNb() > 1));
 
   myModel.Nullify(); // Do not hold link to model.
   return Standard_True;
@@ -104,8 +64,7 @@ Standard_Boolean BRepMesh_FaceDiscret::performInternal(
 // Function: process
 // Purpose : 
 //=======================================================================
-void BRepMesh_FaceDiscret::process(const Standard_Integer theFaceIndex, 
-                                   const Message_ProgressRange& theRange) const
+void BRepMesh_FaceDiscret::process(const Standard_Integer theFaceIndex) const
 {
   const IMeshData::IFaceHandle& aDFace = myModel->GetFace(theFaceIndex);
   if (aDFace->IsSet(IMeshData_Failure) ||
@@ -127,12 +86,7 @@ void BRepMesh_FaceDiscret::process(const Standard_Integer theFaceIndex,
       return;
     }
   
-    if (!theRange.More())
-    {
-      aDFace->SetStatus (IMeshData_UserBreak);
-      return;
-    }
-    aMeshingAlgo->Perform(aDFace, myParameters, theRange);
+    aMeshingAlgo->Perform(aDFace, myParameters);
   }
   catch (Standard_Failure const&)
   {

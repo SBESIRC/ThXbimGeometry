@@ -22,7 +22,6 @@
 #include <Standard_Handle.hxx>
 
 #include <TColStd_Array1OfInteger.hxx>
-#include <TColStd_PackedMapOfInteger.hxx>
 #include <Standard_Integer.hxx>
 #include <Standard_Boolean.hxx>
 class Poly_Triangulation;
@@ -160,7 +159,6 @@ private:
   Standard_Integer myothernode;
   Standard_Boolean mysense;
   Standard_Boolean mymore;
-  TColStd_PackedMapOfInteger myPassedTr;
 
 };
 

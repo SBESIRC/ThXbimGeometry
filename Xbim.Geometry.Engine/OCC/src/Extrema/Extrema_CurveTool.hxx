@@ -63,7 +63,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
     static void Intervals (Adaptor3d_Curve& C, TColStd_Array1OfReal& T, const GeomAbs_Shape S);
 

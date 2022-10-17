@@ -35,7 +35,8 @@
 #include <ShapeBuild_ReShape.hxx>
 #include <Standard_ErrorHandler.hxx>
 
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressIndicator.hxx>
+#include <Message_ProgressSentry.hxx>
 
 //=======================================================================
 //function : ApplyModifier
@@ -46,7 +47,7 @@ TopoDS_Shape ShapeCustom::ApplyModifier (const TopoDS_Shape &S,
                                          const Handle(BRepTools_Modification) &M,
                                          TopTools_DataMapOfShapeShape &context,
                                          BRepTools_Modifier& MD,
-                                         const Message_ProgressRange& theProgress,
+                                         const Handle(Message_ProgressIndicator) & aProgress,
                                          const Handle(ShapeBuild_ReShape) & aReShape)
 {
   // protect against INTERNAL/EXTERNAL shapes
@@ -60,27 +61,26 @@ TopoDS_Shape ShapeCustom::ApplyModifier (const TopoDS_Shape &S,
     B.MakeCompound ( C );
 
     Standard_Integer aShapeCount = SF.NbChildren();
-    Message_ProgressScope aPS(theProgress, "Applying Modifier For Solids", aShapeCount);
-    for ( TopoDS_Iterator it(SF); it.More() && aPS.More(); it.Next()) {
+    Message_ProgressSentry aPSentry(aProgress, "Applying Modifier For Solids", 0, aShapeCount, 1);
+    for ( TopoDS_Iterator it(SF); it.More() && aPSentry.More(); it.Next(), aPSentry.Next() ) {
       TopoDS_Shape shape = it.Value();
       TopLoc_Location L = shape.Location(), nullLoc;
       shape.Location ( nullLoc );
       TopoDS_Shape res;
-      Message_ProgressRange aRange = aPS.Next();
       if ( context.IsBound ( shape ) )
         res = context.Find ( shape ).Oriented ( shape.Orientation() );
       else
-        res = ApplyModifier ( shape, M, context ,MD, aRange);
+        res = ApplyModifier ( shape, M, context ,MD, aProgress);
 
       if ( ! res.IsSame ( shape ) ) {
         context.Bind ( shape, res );
         locModified = Standard_True;
       }
-      res.Location ( L, Standard_False );
+      res.Location ( L );
       B.Add ( C, res );
     }
 
-    if ( !aPS.More() )
+    if ( !aPSentry.More() )
     {
       // Was cancelled
       return S;
@@ -91,12 +91,12 @@ TopoDS_Shape ShapeCustom::ApplyModifier (const TopoDS_Shape &S,
     return C.Oriented ( S.Orientation() );
   }
 
-  Message_ProgressScope aPS(theProgress, "Modify the Shape", 1);
+  Message_ProgressSentry aPSentry(aProgress, "Modify the Shape", 0, 1, 1);
   // Modify the shape
   MD.Init(SF);
-  MD.Perform(M, aPS.Next());
+  MD.Perform(M, aProgress);
   
-  if ( !aPS.More() || !MD.IsDone() ) return S;
+  if ( !aPSentry.More() || !MD.IsDone() ) return S;
   if ( !aReShape.IsNull() )
   {
     for(TopoDS_Iterator theIterator(SF,Standard_False);theIterator.More();theIterator.Next())

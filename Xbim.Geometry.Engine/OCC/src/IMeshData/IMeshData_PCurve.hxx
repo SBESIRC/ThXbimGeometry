@@ -29,7 +29,7 @@ class IMeshData_PCurve : public IMeshData_ParametersList
 public:
 
   //! Destructor.
-  virtual ~IMeshData_PCurve()
+  Standard_EXPORT virtual ~IMeshData_PCurve()
   {
   }
 
@@ -54,35 +54,35 @@ public:
   Standard_EXPORT virtual void RemovePoint (const Standard_Integer theIndex) = 0;
 
   //! Returns forward flag of this pcurve.
-  Standard_Boolean IsForward () const
+  inline Standard_Boolean IsForward () const
   {
     return (myOrientation != TopAbs_REVERSED);
   }
 
   //! Returns internal flag of this pcurve.
-  Standard_Boolean IsInternal() const
+  inline Standard_Boolean IsInternal() const
   {
     return (myOrientation == TopAbs_INTERNAL);
   }
 
   //! Returns orientation of the edge associated with current pcurve.
-  TopAbs_Orientation GetOrientation() const
+  inline TopAbs_Orientation GetOrientation() const
   {
     return myOrientation;
   }
 
   //! Returns discrete face pcurve is associated to.
-  const IMeshData::IFacePtr& GetFace () const
+  inline const IMeshData::IFacePtr& GetFace () const
   {
     return myDFace;
   }
 
-  DEFINE_STANDARD_RTTIEXT(IMeshData_PCurve, IMeshData_ParametersList)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshData_PCurve, IMeshData_ParametersList)
 
 protected:
 
   //! Constructor.
-  IMeshData_PCurve (
+  Standard_EXPORT IMeshData_PCurve (
     const IMeshData::IFacePtr& theDFace,
     const TopAbs_Orientation   theOrientation)
     : myDFace(theDFace),

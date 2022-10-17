@@ -155,7 +155,7 @@ const TopoDS_Edge& BRepFilletAPI_MakeFillet2d::BasisEdge(const TopoDS_Edge& E) c
 //purpose  : 
 //=======================================================================
 
-void BRepFilletAPI_MakeFillet2d::Build(const Message_ProgressRange& /*theRange*/)
+void BRepFilletAPI_MakeFillet2d::Build()
 {
   // test if the operation is done
   if (Status() == ChFi2d_IsDone) {

@@ -27,6 +27,8 @@
 #include <TColgp_Array1OfPnt.hxx>
 #include <TColStd_Array1OfReal.hxx>
 class Geom_BSplineCurve;
+class StdFail_NotDone;
+class Standard_OutOfRange;
 
 
 //! this class is used to construct a BSpline curve by

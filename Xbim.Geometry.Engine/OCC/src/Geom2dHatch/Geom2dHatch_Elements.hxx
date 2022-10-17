@@ -27,6 +27,8 @@
 #include <Standard_Boolean.hxx>
 #include <Standard_Real.hxx>
 #include <TopAbs_Orientation.hxx>
+class Standard_DomainError;
+class Standard_NoSuchObject;
 class Geom2dHatch_Element;
 class gp_Pnt2d;
 class gp_Lin2d;
@@ -112,7 +114,7 @@ private:
   Standard_Integer NumWire;
   Standard_Integer NumEdge;
   Standard_Integer myCurEdge;
-  Standard_Real myCurEdgePar;
+
 
 };
 

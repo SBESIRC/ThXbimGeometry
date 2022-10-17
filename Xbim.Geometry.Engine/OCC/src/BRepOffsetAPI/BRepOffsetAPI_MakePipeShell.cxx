@@ -253,7 +253,7 @@ void BRepOffsetAPI_MakePipeShell::SetMaxSegments(const Standard_Integer NewMaxSe
 //function :Build() 
 //purpose  : 
 //=======================================================================
- void BRepOffsetAPI_MakePipeShell::Build(const Message_ProgressRange& /*theRange*/)
+ void BRepOffsetAPI_MakePipeShell::Build()
 {
   Standard_Boolean Ok;
   Ok = myPipe->Build();

@@ -18,7 +18,6 @@
 #include <GCPnts_AbscissaPoint.hxx>
 #include <GeomAdaptor_Curve.hxx>
 #include <GeomAbs_IsoType.hxx>
-#include <BRep_Tool.hxx>
 
 //=======================================================================
 // Function: Reset
@@ -52,7 +51,7 @@ void BRepMesh_DefaultRangeSplitter::AddPoint(const gp_Pnt2d& thePoint)
 //=======================================================================
 void BRepMesh_DefaultRangeSplitter::AdjustRange()
 {
-  const Handle(BRepAdaptor_Surface)& aSurface = GetSurface();
+  const Handle(BRepAdaptor_HSurface)& aSurface = GetSurface();
   updateRange(aSurface->FirstUParameter(), aSurface->LastUParameter(),
               aSurface->IsUPeriodic(), myRangeU.first, myRangeU.second);
 
@@ -126,14 +125,9 @@ void BRepMesh_DefaultRangeSplitter::computeTolerance(
   const Standard_Real aDiffU = myRangeU.second - myRangeU.first;
   const Standard_Real aDiffV = myRangeV.second - myRangeV.first;
 
-  const Standard_Real      aTolerance = BRep_Tool::Tolerance (myDFace->GetFace());
-  const Adaptor3d_Surface& aSurface   = GetSurface()->Surface();
-  const Standard_Real      aResU      = aSurface.UResolution (aTolerance);
-  const Standard_Real      aResV      = aSurface.VResolution (aTolerance);
-
   const Standard_Real aDeflectionUV = 1.e-05;
-  myTolerance.first  = Max(Min(aDeflectionUV, aResU), 1e-7 * aDiffU);
-  myTolerance.second = Max(Min(aDeflectionUV, aResV), 1e-7 * aDiffV);
+  myTolerance.first  = Max(Min(aDeflectionUV, 0.1 * aDiffU), 1e-7 * aDiffU);
+  myTolerance.second = Max(Min(aDeflectionUV, 0.1 * aDiffV), 1e-7 * aDiffV);
 }
 
 //=======================================================================
@@ -165,7 +159,7 @@ Standard_Real BRepMesh_DefaultRangeSplitter::computeLengthU()
   Standard_Real dfucur;
   Standard_Integer i1;
 
-  const Handle(BRepAdaptor_Surface)& gFace = GetSurface();
+  const Handle(BRepAdaptor_HSurface)& gFace = GetSurface();
   gFace->D0(myRangeU.first, myRangeV.first,  P11);
   gFace->D0(myRangeU.first, dfvave,          P21);
   gFace->D0(myRangeU.first, myRangeV.second, P31);
@@ -197,7 +191,7 @@ Standard_Real BRepMesh_DefaultRangeSplitter::computeLengthV()
   Standard_Real dfvcur;
   Standard_Integer i1;
 
-  const Handle(BRepAdaptor_Surface)& gFace = GetSurface();
+  const Handle(BRepAdaptor_HSurface)& gFace = GetSurface();
   gFace->D0(myRangeU.first,  myRangeV.first, P11);
   gFace->D0(dfuave,          myRangeV.first, P21);
   gFace->D0(myRangeU.second, myRangeV.first, P31);

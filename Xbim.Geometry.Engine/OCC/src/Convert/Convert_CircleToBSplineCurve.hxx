@@ -24,6 +24,7 @@
 #include <Convert_ConicToBSplineCurve.hxx>
 #include <Convert_ParameterisationType.hxx>
 #include <Standard_Real.hxx>
+class Standard_DomainError;
 class gp_Circ2d;
 
 

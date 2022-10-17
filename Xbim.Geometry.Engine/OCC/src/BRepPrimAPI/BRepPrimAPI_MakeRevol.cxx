@@ -22,19 +22,16 @@
 #include <BRepPrimAPI_MakeRevol.hxx>
 #include <BRepSweep_Revol.hxx>
 #include <gp_Ax1.hxx>
-#include <gp_Circ.hxx>
-#include <gp_Lin.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS_Shape.hxx>
 #include <TopTools_DataMapOfShapeListOfShape.hxx>
 #include <BRepTools_ReShape.hxx>
 #include <Geom_TrimmedCurve.hxx>
 #include <GeomAdaptor_SurfaceOfRevolution.hxx>
-#include <GeomAdaptor_Curve.hxx>
+#include <GeomAdaptor_HCurve.hxx>
 #include <Extrema_ExtCC.hxx>
 #include <Extrema_POnCurv.hxx>
 #include <Geom_Line.hxx>
-#include <Adaptor3d_Curve.hxx>
 
 // perform checks on the argument
 static const TopoDS_Shape& check(const TopoDS_Shape& S)
@@ -109,7 +106,7 @@ const BRepSweep_Revol&  BRepPrimAPI_MakeRevol::Revol() const
 //purpose  : 
 //=======================================================================
 
-void  BRepPrimAPI_MakeRevol::Build(const Message_ProgressRange& /*theRange*/)
+void  BRepPrimAPI_MakeRevol::Build()
 {
   if (myIsBuild)
   {
@@ -208,13 +205,13 @@ void  BRepPrimAPI_MakeRevol::Build(const Message_ProgressRange& /*theRange*/)
           {
             if (anIt.Value().IsEqual(anE))
             {
-              //First occurrence of initial deg. edge is not replaced
+              //First occurence of initial deg. edge is not replaced
               aCEL.Remove(anIt);
               break;
             }
             if (anIt.Value().Orientation() == anE.Orientation())
             {
-              //All other occurrences of anE are replaced by any copy
+              //All other occurences of anE are replaced by any copy
               //with suitable orientation
               isReplaced = Standard_True;
               aSubs.Replace(anE, anIt.Value());
@@ -252,30 +249,16 @@ void  BRepPrimAPI_MakeRevol::Build(const Message_ProgressRange& /*theRange*/)
 //purpose  : used in CheckValidity to find out is there
 //           intersection between curve and axe of revolution
 //=======================================================================
-static Standard_Boolean IsIntersect(const Handle(Adaptor3d_Curve)& theC, 
+static Standard_Boolean IsIntersect(const Handle(Adaptor3d_HCurve)& theC, 
                                     const gp_Ax1& theAxe)
 {
-  const gp_Lin anAxis(theAxe);
-  //Quick test for circle
-  if (theC->GetType() == GeomAbs_Circle)
-  {
-    gp_Circ aCirc = theC->Circle();
-    const gp_Pnt& aCentr = aCirc.Location();
-    Standard_Real anR2 = aCirc.Radius();
-    anR2 -= Precision::Confusion();
-    anR2 *= anR2;
-    if (anAxis.SquareDistance(aCentr) > anR2)
-    {
-      return Standard_False;
-    }
-  }
-  const Handle(Geom_Line) aL = new Geom_Line(anAxis);
+  const Handle(Geom_Line) aL = new Geom_Line(theAxe);
   const GeomAdaptor_Curve aLin(aL);
   const Standard_Real aParTol = theC->Resolution(Precision::Confusion());
   const Standard_Real aParF = theC->FirstParameter() + aParTol,
                       aParL = theC->LastParameter() - aParTol;
 
-  Extrema_ExtCC anExtr (*theC, aLin);
+  Extrema_ExtCC anExtr(theC->Curve(), aLin);
   anExtr.Perform();
   if (anExtr.IsDone() && anExtr.NbExt() > 0)
   {
@@ -323,9 +306,9 @@ Standard_Boolean BRepPrimAPI_MakeRevol::CheckValidity(const TopoDS_Shape& theSha
     C = new Geom_TrimmedCurve(C, First, Last);
     C->Transform(Tr);
 
-    Handle(GeomAdaptor_Curve) HC = new GeomAdaptor_Curve();
-    HC->Load(C, First, Last);
-    //Checking coincidence axe of revolution and basis curve
+    Handle(GeomAdaptor_HCurve) HC = new GeomAdaptor_HCurve();
+    HC->ChangeCurve().Load(C, First, Last);
+    //Checking coinsidence axe of revolution and basis curve
     //This code is taken directly from GeomAdaptor_SurfaceOfRevolution
     Standard_Integer Ratio = 1;
     Standard_Real Dist;
@@ -336,10 +319,10 @@ Standard_Boolean BRepPrimAPI_MakeRevol::CheckValidity(const TopoDS_Shape& theSha
       Ratio++;
     } while (Dist < Precision::Confusion() && Ratio < 100);
     //
-    if (Ratio >= 100) // edge coincides with axes
+    if (Ratio >= 100) // edge coinsides with axes
     {
       IsValid = Standard_True; //Such edges are allowed by revol algo and treated
-                               //by special way, so they must be considered as valid
+                               //by special way, so they must be concidered as valid
     }
     else
     {

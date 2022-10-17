@@ -30,6 +30,9 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <Standard_Real.hxx>
 #include <GccEnt_Position.hxx>
+class Standard_OutOfRange;
+class StdFail_NotDone;
+class GccEnt_BadQualifier;
 class GccEnt_QualifiedCirc;
 class gp_Lin2d;
 class GccEnt_QualifiedLin;
@@ -156,7 +159,7 @@ public:
   //! StdFail_NotDone if the construction fails.
   Standard_EXPORT void WhichQualifier (const Standard_Integer Index, GccEnt_Position& Qualif1, GccEnt_Position& Qualif2) const;
   
-  //! Returns the information about the tangency point between the
+  //! Returns the informations about the tangency point between the
   //! result number Index and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol on
   //! the solution
@@ -165,7 +168,7 @@ public:
   //! of solutions and NotDone if IsDone returns false.
   Standard_EXPORT void Tangency1 (const Standard_Integer Index, Standard_Real& ParSol, Standard_Real& ParArg, gp_Pnt2d& PntSol) const;
   
-  //! Returns the information about the tangency point between the
+  //! Returns the informations about the tangency point between the
   //! result number Index and the second argument.
   //! ParSol is the intrinsic parameter of the point PntSol on
   //! the solution.
@@ -174,7 +177,7 @@ public:
   //! of solutions and NotDone if IsDone returns false.
   Standard_EXPORT void Tangency2 (const Standard_Integer Index, Standard_Real& ParSol, Standard_Real& ParArg, gp_Pnt2d& PntSol) const;
   
-  //! Returns the information about the center (on the curv) of
+  //! Returns the informations about the center (on the curv) of
   //! the result number Index and the third argument.
   //! ParArg is the intrinsic parameter of the point PntArg on
   //! the third argument.

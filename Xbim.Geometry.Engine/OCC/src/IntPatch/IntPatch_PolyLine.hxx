@@ -29,6 +29,7 @@
 #include <Standard_Integer.hxx>
 class IntPatch_WLine;
 class IntPatch_RLine;
+class gp_Pnt2d;
 
 
 

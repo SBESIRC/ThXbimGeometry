@@ -22,7 +22,8 @@
 #include <BRep_Tool.hxx>
 #include <BRepBndLib.hxx>
 #include <Message_Msg.hxx>
-#include <Message_ProgressScope.hxx>
+#include <Message_ProgressIndicator.hxx>
+#include <Message_ProgressSentry.hxx>
 #include <Precision.hxx>
 #include <ShapeAnalysis_Shell.hxx>
 #include <ShapeBuild_ReShape.hxx>
@@ -104,7 +105,7 @@ void ShapeFix_Shell::Init(const TopoDS_Shell& shell)
 //purpose  : 
 //=======================================================================
 
-Standard_Boolean ShapeFix_Shell::Perform(const Message_ProgressRange& theProgress) 
+Standard_Boolean ShapeFix_Shell::Perform(const Handle(Message_ProgressIndicator)& theProgress) 
 {
   Standard_Boolean status = Standard_False;
   if ( Context().IsNull() )
@@ -119,9 +120,9 @@ Standard_Boolean ShapeFix_Shell::Perform(const Message_ProgressRange& theProgres
     Standard_Integer aNbFaces = S.NbChildren();
 
     // Start progress scope (no need to check if progress exists -- it is safe)
-    Message_ProgressScope aPS(theProgress, "Fixing face", aNbFaces);
+    Message_ProgressSentry aPSentry(theProgress, "Fixing face", 0, aNbFaces, 1);
 
-    for( TopoDS_Iterator iter(S); iter.More() && aPS.More(); iter.Next(), aPS.Next() )
+    for( TopoDS_Iterator iter(S); iter.More() && aPSentry.More(); iter.Next(), aPSentry.Next() )
     { 
       TopoDS_Shape sh = iter.Value();
       TopoDS_Face tmpFace = TopoDS::Face(sh);
@@ -134,7 +135,7 @@ Standard_Boolean ShapeFix_Shell::Perform(const Message_ProgressRange& theProgres
     }
 
     // Halt algorithm in case of user's abort
-    if ( !aPS.More() )
+    if ( !aPSentry.More() )
       return Standard_False;
   }
 
@@ -367,7 +368,7 @@ static Standard_Boolean AddMultiConexityFaces(TopTools_SequenceOfShape& Lface,
     }
   }
   
-  // Attempt to create shell from unconnected which have not only multiconnexity boundary.
+  // Attemp to create shell from unconnected which have not only multiconnexity boundary.
   TopTools_SequenceOfShape aTmpShells;
   if(!llPosibleShells.IsEmpty()) {
     TopTools_MapOfShape aMap;
@@ -390,7 +391,7 @@ static Standard_Boolean AddMultiConexityFaces(TopTools_SequenceOfShape& Lface,
     }
   }
   
-  //Add chosen faces to shells.
+  //Add choosen faces to shells.
   for(Standard_Integer k1 =1; k1 <= AddShapes.Length(); k1++) {
     TopTools_DataMapOfShapeInteger MapOtherShells;
     TopTools_MapOfShape dire,reve;
@@ -452,7 +453,7 @@ static Standard_Boolean AddMultiConexityFaces(TopTools_SequenceOfShape& Lface,
       continue;
     }
     
-    //Adds face to open shells containing the same multishared edges.
+    //Adds face to open shells containg the same multishared edges.
     //For nonmanifold mode creation ine shell from face and shells containing the same multishared edges.
     // If one face can be added to a few shells (case of compsolid) face will be added to each shell.
     done = Standard_True;
@@ -552,11 +553,12 @@ static void GetClosedShells(TopTools_SequenceOfShape& Shells, TopTools_SequenceO
 }
 //=======================================================================
 // function : GlueClosedCandidate
-// purpose  : First, attempt to create closed shells from sequence of open shells.
+// purpose  :Attemt firstly to create closed shells from sequence of open shells.
 //=======================================================================
 static void GlueClosedCandidate(TopTools_SequenceOfShape& OpenShells,
                                                     const TopTools_MapOfShape& aMapMultiConnectEdges,
                                                     TopTools_SequenceOfShape& aSeqNewShells)
+                                                    
 {
   // Creating new shells if some open shells contain the same free boundary.
   for(Standard_Integer i = 1 ; i < OpenShells.Length();i++ )  {
@@ -596,12 +598,13 @@ static void GlueClosedCandidate(TopTools_SequenceOfShape& OpenShells,
           isReversed = Standard_True;
         nbedge++;
       }
-
+      
       if(!isAddShell) continue;
       MapOtherShells.Bind(OpenShells.Value(j),isReversed);
     }
     if(MapOtherShells.IsEmpty()) continue;
-
+    
+    
     if (!MapOtherShells.IsEmpty())
     {
       // Case of compsolid when more than two shells have the same free boundary.
@@ -613,8 +616,8 @@ static void GlueClosedCandidate(TopTools_SequenceOfShape& OpenShells,
         aSeqCandidate.Append(aIt.Key());
       }
       
-      //Creation of all possible shells from chosen candidate.
-      // And the addition of them to temporary sequence.
+      //Creation all possibly shells from choosen candidate.And
+      // addition of them to temporary sequence.
       
       TopTools_SequenceOfShape aTmpSeq;
       for(Standard_Integer k =1; k <= aSeqCandidate.Length(); k++) {
@@ -636,7 +639,7 @@ static void GlueClosedCandidate(TopTools_SequenceOfShape& OpenShells,
           aTmpSeq.Append(aNewSh);
         }
       }
-
+      
       //Choice from temporary sequence shells contains different set of faces (case of compsolid) 
       TopTools_SequenceOfShape aRemainShells;
       GetClosedShells(aTmpSeq,aRemainShells);
@@ -794,9 +797,9 @@ static void CreateClosedShell(TopTools_SequenceOfShape& OpenShells,
                               const TopTools_MapOfShape& aMapMultiConnectEdges)
 {
   TopTools_SequenceOfShape aNewShells;
-  //First, attempt to create closed shells.
+  //Attemt firstly to create closed shells.
   GlueClosedCandidate(OpenShells,aMapMultiConnectEdges,aNewShells);
-
+  
   // Creating new shells if some open shells contain the multishared same edges.
   for(Standard_Integer i = 1 ; i < OpenShells.Length();i++ )  {
     Standard_Boolean isAddShell = Standard_False;
@@ -825,32 +828,32 @@ static void CreateClosedShell(TopTools_SequenceOfShape& OpenShells,
            || (edge2.Orientation() == TopAbs_REVERSED && reve.Contains(edge2)))
           isReversed = Standard_True;
       }
-
+      
       if(!isAddShell) continue;
       BRep_Builder aB;
-
+      
       for(TopExp_Explorer aExpF21(OpenShells.Value(j),TopAbs_FACE); aExpF21.More(); aExpF21.Next()) {
         TopoDS_Shape aFace = aExpF21.Current();
         if(isReversed)
           aFace.Reverse();
         aB.Add( aShell,aFace);
       }
-
+      
       OpenShells.ChangeValue(i) = aShell;
       OpenShells.Remove(j--);
     }
   }
-
+ 
   OpenShells.Append(aNewShells);
-
+  
 }
-
+  
 
 //=======================================================================
 // function : FixFaceOrientation
 // purpose  : 
 //=======================================================================
-
+  
 Standard_Boolean ShapeFix_Shell::FixFaceOrientation(
     const TopoDS_Shell& shell,
     const Standard_Boolean isAccountMultiConex,

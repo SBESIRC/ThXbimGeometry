@@ -25,7 +25,9 @@
 #include <BRepPrimAPI_MakeOneAxis.hxx>
 #include <Standard_Real.hxx>
 #include <Standard_Address.hxx>
+class Standard_DomainError;
 class gp_Ax2;
+class BRepPrim_Cylinder;
 
 
 //! Describes functions to build cylinders or portions of  cylinders.
@@ -39,23 +41,17 @@ public:
 
   DEFINE_STANDARD_ALLOC
 
-  //! Make a cylinder.
-  //! @param R [in] cylinder radius
-  //! @param H [in] cylinder height
-  Standard_EXPORT BRepPrimAPI_MakeCylinder(const Standard_Real R, const Standard_Real H);
-
-  //! Make a cylinder (part cylinder).
-  //! @param R     [in] cylinder radius
-  //! @param H     [in] cylinder height
-  //! @param Angle [in] defines the missing portion of the cylinder
-  Standard_EXPORT BRepPrimAPI_MakeCylinder(const Standard_Real R, const Standard_Real H, const Standard_Real Angle);
-
+  
   //! Make a cylinder of radius R and length H.
-  //! @param Axes [in] coordinate system for the construction of the cylinder
-  //! @param R    [in] cylinder radius
-  //! @param H    [in] cylinder height
+  Standard_EXPORT BRepPrimAPI_MakeCylinder(const Standard_Real R, const Standard_Real H);
+  
+  //! Make a cylinder   of  radius R  and  length H with
+  //! angle  H.
+  Standard_EXPORT BRepPrimAPI_MakeCylinder(const Standard_Real R, const Standard_Real H, const Standard_Real Angle);
+  
+  //! Make a cylinder of radius R and length H.
   Standard_EXPORT BRepPrimAPI_MakeCylinder(const gp_Ax2& Axes, const Standard_Real R, const Standard_Real H);
-
+  
   //! Make a cylinder   of  radius R  and  length H with
   //! angle  H.
   //! Constructs

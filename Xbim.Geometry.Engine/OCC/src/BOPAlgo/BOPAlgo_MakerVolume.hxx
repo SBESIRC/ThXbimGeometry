@@ -26,6 +26,7 @@
 #include <TopoDS_Solid.hxx>
 #include <TopTools_ListOfShape.hxx>
 #include <TopTools_MapOfShape.hxx>
+class TopoDS_Solid;
 class BOPAlgo_PaveFiller;
 
 
@@ -48,7 +49,7 @@ class BOPAlgo_PaveFiller;
 //!
 //! 3. Build solids from <myFaces> using BOPAlgo_BuilderSolid algorithm;
 //!
-//! 4. Treat the result: Eliminate solid containing faces from <mySBox>;
+//! 4. Treat the result: Eliminate solid containig faces from <mySBox>;
 //!
 //! 5. Fill internal shapes: add internal vertices and edges into
 //! created solids;
@@ -112,11 +113,13 @@ public:
 
   DEFINE_STANDARD_ALLOC
 
-  //! Empty constructor.
+  
+
+  //! Empty contructor.
   BOPAlgo_MakerVolume();
   virtual ~BOPAlgo_MakerVolume();
 
-  //! Empty constructor.
+  //! Empty contructor.
   BOPAlgo_MakerVolume(const Handle(NCollection_BaseAllocator)& theAllocator);
 
   //! Clears the data.
@@ -148,7 +151,7 @@ public:
   }
 
   //! Performs the operation.
-  Standard_EXPORT virtual void Perform(const Message_ProgressRange& theRange = Message_ProgressRange()) Standard_OVERRIDE;
+  Standard_EXPORT virtual void Perform() Standard_OVERRIDE;
 
 protected:
 
@@ -156,7 +159,7 @@ protected:
   Standard_EXPORT virtual void CheckData() Standard_OVERRIDE;
 
   //! Performs the operation.
-  Standard_EXPORT virtual void PerformInternal1 (const BOPAlgo_PaveFiller& thePF, const Message_ProgressRange& theRange = Message_ProgressRange()) Standard_OVERRIDE;
+  Standard_EXPORT virtual void PerformInternal1 (const BOPAlgo_PaveFiller& thePF) Standard_OVERRIDE;
 
   //! Collects all faces.
   Standard_EXPORT void CollectFaces();
@@ -165,8 +168,7 @@ protected:
   Standard_EXPORT void MakeBox (TopTools_MapOfShape& theBoxFaces);
 
   //! Builds solids.
-  Standard_EXPORT void BuildSolids (TopTools_ListOfShape& theLSR,
-                                    const Message_ProgressRange& theRange);
+  Standard_EXPORT void BuildSolids (TopTools_ListOfShape& theLSR);
 
   //! Removes the covering box.
   Standard_EXPORT void RemoveBox (TopTools_ListOfShape& theLSR, const TopTools_MapOfShape& theBoxFaces);
@@ -177,25 +179,6 @@ protected:
   //! Builds the result.
   Standard_EXPORT void BuildShape (const TopTools_ListOfShape& theLSR);
 
-protected:
-  //! List of operations to be supported by the Progress Indicator.
-  //! Enumeration is going to contain some extra operations from base class,
-  //! which are not going to be used here. So, the array of steps will also
-  //! contain some extra zero values. This is the only extra resource that is
-  //! going to be used, but it allows us not to override the methods that use
-  //! the values of the enumeration of base class.
-  //! Starting the enumeration from the middle of enumeration of base class is
-  //! not a good idea as the values in enumeration may be swapped.
-  enum BOPAlgo_PIOperation
-  {
-    PIOperation_BuildSolids = BOPAlgo_Builder::PIOperation_Last,
-    PIOperation_Last
-  };
-
-  //! Analyze progress steps
-  Standard_EXPORT void fillPISteps(BOPAlgo_PISteps& theSteps) const Standard_OVERRIDE;
-
-protected:
 
   Standard_Boolean myIntersect;
   Bnd_Box myBBox;

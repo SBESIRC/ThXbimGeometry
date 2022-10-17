@@ -2444,7 +2444,7 @@ void ProjectOnLAndIntersectWithLDomain(const gp_Elips2d& Ellipse
 
 //=======================================================================
 //function : Perform
-//purpose  : Line - Ellipse
+//purpose  : Line - Elipse
 //=======================================================================
 void IntCurve_IntConicConic::Perform(const gp_Lin2d& L, const
   IntRes2d_Domain& DL, const gp_Elips2d& E,

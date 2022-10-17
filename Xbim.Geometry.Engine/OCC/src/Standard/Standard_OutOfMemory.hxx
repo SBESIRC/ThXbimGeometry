@@ -68,11 +68,7 @@ public:
   Standard_EXPORT static void Raise(Standard_SStream& theMessage);
 
   //! Returns global instance of exception
-  Standard_EXPORT static Handle(Standard_OutOfMemory) NewInstance (Standard_CString theMessage = "");
-
-  //! Returns global instance of exception
-  Standard_EXPORT static Handle(Standard_OutOfMemory) NewInstance (Standard_CString theMessage,
-                                                                   Standard_CString theStackTrace);
+  Standard_EXPORT static Handle(Standard_OutOfMemory) NewInstance(const Standard_CString theMessage = "");
 
   DEFINE_STANDARD_RTTIEXT(Standard_OutOfMemory,Standard_ProgramError)
 

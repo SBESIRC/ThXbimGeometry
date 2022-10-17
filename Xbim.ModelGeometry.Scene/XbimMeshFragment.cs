@@ -82,7 +82,6 @@ namespace Xbim.ModelGeometry.Scene
         /// Offsets the start of the fragment positions and triangle indices 
         /// </summary>
         /// <param name="startPos"></param>
-        /// <param name="startIndex"></param>
         internal void Offset(int startPos, int startIndex)
         {
             StartPosition += startPos;

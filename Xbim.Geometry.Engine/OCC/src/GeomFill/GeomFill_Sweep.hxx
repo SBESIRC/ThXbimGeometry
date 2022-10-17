@@ -31,6 +31,9 @@
 class GeomFill_LocationLaw;
 class GeomFill_SectionLaw;
 class Geom_Surface;
+class StdFail_NotDone;
+class Standard_OutOfRange;
+class Standard_ConstructionError;
 class Geom2d_Curve;
 
 
@@ -47,7 +50,7 @@ public:
   //! Set parametric information
   //! [<First>, <Last>] Sets the parametric bound of the
   //! sweeping surface to build.
-  //! <SectionFirst>, <SectionLast> gives corresponding
+  //! <SectionFirst>, <SectionLast> gives coresponding
   //! bounds parameter on the section law of <First> and <Last>
   //!
   //! V-Iso on Sweeping Surface S(u,v) is defined by
@@ -62,13 +65,13 @@ public:
   //! Set Approximation Tolerance
   //! Tol3d : Tolerance to surface approximation
   //! Tol2d : Tolerance used to perform curve approximation
-  //! Normally the 2d curve are approximated with a
+  //! Normaly the 2d curve are approximated with a
   //! tolerance given by the resolution method define in
   //! <LocationLaw> but if this tolerance is too large Tol2d
   //! is used.
   //! TolAngular : Tolerance (in radian) to control the angle
-  //! between tangents on the section law and
-  //! tangent of iso-v on approximated surface
+  //! beetween tangents on the section law and
+  //! tangent of iso-v on approximed surface
   Standard_EXPORT void SetTolerance (const Standard_Real Tol3d, const Standard_Real BoundTol = 1.0, const Standard_Real Tol2d = 1.0e-5, const Standard_Real TolAngular = 1.0);
   
   //! Set the flag that indicates attempt to approximate
@@ -91,18 +94,18 @@ public:
   //! Build the Sweeep  Surface
   //! ApproxStyle defines Approximation Strategy
   //! - GeomFill_Section : The composed Function : Location X Section
-  //! is directly approximated.
-  //! - GeomFill_Location : The location law is approximated, and the
+  //! is directly approximed.
+  //! - GeomFill_Location : The location law is approximed, and the
   //! SweepSurface is build algebric composition
-  //! of approximated location law and section law
+  //! of approximed location law and section law
   //! This option is Ok, if Section.Surface() methode
   //! is effective.
   //! Continuity : The continuity in v waiting on the surface
-  //! Degmax     : The maximum degree in v required on the surface
-  //! Segmax     : The maximum number of span in v required on
+  //! Degmax     : The maximum degree in v requiered on the surface
+  //! Segmax     : The maximum number of span in v requiered on
   //! the surface
   //!
-  //! raise If Domain are infinite or Profile not set.
+  //! raise If Domain are infinite or Profile not Setted.
   Standard_EXPORT void Build (const Handle(GeomFill_SectionLaw)& Section, const GeomFill_ApproxStyle Methode = GeomFill_Location, const GeomAbs_Shape Continuity = GeomAbs_C2, const Standard_Integer Degmax = 10, const Standard_Integer Segmax = 30);
   
   //! Tells if the Surface is Buildt.

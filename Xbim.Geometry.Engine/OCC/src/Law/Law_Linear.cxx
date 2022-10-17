@@ -23,13 +23,7 @@
 
 IMPLEMENT_STANDARD_RTTIEXT(Law_Linear,Law_Function)
 
-Law_Linear::Law_Linear ()
-: valdeb(0.0),
-  valfin(0.0),
-  pdeb(0.0),
-  pfin(0.0)
-{
-}
+Law_Linear::Law_Linear () {}
 
 
 void Law_Linear::Set (const Standard_Real Pdeb,

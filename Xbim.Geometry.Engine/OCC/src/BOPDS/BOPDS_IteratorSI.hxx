@@ -42,13 +42,13 @@ public:
 
   
 
-  //! Empty constructor
+  //! Empty contructor
   Standard_EXPORT BOPDS_IteratorSI();
+Standard_EXPORT virtual ~BOPDS_IteratorSI();
+  
 
-  Standard_EXPORT virtual ~BOPDS_IteratorSI();
-
-  //! Constructor
-  //! @param theAllocator the allocator to manage the memory
+  //! Contructor
+  //! theAllocator - the allocator to manage the memory
   Standard_EXPORT BOPDS_IteratorSI(const Handle(NCollection_BaseAllocator)& theAllocator);
   
   //! Updates the lists of possible intersections

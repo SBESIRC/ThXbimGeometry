@@ -24,6 +24,7 @@
 #include <GC_Root.hxx>
 #include <Geom_Ellipse.hxx>
 
+class StdFail_NotDone;
 class gp_Elips;
 class gp_Ax2;
 class gp_Pnt;

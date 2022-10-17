@@ -27,7 +27,7 @@ class IMeshTools_CurveTessellator : public Standard_Transient
 public:
 
   //! Destructor.
-  virtual ~IMeshTools_CurveTessellator()
+  Standard_EXPORT virtual ~IMeshTools_CurveTessellator()
   {
   }
 
@@ -44,12 +44,12 @@ public:
     gp_Pnt&                thePoint,
     Standard_Real&         theParameter) const = 0;
 
-  DEFINE_STANDARD_RTTIEXT(IMeshTools_CurveTessellator, Standard_Transient)
+  DEFINE_STANDARD_RTTI_INLINE(IMeshTools_CurveTessellator, Standard_Transient)
 
 protected:
 
   //! Constructor.
-  IMeshTools_CurveTessellator()
+  Standard_EXPORT IMeshTools_CurveTessellator()
   {
   }
 };

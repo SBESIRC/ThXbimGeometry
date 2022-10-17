@@ -21,7 +21,6 @@
 #include <BRepAdaptor_Surface.hxx>
 #include <Geom2d_Curve.hxx>
 #include <Geom2d_TrimmedCurve.hxx>
-#include <Geom2dAdaptor_Curve.hxx>
 #include <Geom_BoundedCurve.hxx>
 #include <Geom_Curve.hxx>
 #include <Geom_Geometry.hxx>
@@ -793,21 +792,12 @@ Standard_Boolean IntTools_Tools::ComputeTolerance
    const Standard_Real theLast,
    Standard_Real& theMaxDist,
    Standard_Real& theMaxPar,
-   const Standard_Real theTolRange,
-   const Standard_Boolean theToRunParallel)
+   const Standard_Real theTolRange)
 {
   GeomLib_CheckCurveOnSurface aCS;
   //
-  const Handle(Adaptor3d_Curve) aGeomAdaptorCurve = new GeomAdaptor_Curve(theCurve3D, theFirst, theLast);
-
-  Handle(Adaptor2d_Curve2d) aGeom2dAdaptorCurve = new Geom2dAdaptor_Curve(theCurve2D, theFirst, theLast);
-  Handle(GeomAdaptor_Surface) aGeomAdaptorSurface = new GeomAdaptor_Surface(theSurf);
-
-  Handle(Adaptor3d_CurveOnSurface) anAdaptor3dCurveOnSurface =
-    new Adaptor3d_CurveOnSurface(aGeom2dAdaptorCurve, aGeomAdaptorSurface);
-
-  aCS.Init(aGeomAdaptorCurve, theTolRange);
-  aCS.Perform(anAdaptor3dCurveOnSurface, theToRunParallel);
+  aCS.Init(theCurve3D, theSurf, theFirst, theLast, theTolRange);
+  aCS.Perform(theCurve2D);
   if (!aCS.IsDone()) {
     return Standard_False;
   }

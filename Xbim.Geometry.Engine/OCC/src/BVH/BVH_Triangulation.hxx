@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef BVH_Triangulation_HeaderFile
-#define BVH_Triangulation_HeaderFile
+#ifndef _BVH_Triangulation_Header
+#define _BVH_Triangulation_Header
 
 #include <BVH_PrimitiveSet.hxx>
 

@@ -83,11 +83,11 @@ namespace Xbim
 			return result;
 		}
 
-		IXbimGeometryObject ^ XbimVertexSet::Moved(IIfcObjectPlacement ^ objectPlacement, ILogger^ logger )
+		IXbimGeometryObject ^ XbimVertexSet::Moved(IIfcObjectPlacement ^ objectPlacement)
 		{
 			if (!IsValid) return this;
 			XbimVertexSet^ result = gcnew XbimVertexSet();
-			TopLoc_Location loc = XbimConvert::ToLocation(objectPlacement, logger);
+			TopLoc_Location loc = XbimConvert::ToLocation(objectPlacement);
 			for each (IXbimVertex^ vertex in vertices)
 			{
 				XbimVertex^ copy = gcnew XbimVertex((XbimVertex^)vertex, Tag);
@@ -97,9 +97,9 @@ namespace Xbim
 			return result;
 		}
 
-		void XbimVertexSet::Mesh(IXbimMeshReceiver ^ /*mesh*/, double /*precision*/, double /*deflection*/, double /*angle*/)
+		void XbimVertexSet::Mesh(IXbimMeshReceiver ^ mesh, double precision, double deflection, double angle)
 		{
-			throw gcnew NotImplementedException("XbimVertexSet::Mesh");
+			return;//maybe add an implementation for this
 		}
 
 

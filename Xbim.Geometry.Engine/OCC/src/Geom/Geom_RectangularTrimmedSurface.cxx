@@ -67,15 +67,15 @@ Handle(Geom_Geometry) Geom_RectangularTrimmedSurface::Copy () const {
     S = new RectangularTrimmedSurface (basisSurf,
 				       utrim1   , utrim2,
 				       vtrim1   , vtrim2,
-				       Standard_True, Standard_True);
+				       Standard_True     , Standard_True   );
   else if ( isutrimmed)
     S = new RectangularTrimmedSurface (basisSurf,
 				       utrim1   , utrim2,
-				       Standard_True, Standard_True);
+				       Standard_True,      Standard_True   );
   else if (isvtrimmed)
     S = new RectangularTrimmedSurface (basisSurf,
 				       vtrim1   , vtrim2,
-				       Standard_False    , Standard_True);
+				       Standard_False    , Standard_True   );
 
   return S;
 }
@@ -118,7 +118,7 @@ const Standard_Boolean          VSense)
   {
     Handle(Geom_RectangularTrimmedSurface) S2 = 
            new Geom_RectangularTrimmedSurface( O->BasisSurface(),U1,U2, V1, V2, USense, VSense);
-    basisSurf = new Geom_OffsetSurface(S2, O->Offset(), Standard_True);
+    basisSurf = new Geom_OffsetSurface(S2, O->Offset());
   }  
 
   SetTrim( U1, U2, V1, V2, USense, VSense);
@@ -138,6 +138,7 @@ Geom_RectangularTrimmedSurface::Geom_RectangularTrimmedSurface (
  const Standard_Boolean               UTrim,
  const Standard_Boolean               Sense
 ) {
+
   // kill trimmed basis surfaces
   Handle(Geom_RectangularTrimmedSurface) T =
     Handle(Geom_RectangularTrimmedSurface)::DownCast(S);
@@ -152,22 +153,8 @@ Geom_RectangularTrimmedSurface::Geom_RectangularTrimmedSurface (
   {
     Handle(Geom_RectangularTrimmedSurface) S2 = 
            new Geom_RectangularTrimmedSurface( O->BasisSurface(),Param1,Param2, UTrim, Sense);
-    basisSurf = new Geom_OffsetSurface(S2, O->Offset(), Standard_True);
+    basisSurf = new Geom_OffsetSurface(S2, O->Offset());
   }  
-
-  if (!T.IsNull())
-  {
-    if (UTrim && T->isvtrimmed)
-    {
-      SetTrim(Param1, Param2, T->vtrim1, T->vtrim2, Sense, Standard_True);
-      return;
-    }
-    else if (!UTrim && T->isutrimmed)
-    {
-      SetTrim(T->utrim1, T->utrim2, Param1, Param2, Standard_True, Sense);
-      return;
-    }
-  }
 
   SetTrim(Param1, Param2, UTrim, Sense);
 }
@@ -184,6 +171,7 @@ void Geom_RectangularTrimmedSurface::SetTrim (const Standard_Real    U1,
 					      const Standard_Real    V2, 
 					      const Standard_Boolean USense, 
 					      const Standard_Boolean VSense ) {
+
   SetTrim( U1, U2, V1, V2, Standard_True, Standard_True, USense, VSense);
 }
 
@@ -205,36 +193,16 @@ void Geom_RectangularTrimmedSurface::SetTrim (const Standard_Real    Param1,
   Standard_Boolean dummy_Sense = Standard_True;
 
   if ( UTrim) {
-    if (isvtrimmed)
-    {
-      SetTrim (Param1, Param2,
-               vtrim1, vtrim2,
-               Standard_True, Standard_True,
-               Sense, dummy_Sense);
-    }
-    else
-    {
-      SetTrim (Param1, Param2,
-               dummy_a, dummy_b,
-               Standard_True, Standard_False,
-               Sense, dummy_Sense);
-    }
+    SetTrim( Param1        , Param2        , 
+	     dummy_a       , dummy_b       ,
+	     Standard_True , Standard_False,
+	     Sense         , dummy_Sense    );
   }
   else {
-    if (isutrimmed)
-    {
-      SetTrim (utrim1, utrim2,
-               Param1, Param2,
-               Standard_True, Standard_True,
-               dummy_Sense, Sense);
-    }
-    else
-    {
-      SetTrim (dummy_a, dummy_b,
-               Param1, Param2,
-               Standard_False, Standard_True,
-               dummy_Sense, Sense);
-    }
+    SetTrim( dummy_a       , dummy_b      ,
+	     Param1        , Param2       ,
+	     Standard_False, Standard_True,
+	     dummy_Sense   , Sense         );
   }
 }
 
@@ -685,22 +653,3 @@ gp_GTrsf2d Geom_RectangularTrimmedSurface::ParametricTransformation
   return basisSurf->ParametricTransformation(T);
 }
 
-//=======================================================================
-//function : DumpJson
-//purpose  : 
-//=======================================================================
-void Geom_RectangularTrimmedSurface::DumpJson (Standard_OStream& theOStream, Standard_Integer theDepth) const
-{
-  OCCT_DUMP_TRANSIENT_CLASS_BEGIN (theOStream)
-
-  OCCT_DUMP_BASE_CLASS (theOStream, theDepth, Geom_BoundedSurface)
-
-  OCCT_DUMP_FIELD_VALUES_DUMPED (theOStream, theDepth, basisSurf.get())
-
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, utrim1)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, vtrim1)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, utrim2)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, vtrim2)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, isutrimmed)
-  OCCT_DUMP_FIELD_VALUE_NUMERICAL (theOStream, isvtrimmed)
-}

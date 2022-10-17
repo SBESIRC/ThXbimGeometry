@@ -29,6 +29,9 @@
 #include <TColStd_Array1OfReal.hxx>
 #include <Standard_Real.hxx>
 #include <GccEnt_Position.hxx>
+class Standard_OutOfRange;
+class GccEnt_BadQualifier;
+class StdFail_NotDone;
 class Geom2dGcc_QCurve;
 class gp_Pnt2d;
 class gp_Circ2d;
@@ -75,8 +78,8 @@ public:
   
   //! Returns the solution number Index and raises OutOfRange
   //! exception if Index is greater than the number of solutions.
-  //! Be careful: the Index is only a way to get all the
-  //! solutions, but is not associated to these outside the
+  //! Be carefull: the Index is only a way to get all the
+  //! solutions, but is not associated to theses outside the
   //! context of the algorithm-object.
   //! It raises NotDone if the construction algorithm
   //! didn't succeed.
@@ -86,7 +89,7 @@ public:
   
   Standard_EXPORT void WhichQualifier (const Standard_Integer Index, GccEnt_Position& Qualif1) const;
   
-  //! Returns information about the tangency point between the
+  //! Returns informations about the tangency point between the
   //! result number Index and the first argument.
   //! ParSol is the intrinsic parameter of the point PntSol
   //! on the solution curv.

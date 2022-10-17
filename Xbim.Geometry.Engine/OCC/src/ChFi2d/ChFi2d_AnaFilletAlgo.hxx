@@ -13,8 +13,8 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#ifndef ChFi2d_AnaFilletAlgo_HeaderFile
-#define ChFi2d_AnaFilletAlgo_HeaderFile
+#ifndef _ANAFILLETALGO_H_
+#define _ANAFILLETALGO_H_
 
 #include <TopoDS_Wire.hxx>
 #include <TopoDS_Edge.hxx>

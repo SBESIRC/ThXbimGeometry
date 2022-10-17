@@ -763,18 +763,11 @@ Standard_Boolean TCollection_AsciiString::IsIntegerValue()const
 // ----------------------------------------------------------------------------
 // IsRealValue
 // ----------------------------------------------------------------------------
-Standard_Boolean TCollection_AsciiString::IsRealValue (Standard_Boolean theToCheckFull)const
+Standard_Boolean TCollection_AsciiString::IsRealValue()const
 {
   char *ptr;
   Strtod(mystring,&ptr);
-  if (theToCheckFull)
-  {
-    return (ptr[0] == '\0');
-  }
-  else
-  {
-    return (ptr != mystring);
-  }
+  return (ptr != mystring);
 }
 
 // ----------------------------------------------------------------------------

@@ -36,6 +36,7 @@
 #include <TopTools_IndexedMapOfShape.hxx>
 #include <TopTools_MapOfOrientedShape.hxx>
 
+
 //=======================================================================
 //function : 
 //purpose  : 
@@ -176,7 +177,7 @@ void BOPAlgo_Builder::Prepare()
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::Perform(const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::Perform()
 {
   GetReport()->Clear();
   //
@@ -194,22 +195,22 @@ void BOPAlgo_Builder::Perform(const Message_ProgressRange& theRange)
   //
   pPF->SetArguments(myArguments);
   pPF->SetRunParallel(myRunParallel);
-  Message_ProgressScope aPS(theRange, "Performing General Fuse operation", 10);
+  pPF->SetProgressIndicator(myProgressIndicator);
   pPF->SetFuzzyValue(myFuzzyValue);
   pPF->SetNonDestructive(myNonDestructive);
   pPF->SetGlue(myGlue);
   pPF->SetUseOBB(myUseOBB);
   //
-  pPF->Perform(aPS.Next(9));
+  pPF->Perform();
   //
   myEntryPoint=1;
-  PerformInternal(*pPF, aPS.Next(1));
+  PerformInternal(*pPF);
 }
 //=======================================================================
 //function : PerformWithFiller
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::PerformWithFiller(const BOPAlgo_PaveFiller& theFiller, const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::PerformWithFiller(const BOPAlgo_PaveFiller& theFiller)
 {
   GetReport()->Clear();
   myEntryPoint=0;
@@ -217,118 +218,30 @@ void BOPAlgo_Builder::PerformWithFiller(const BOPAlgo_PaveFiller& theFiller, con
   myFuzzyValue = theFiller.FuzzyValue();
   myGlue = theFiller.Glue();
   myUseOBB = theFiller.UseOBB();
-  PerformInternal(theFiller, theRange);
+  PerformInternal(theFiller);
 }
 //=======================================================================
 //function : PerformInternal
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::PerformInternal(const BOPAlgo_PaveFiller& theFiller, const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::PerformInternal(const BOPAlgo_PaveFiller& theFiller)
 {
   GetReport()->Clear();
   //
   try {
     OCC_CATCH_SIGNALS
-    PerformInternal1(theFiller, theRange);
+    PerformInternal1(theFiller);
   }
   //
   catch (Standard_Failure const&) {
     AddError (new BOPAlgo_AlertBuilderFailed);
   }
 }
-
-//=======================================================================
-//function : getNbShapes
-//purpose  : 
-//=======================================================================
-BOPAlgo_Builder::NbShapes BOPAlgo_Builder::getNbShapes() const
-{
-  NbShapes aCounter;
-  aCounter.NbVertices() = myDS->ShapesSD().Size();
-  for (Standard_Integer i = 0; i < myDS->NbSourceShapes(); ++i)
-  {
-    const BOPDS_ShapeInfo& aSI = myDS->ShapeInfo(i); 
-    switch (aSI.ShapeType())
-    {
-      case TopAbs_EDGE:
-      {
-        if (myDS->HasPaveBlocks(i))
-        {
-          aCounter.NbEdges()++;
-        }
-        break;
-      }
-      case TopAbs_WIRE:
-        aCounter.NbWires()++;
-        break;
-      case TopAbs_FACE:
-      {
-        if (myDS->HasFaceInfo(i))
-        {
-          aCounter.NbFaces()++;
-        }
-        break;
-      }
-      case TopAbs_SHELL:
-        aCounter.NbShells()++;
-        break;
-      case TopAbs_SOLID:
-        aCounter.NbSolids()++;
-        break;
-      case TopAbs_COMPSOLID:
-        aCounter.NbCompsolids()++;
-        break;
-      case TopAbs_COMPOUND:
-        aCounter.NbCompounds()++;
-        break;
-      default: break;
-    }
-  }
-  return aCounter;
-}
-
-//=======================================================================
-// function: fillPIConstants
-// purpose: 
-//=======================================================================
-void BOPAlgo_Builder::fillPIConstants (const Standard_Real theWhole,
-                                       BOPAlgo_PISteps& theSteps) const
-{
-  // Fill in the constants:
-  if (myFillHistory)
-  {
-    // for FillHistroty, which takes about 5% of the whole operation
-    theSteps.SetStep(PIOperation_FillHistory, 0.05 * theWhole);
-  }
-
-  // and for PostTreat, which takes about 3% of the whole operation 
-  theSteps.SetStep(PIOperation_PostTreat, 0.03 * theWhole);
-}
-
-//=======================================================================
-// function: fillPISteps
-// purpose: 
-//=======================================================================
-void BOPAlgo_Builder::fillPISteps (BOPAlgo_PISteps& theSteps) const
-{
-  // Compute the rest of the operations - all depend on the number of sub-shapes of certain type
-  NbShapes aNbShapes = getNbShapes();
-
-  theSteps.SetStep(PIOperation_TreatVertices, aNbShapes.NbVertices());
-  theSteps.SetStep(PIOperation_TreatEdges, aNbShapes.NbEdges());
-  theSteps.SetStep(PIOperation_TreatWires, aNbShapes.NbWires());
-  theSteps.SetStep(PIOperation_TreatFaces, 20 * aNbShapes.NbFaces());
-  theSteps.SetStep(PIOperation_TreatShells, aNbShapes.NbShells());
-  theSteps.SetStep(PIOperation_TreatSolids, 50 * aNbShapes.NbSolids());
-  theSteps.SetStep(PIOperation_TreatCompsolids, aNbShapes.NbCompsolids());
-  theSteps.SetStep(PIOperation_TreatCompounds, aNbShapes.NbCompounds());
-}
-
 //=======================================================================
 //function : PerformInternal1
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller)
 {
   myPaveFiller=(BOPAlgo_PaveFiller*)&theFiller;
   myDS=myPaveFiller->PDS();
@@ -336,7 +249,6 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
   myFuzzyValue = myPaveFiller->FuzzyValue();
   myNonDestructive = myPaveFiller->NonDestructive();
   //
-  Message_ProgressScope aPS(theRange, "Building the result of General Fuse operation", 100);
   // 1. CheckData
   CheckData();
   if (HasErrors()) {
@@ -349,11 +261,9 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   //
-  BOPAlgo_PISteps aSteps(PIOperation_Last);
-  analyzeProgress(100., aSteps);
   // 3. Fill Images
   // 3.1 Vertice
-  FillImagesVertices(aPS.Next(aSteps.GetStep(PIOperation_TreatVertices)));
+  FillImagesVertices();
   if (HasErrors()) {
     return;
   }
@@ -363,7 +273,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   // 3.2 Edges
-  FillImagesEdges(aPS.Next(aSteps.GetStep(PIOperation_TreatEdges)));
+  FillImagesEdges();
   if (HasErrors()) {
     return;
   }
@@ -374,7 +284,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
   }
   //
   // 3.3 Wires
-  FillImagesContainers(TopAbs_WIRE, aPS.Next(aSteps.GetStep(PIOperation_TreatWires)));
+  FillImagesContainers(TopAbs_WIRE);
   if (HasErrors()) {
     return;
   }
@@ -385,7 +295,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
   }
   
   // 3.4 Faces
-  FillImagesFaces(aPS.Next(aSteps.GetStep(PIOperation_TreatFaces)));
+  FillImagesFaces();
   if (HasErrors()) {
     return;
   }
@@ -395,7 +305,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   // 3.5 Shells
-  FillImagesContainers(TopAbs_SHELL, aPS.Next(aSteps.GetStep(PIOperation_TreatShells)));
+  FillImagesContainers(TopAbs_SHELL);
   if (HasErrors()) {
     return;
   }
@@ -405,7 +315,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   // 3.6 Solids
-  FillImagesSolids(aPS.Next(aSteps.GetStep(PIOperation_TreatSolids)));
+  FillImagesSolids();
   if (HasErrors()) {
     return;
   }
@@ -415,7 +325,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   // 3.7 CompSolids
-  FillImagesContainers(TopAbs_COMPSOLID, aPS.Next(aSteps.GetStep(PIOperation_TreatCompsolids)));
+  FillImagesContainers(TopAbs_COMPSOLID);
   if (HasErrors()) {
     return;
   }
@@ -426,7 +336,7 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
   }
   
   // 3.8 Compounds
-  FillImagesCompounds(aPS.Next(aSteps.GetStep(PIOperation_TreatCompounds)));
+  FillImagesCompounds();
   if (HasErrors()) {
     return;
   }
@@ -436,21 +346,19 @@ void BOPAlgo_Builder::PerformInternal1(const BOPAlgo_PaveFiller& theFiller, cons
     return;
   }
   //
-  // 4 History
-  PrepareHistory(aPS.Next(aSteps.GetStep(PIOperation_FillHistory)));
-  if (HasErrors()) {
-    return;
-  }
+  // 4.History
+  PrepareHistory();
+  //
   //
   // 5 Post-treatment 
-  PostTreat(aPS.Next(aSteps.GetStep(PIOperation_PostTreat)));
+  PostTreat();
+  
 }
-
 //=======================================================================
 //function : PostTreat
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::PostTreat(const Message_ProgressRange& theRange)
+void BOPAlgo_Builder::PostTreat()
 {
   Standard_Integer i, aNbS;
   TopAbs_ShapeEnum aType;
@@ -470,9 +378,7 @@ void BOPAlgo_Builder::PostTreat(const Message_ProgressRange& theRange)
     }
   }
   //
-  Message_ProgressScope aPS(theRange, "Post treatment of result shape", 2);
   BOPTools_AlgoTools::CorrectTolerances(myShape, aMA, 0.05, myRunParallel);
-  aPS.Next();
   BOPTools_AlgoTools::CorrectShapeTolerances(myShape, aMA, myRunParallel);
 }
 
@@ -480,12 +386,11 @@ void BOPAlgo_Builder::PostTreat(const Message_ProgressRange& theRange)
 //function : BuildBOP
 //purpose  : 
 //=======================================================================
-void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
-                               const TopAbs_State           theObjState,
-                               const TopTools_ListOfShape&  theTools,
-                               const TopAbs_State           theToolsState,
-                               const Message_ProgressRange& theRange,
-                               Handle(Message_Report)       theReport)
+void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape& theObjects,
+                               const TopAbs_State          theObjState,
+                               const TopTools_ListOfShape& theTools,
+                               const TopAbs_State          theToolsState,
+                               Handle(Message_Report)      theReport)
 {
   if (HasErrors())
     return;
@@ -498,6 +403,7 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
     aReport->AddAlert(Message_Fail, new BOPAlgo_AlertBuilderFailed());
     return;
   }
+
   // Check the input data
   if ((theObjState   != TopAbs_IN && theObjState   != TopAbs_OUT) ||
       (theToolsState != TopAbs_IN && theToolsState != TopAbs_OUT))
@@ -535,7 +441,7 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
       {
         TopTools_ListOfShape aLS;
         TopTools_MapOfShape aMFence;
-        BOPTools_AlgoTools::TreatCompound(aS, aLS, &aMFence);
+        BOPAlgo_Tools::TreatCompound(aS, aMFence, aLS);
 
         TopTools_ListOfShape::Iterator it(aLS);
         for (; it.More(); it.Next())
@@ -717,7 +623,7 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
     if (!aMFToAvoid.Contains(aRF))
       aResFaces.Append(aRF);
   }
-  Message_ProgressScope aPS(theRange, NULL, 2);
+
   BRep_Builder aBB;
 
   // Try to build closed solids from the faces
@@ -726,7 +632,8 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
   aBS.SetRunParallel(myRunParallel);
   aBS.SetContext(myContext);
   aBS.SetFuzzyValue(myFuzzyValue);
-  aBS.Perform(aPS.Next());
+  aBS.SetProgressIndicator(myProgressIndicator);
+  aBS.Perform();
 
   // Resulting solids
   TopTools_ListOfShape aResSolids;
@@ -754,10 +661,6 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
         TopExp::MapShapes(aSolid, aMFence);
       }
     }
-  }
-  else
-  {
-    return;
   }
 
   // Collect unused faces
@@ -839,5 +742,5 @@ void BOPAlgo_Builder::BuildBOP(const TopTools_ListOfShape&  theObjects,
     aBB.Add(aResult, itLS.Value());
 
   myShape = aResult;
-  PrepareHistory(aPS.Next());
+  PrepareHistory();
 }

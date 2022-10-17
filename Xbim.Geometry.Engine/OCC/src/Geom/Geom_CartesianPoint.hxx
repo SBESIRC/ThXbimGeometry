@@ -23,6 +23,7 @@
 #include <gp_Pnt.hxx>
 #include <Geom_Point.hxx>
 #include <Standard_Real.hxx>
+class gp_Pnt;
 class gp_Trsf;
 class Geom_Geometry;
 

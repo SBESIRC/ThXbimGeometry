@@ -17,12 +17,22 @@
 #ifndef _Adaptor2d_OffsetCurve_HeaderFile
 #define _Adaptor2d_OffsetCurve_HeaderFile
 
+#include <Standard.hxx>
+#include <Standard_DefineAlloc.hxx>
+#include <Standard_Handle.hxx>
+
+#include <Standard_Real.hxx>
 #include <Adaptor2d_Curve2d.hxx>
-#include <GeomAbs_CurveType.hxx>
 #include <GeomAbs_Shape.hxx>
 #include <Standard_Integer.hxx>
 #include <TColStd_Array1OfReal.hxx>
-
+#include <Standard_Boolean.hxx>
+#include <GeomAbs_CurveType.hxx>
+class Adaptor2d_HCurve2d;
+class Standard_NoSuchObject;
+class Standard_DomainError;
+class Standard_OutOfRange;
+class Standard_TypeMismatch;
 class gp_Pnt2d;
 class gp_Vec2d;
 class gp_Lin2d;
@@ -33,46 +43,46 @@ class gp_Parab2d;
 class Geom2d_BezierCurve;
 class Geom2d_BSplineCurve;
 
+
 //! Defines an Offset curve (algorithmic 2d curve).
 class Adaptor2d_OffsetCurve  : public Adaptor2d_Curve2d
 {
-  DEFINE_STANDARD_RTTIEXT(Adaptor2d_OffsetCurve, Adaptor2d_Curve2d)
 public:
 
+  DEFINE_STANDARD_ALLOC
+
+  
   //! The Offset is set to 0.
   Standard_EXPORT Adaptor2d_OffsetCurve();
   
   //! The curve is loaded. The Offset is set to 0.
-  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_Curve2d)& C);
+  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_HCurve2d)& C);
   
   //! Creates  an  OffsetCurve curve.
   //! The Offset is set to Offset.
-  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_Curve2d)& C, const Standard_Real Offset);
+  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_HCurve2d)& C, const Standard_Real Offset);
   
   //! Create an Offset curve.
   //! WFirst,WLast define the bounds of the Offset curve.
-  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_Curve2d)& C, const Standard_Real Offset, const Standard_Real WFirst, const Standard_Real WLast);
+  Standard_EXPORT Adaptor2d_OffsetCurve(const Handle(Adaptor2d_HCurve2d)& C, const Standard_Real Offset, const Standard_Real WFirst, const Standard_Real WLast);
   
-  //! Shallow copy of adaptor
-  Standard_EXPORT virtual Handle(Adaptor2d_Curve2d) ShallowCopy() const Standard_OVERRIDE;
-
   //! Changes  the curve.  The Offset is reset to 0.
-  Standard_EXPORT void Load (const Handle(Adaptor2d_Curve2d)& S);
+  Standard_EXPORT void Load (const Handle(Adaptor2d_HCurve2d)& S);
   
   //! Changes the Offset on the current Curve.
   Standard_EXPORT void Load (const Standard_Real Offset);
   
   //! Changes the Offset Curve on the current Curve.
   Standard_EXPORT void Load (const Standard_Real Offset, const Standard_Real WFirst, const Standard_Real WLast);
-
-  const Handle(Adaptor2d_Curve2d)& Curve() const { return myCurve; }
-
-  Standard_Real Offset() const { return myOffset; }
-
-  virtual Standard_Real FirstParameter() const Standard_OVERRIDE { return myFirst; }
-
-  virtual Standard_Real LastParameter() const Standard_OVERRIDE { return myLast; }
-
+  
+    const Handle(Adaptor2d_HCurve2d)& Curve() const;
+  
+    Standard_Real Offset() const;
+  
+    Standard_Real FirstParameter() const Standard_OVERRIDE;
+  
+    Standard_Real LastParameter() const Standard_OVERRIDE;
+  
   Standard_EXPORT GeomAbs_Shape Continuity() const Standard_OVERRIDE;
   
   //! If necessary,  breaks the  curve in  intervals  of
@@ -83,7 +93,7 @@ public:
   //! Stores in <T> the  parameters bounding the intervals
   //! of continuity <S>.
   //!
-  //! The array must provide  enough room to  accommodate
+  //! The array must provide  enough room to  accomodate
   //! for the parameters. i.e. T.Length() > NbIntervals()
   Standard_EXPORT void Intervals (TColStd_Array1OfReal& T, const GeomAbs_Shape S) const Standard_OVERRIDE;
   
@@ -91,7 +101,7 @@ public:
   //! parameters <First>  and <Last>. <Tol>  is used  to
   //! test for 3d points confusion.
   //! If <First> >= <Last>
-  Standard_EXPORT Handle(Adaptor2d_Curve2d) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
+  Standard_EXPORT Handle(Adaptor2d_HCurve2d) Trim (const Standard_Real First, const Standard_Real Last, const Standard_Real Tol) const Standard_OVERRIDE;
   
   Standard_EXPORT Standard_Boolean IsClosed() const Standard_OVERRIDE;
   
@@ -166,15 +176,31 @@ public:
 
   Standard_EXPORT  Standard_Integer NbSamples() const Standard_OVERRIDE;
 
+
+
+protected:
+
+
+
+
+
 private:
 
-  Handle(Adaptor2d_Curve2d) myCurve;
+
+
+  Handle(Adaptor2d_HCurve2d) myCurve;
   Standard_Real myOffset;
   Standard_Real myFirst;
   Standard_Real myLast;
 
+
 };
 
-DEFINE_STANDARD_HANDLE(Adaptor2d_OffsetCurve, Adaptor2d_Curve2d)
+
+#include <Adaptor2d_OffsetCurve.lxx>
+
+
+
+
 
 #endif // _Adaptor2d_OffsetCurve_HeaderFile

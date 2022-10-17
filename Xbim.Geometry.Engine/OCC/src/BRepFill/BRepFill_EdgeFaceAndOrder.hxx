@@ -24,6 +24,9 @@
 #include <TopoDS_Edge.hxx>
 #include <TopoDS_Face.hxx>
 #include <GeomAbs_Shape.hxx>
+class BRepFill_Filling;
+class TopoDS_Edge;
+class TopoDS_Face;
 
 
 

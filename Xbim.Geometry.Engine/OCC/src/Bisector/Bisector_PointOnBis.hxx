@@ -24,6 +24,7 @@
 #include <Standard_Real.hxx>
 #include <Standard_Boolean.hxx>
 #include <gp_Pnt2d.hxx>
+class gp_Pnt2d;
 
 
 

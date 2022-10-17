@@ -60,7 +60,7 @@ GeomFill_UniformSection::GeomFill_UniformSection(const Handle(Geom_Curve)& C,
    }
  }
 
-#ifdef DRAW
+#if DRAW
  if (Affich) {
    char name[256];
    sprintf(name,"UnifSect_%d",++NumSec);

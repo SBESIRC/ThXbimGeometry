@@ -30,8 +30,7 @@ IMPLEMENT_STANDARD_RTTIEXT(MAT_Node,Standard_Transient)
 MAT_Node::MAT_Node(const Standard_Integer     GeomIndex, 
 		   const Handle(MAT_Arc)&     LinkedArc, 
 		   const Standard_Real        Distance)
-     : nodeIndex(0),
-       geomIndex(GeomIndex),
+     : geomIndex(GeomIndex),
        distance(Distance)
 {
   aLinkedArc = LinkedArc.get();

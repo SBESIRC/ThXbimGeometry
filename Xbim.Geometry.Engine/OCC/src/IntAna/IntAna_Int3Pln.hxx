@@ -23,7 +23,10 @@
 
 #include <Standard_Boolean.hxx>
 #include <gp_Pnt.hxx>
+class StdFail_NotDone;
+class Standard_DomainError;
 class gp_Pln;
+class gp_Pnt;
 
 
 //! Intersection between 3 planes. The algorithm searches

@@ -38,8 +38,7 @@ BRepAlgoAPI_Check::BRepAlgoAPI_Check()
 //=======================================================================
 BRepAlgoAPI_Check::BRepAlgoAPI_Check(const TopoDS_Shape& theS,
                                      const Standard_Boolean bTestSE,
-                                     const Standard_Boolean bTestSI,
-                                     const Message_ProgressRange& theRange)
+                                     const Standard_Boolean bTestSI)
 :
   BOPAlgo_Options(),
   myS1(theS),
@@ -47,7 +46,7 @@ BRepAlgoAPI_Check::BRepAlgoAPI_Check(const TopoDS_Shape& theS,
   myTestSI(bTestSI),
   myOperation(BOPAlgo_UNKNOWN)
 {
-  Perform(theRange);
+  Perform();
 }
 
 //=======================================================================
@@ -58,8 +57,7 @@ BRepAlgoAPI_Check::BRepAlgoAPI_Check(const TopoDS_Shape& theS1,
                                      const TopoDS_Shape& theS2,
                                      const BOPAlgo_Operation theOp,
                                      const Standard_Boolean bTestSE,
-                                     const Standard_Boolean bTestSI,
-                                     const Message_ProgressRange& theRange)
+                                     const Standard_Boolean bTestSI)
 :
   BOPAlgo_Options(),
   myS1(theS1),
@@ -68,7 +66,7 @@ BRepAlgoAPI_Check::BRepAlgoAPI_Check(const TopoDS_Shape& theS1,
   myTestSI(bTestSI),
   myOperation(theOp)
 {
-  Perform(theRange);
+  Perform();
 }
 
 //=======================================================================
@@ -83,7 +81,7 @@ BRepAlgoAPI_Check::~BRepAlgoAPI_Check()
 //function : Perform
 //purpose  : 
 //=======================================================================
-void BRepAlgoAPI_Check::Perform(const Message_ProgressRange& theRange)
+void BRepAlgoAPI_Check::Perform()
 {
   // Check the incompatibility of shapes types, small edges and self-interference
   BOPAlgo_ArgumentAnalyzer anAnalyzer;
@@ -96,14 +94,10 @@ void BRepAlgoAPI_Check::Perform(const Message_ProgressRange& theRange)
   anAnalyzer.SelfInterMode() = myTestSI;
   // Set options from BOPAlgo_Options
   anAnalyzer.SetRunParallel(myRunParallel);
+  anAnalyzer.SetProgressIndicator(myProgressIndicator);
   anAnalyzer.SetFuzzyValue(myFuzzyValue);
   // Perform the check
-  Message_ProgressScope aPS(theRange, "Checking shapes", 1);
-  anAnalyzer.Perform(aPS.Next());
-  if (UserBreak(aPS))
-  {
-    return;
-  }
+  anAnalyzer.Perform();
   // Get the results
   myFaultyShapes = anAnalyzer.GetCheckResult();
 

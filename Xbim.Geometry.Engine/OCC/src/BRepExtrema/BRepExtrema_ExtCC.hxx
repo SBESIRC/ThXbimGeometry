@@ -15,11 +15,13 @@
 #define _BRepExtrema_ExtCC_HeaderFile
 
 #include <Extrema_ExtCC.hxx>
-#include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_HCurve.hxx>
 #include <Standard_DefineAlloc.hxx>
 
+class BRepAdaptor_HCurve;
 class TopoDS_Edge;
 class gp_Pnt;
+
 
 class BRepExtrema_ExtCC
 {
@@ -73,7 +75,7 @@ class BRepExtrema_ExtCC
  private:
 
   Extrema_ExtCC myExtCC;
-  Handle(BRepAdaptor_Curve) myHC;
+  Handle(BRepAdaptor_HCurve) myHC;
 };
 
 #endif

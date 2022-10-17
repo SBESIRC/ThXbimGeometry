@@ -305,7 +305,7 @@ TopoDS_Shape BRepOffsetAPI_DraftAngle::ModifiedShape
 //purpose  : 
 //=======================================================================
 
-void BRepOffsetAPI_DraftAngle::Build(const Message_ProgressRange& /*theRange*/)
+void BRepOffsetAPI_DraftAngle::Build()
 {
   Handle(Draft_Modification)::DownCast (myModification)->Perform();
   if (!Handle(Draft_Modification)::DownCast (myModification)->IsDone()) {

@@ -20,9 +20,10 @@
 #include <NCollection_Shared.hxx>
 #include <IMeshTools_Parameters.hxx>
 
+class BRepMesh_DataStructureOfDelaun;
 class BRepMesh_Delaun;
 
-//! Class provides base functionality to build face triangulation using Dealunay approach.
+//! Class provides base fuctionality to build face triangulation using Dealunay approach.
 //! Performs generation of mesh using raw data from model.
 class BRepMesh_ConstrainedBaseMeshAlgo : public BRepMesh_BaseMeshAlgo
 {
@@ -38,7 +39,7 @@ public:
   {
   }
 
-  DEFINE_STANDARD_RTTIEXT(BRepMesh_ConstrainedBaseMeshAlgo, BRepMesh_BaseMeshAlgo)
+  DEFINE_STANDARD_RTTI_INLINE(BRepMesh_ConstrainedBaseMeshAlgo, BRepMesh_BaseMeshAlgo)
 
 protected:
 
@@ -48,11 +49,10 @@ protected:
     return std::pair<Standard_Integer, Standard_Integer> (-1, -1);
   }
 
-  //! Performs processing of generated mesh.
+  //! Perfroms processing of generated mesh.
   //! By default does nothing.
   //! Expected to be called from method generateMesh() in successor classes.
-  virtual void postProcessMesh (BRepMesh_Delaun&              /*theMesher*/,
-                                const Message_ProgressRange&  /*theRange*/)
+  virtual void postProcessMesh (BRepMesh_Delaun& /*theMesher*/)
   {
   }
 };

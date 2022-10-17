@@ -14,11 +14,11 @@
 // Alternatively, this file may be used under the terms of Open CASCADE
 // commercial license or contractual agreement.
 
-#include <GeomFill_Frenet.hxx>
 
-#include <Adaptor3d_Curve.hxx>
+#include <Adaptor3d_HCurve.hxx>
 #include <Extrema_ExtPC.hxx>
 #include <GeomAbs_CurveType.hxx>
+#include <GeomFill_Frenet.hxx>
 #include <GeomFill_SnglrFunc.hxx>
 #include <GeomFill_TrihedronLaw.hxx>
 #include <GeomLib.hxx>
@@ -95,7 +95,6 @@ static Standard_Real CosAngle(const gp_Vec& theV1, const gp_Vec& theV2)
 //=======================================================================
 
 GeomFill_Frenet::GeomFill_Frenet()
-: isSngl(Standard_False)
 {
 }
 
@@ -117,7 +116,7 @@ Handle(GeomFill_TrihedronLaw) GeomFill_Frenet::Copy() const
 //purpose  : 
 //=======================================================================
 
- void GeomFill_Frenet::SetCurve(const Handle(Adaptor3d_Curve)& C) 
+ void GeomFill_Frenet::SetCurve(const Handle(Adaptor3d_HCurve)& C) 
 {
   GeomFill_TrihedronLaw::SetCurve(C);
   if (! C.IsNull()) {
@@ -130,13 +129,13 @@ Handle(GeomFill_TrihedronLaw) GeomFill_Frenet::Copy() const
     case GeomAbs_Parabola:
     case GeomAbs_Line:
       {
-        // No problem
+        // No probleme
         isSngl = Standard_False;
         break;
       }
      default :
        { 
-         // We have to search singularities
+         // We have to search singulaties
          Init();
        }
     }
@@ -692,7 +691,7 @@ Standard_Boolean
   myCurve->Intervals(TrimInt, tmpS);
 
   TColStd_SequenceOfReal Fusion;
-  GeomLib::FuseIntervals(TrimInt, mySngl->Array1(), Fusion, Precision::PConfusion(), Standard_True);
+  GeomLib::FuseIntervals(TrimInt, mySngl->Array1(), Fusion);
 
   return Fusion.Length() - 1;
 }
@@ -726,7 +725,7 @@ Standard_Boolean
   myCurve->Intervals(TrimInt, tmpS);
 
   TColStd_SequenceOfReal Fusion;
-  GeomLib::FuseIntervals(TrimInt, mySngl->Array1(), Fusion, Precision::PConfusion(), Standard_True);
+  GeomLib::FuseIntervals(TrimInt, mySngl->Array1(), Fusion);
 
   for (Standard_Integer i = 1; i <= Fusion.Length(); i++)
     T.ChangeValue(i) = Fusion.Value(i);

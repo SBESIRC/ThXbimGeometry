@@ -119,8 +119,6 @@ ExtremaExtElC_TrigonometricRoots::
 				   const Standard_Real Cte,
 				   const Standard_Real Binf,
 				   const Standard_Real Bsup) 
-: NbRoots(0),
-  infinite_roots(Standard_False)
 {
   Standard_Integer i, nbessai;
   Standard_Real cc ,sc, c, s, cte;
@@ -234,9 +232,10 @@ Extrema_ExtElC::Extrema_ExtElC ()
   myDone = Standard_False; 
   myIsPar = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
+
+  for (Standard_Integer i = 0; i < 6; i++)
   {
-    mySqDist[anIdx] = RealLast();
+    mySqDist[i] = RealLast();
   }
 }
 //=======================================================================
@@ -295,10 +294,6 @@ Extrema_ExtElC::Extrema_ExtElC (const gp_Lin& theC1,
   myDone = Standard_False;
   myNbExt = 0;
   myIsPar = Standard_False;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 
   const gp_Dir &aD1 = theC1.Position().Direction(),
                &aD2 = theC2.Position().Direction();
@@ -465,10 +460,6 @@ Extrema_ExtElC::Extrema_ExtElC (const gp_Lin& C1,
   myIsPar = Standard_False;
   myDone = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 
   if (PlanarLineCircleExtrema(C1, C2))
   {
@@ -640,10 +631,6 @@ Method:
   myIsPar = Standard_False;
   myDone = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 
 // Calculate T1 the reference of the ellipse ...
   gp_Dir D = C1.Direction();
@@ -757,10 +744,6 @@ Method:
   myIsPar = Standard_False;
   myDone = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 
 // Calculate T1 in the reference of the hyperbola...
   gp_Dir D = C1.Direction();
@@ -856,10 +839,6 @@ Method:
   myIsPar = Standard_False;
   myDone = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
 
 // Calculate T1 in the reference of the parabola...
   gp_Dir D = C1.Direction();
@@ -921,10 +900,6 @@ Extrema_ExtElC::Extrema_ExtElC (const gp_Circ& C1,
   myIsPar = Standard_False;
   myDone = Standard_False;
   myNbExt = 0;
-  for (size_t anIdx = 0; anIdx < sizeof (mySqDist) / sizeof (mySqDist[0]); anIdx++)
-  {
-    mySqDist[anIdx] = RealLast();
-  }
   //
   aTolA=Precision::Angular();
   aTolD=Precision::Confusion();
