@@ -4,13 +4,13 @@
 #include <gp_GTrsf.hxx> 
 #include <gp_Trsf.hxx> 
 #include <gp_Pln.hxx> 
- 
+#include <TColgp_Array1OfPnt.hxx>
 using namespace Xbim::Ifc4::Interfaces;
 using namespace Xbim::Common::Exceptions;
 using namespace Xbim::Common::Geometry;
 using namespace Xbim::Ifc4::MeasureResource;
 
-
+ 
 namespace Xbim
 {
 	namespace Geometry
@@ -24,15 +24,16 @@ namespace Xbim
 		public:
 			XbimConvert(void);
 			// Converts a Local Placement into a TopLoc_Location
-			static TopLoc_Location ToLocation(IIfcObjectPlacement^ placement);
+			static TopLoc_Location ToLocation(IIfcObjectPlacement^ placement, ILogger^ logger);
 			// Converts a Placement into a TopLoc_Location
 			static TopLoc_Location ToLocation(IIfcPlacement^ placement);
 			// Converts a IfcAxis2Placement into a TopLoc_Location
-			static TopLoc_Location ToLocation(Xbim::Ifc4::GeometryResource::IfcAxis2Placement^ placement);
+			static TopLoc_Location ToLocation(IIfcAxis2Placement^ placement);
 			// Converts an Axis2Placement3D into a TopLoc_Location
 			static TopLoc_Location ToLocation(IIfcAxis2Placement3D^ axis3D);
 			// Converts an Axis2Placement3D into a gp_Ax3
 			static gp_Ax3 ToAx3(IIfcAxis2Placement3D^ axis3D);
+			static gp_Ax3 ToAx3NoTranslation(IIfcAxis2Placement3D^ axis3D);
 			// Converts an Axis2Placement2D into a TopLoc_Location
 			static TopLoc_Location ToLocation(IIfcAxis2Placement2D^ axis2D);
 			// Converts an CartesianTransformationOperator into a gp_GTrsf
@@ -53,12 +54,13 @@ namespace Xbim
 			static XbimMatrix3D ToMatrix3D(IIfcAxis2Placement3D^ axis3);
 			// Builds a windows Matrix3D from a CartesianTransformationOperator3D
 			static XbimMatrix3D ConvertMatrix3D(IIfcCartesianTransformationOperator3D ^ stepTransform);
-			static XbimMatrix3D ConvertMatrix3D(IIfcObjectPlacement ^ placement);
+			static XbimMatrix3D ConvertMatrix3D(IIfcObjectPlacement ^ placement, ILogger^ logger);
 			static bool IsEqual(IIfcCartesianPoint^ ptA, IIfcCartesianPoint^ ptB, double tolerance);
 			static double DistanceSquared(IIfcCartesianPoint^ pt1, IIfcCartesianPoint^ pt2);
 			static bool Is3D(IIfcPolyline^ pline);
 			static bool Is3D(IIfcPolyLoop^ pLoop);
 			static bool IsPolygon(IIfcPolyLoop^ pLoop);
+			static bool IsInvalid(const gp_Dir& dir, double tolerance);
 			static double GetZValueOrZero(IIfcCartesianPoint^ point);
 			static double GetZValueOrZero(IIfcDirection^ dir);
 			static double GetZValueOrZero(IIfcVector^ vec);
@@ -74,6 +76,7 @@ namespace Xbim
 			static gp_Vec GetAxisDir3d(IIfcAxis2Placement^ placement);
 			static gp_Ax3 ToAx3(IIfcAxis2Placement2D^ axis2D);
 			static gp_Ax3 ToAx3(IIfcAxis2Placement^ axis2);
+			static gp_Vec NewellsNormal(const TColgp_Array1OfPnt& loop, bool& isPlanar);
 		};
 
 	}

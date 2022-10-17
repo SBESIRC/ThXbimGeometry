@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Xbim.Common.Logging;
+
 
 
 namespace XbimRegression
@@ -11,15 +12,14 @@ namespace XbimRegression
     /// </summary>
     public class Params
     {
-
         public int MaxThreads;
 
         private const int DefaultTimeout = 1000 * 60 * 20; // 20 mins
-        public bool Caching;
-		public bool WriteBreps = false;
+        public bool Caching = false;
+        public bool ReportProgress = false;
+        public List<int> WriteBreps = null;
         public bool GeometryV1;
-        public bool Progress = false;
-		
+
         public Params(string[] args)
         {
             if (args.Length < 1)
@@ -31,25 +31,63 @@ namespace XbimRegression
 
             TestFileRoot = args[0];
 
-            if (!Directory.Exists(TestFileRoot))
+            // work out what are the files to process and the report file
+            //
+            if (Directory.Exists(TestFileRoot))
+            {
+                var di = new DirectoryInfo(TestFileRoot);
+                FilesToProcess = di.GetFiles("*.IFC", SearchOption.AllDirectories).Where(y=>y.Extension.ToLowerInvariant() == ".ifc");
+                ResultsFile = Path.Combine(TestFileRoot, string.Format("XbimRegression_{0:yyyyMMdd-hhmmss}.csv", DateTime.Now));
+            }
+            else if (File.Exists(TestFileRoot))
+            {
+                var ext = Path.GetExtension(TestFileRoot).ToLowerInvariant();
+                if (ext == ".ifc")
+                {
+                    FilesToProcess = new[] { new FileInfo(TestFileRoot) };
+                    ResultsFile = Path.ChangeExtension(TestFileRoot, "regression.csv");
+                }
+                else if (ext == ".txt")
+                {
+                    var justLines = File.ReadAllLines(TestFileRoot).Where(x => !x.StartsWith("#"));
+                    FilesToProcess = justLines.Where(name => File.Exists(name)).Select(x => new FileInfo(x)).ToArray();
+                    ResultsFile = string.Format("XbimRegression_{0:yyyyMMdd-hhmmss}.csv", DateTime.Now);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid source file {0}", TestFileRoot);
+                    return;
+                }
+            }
+            else
             {
                 Console.WriteLine("Invalid model folder {0}", TestFileRoot);
                 return;
             }
 
             Timeout = DefaultTimeout;
-
             CompoundParameter paramType = CompoundParameter.None;
 
-            foreach (string arg in args.Skip(1))
+            var eval = args.Skip(1).ToList();
+			for (int i = 0; i < eval.Count; i++)
             {
-                switch (paramType)
+				string arg = eval[i];
+				switch (paramType)
                 {
                     case CompoundParameter.None:
                         switch (arg.ToLowerInvariant())
                         {
                             case "/singlethread":
                                 MaxThreads = 1;
+                                break;
+                            case "/lowthreadscount":
+                                MaxThreads = Environment.ProcessorCount / 2;
+                                break;
+                            case "/writebreps":
+                            case "/breps":
+                            case "/brep":
+                                WriteBreps = WriteBreps ?? new List<int>();
+                                paramType = CompoundParameter.Breps;
                                 break;
                             case "/timeout":
                                 paramType = CompoundParameter.Timeout;
@@ -58,25 +96,19 @@ namespace XbimRegression
                                 paramType = CompoundParameter.MaxThreads;
                                 break;
                             case "/caching":
-								Console.WriteLine("Caching on.");
                                 Caching = true;
                                 break;
-							case "/writebreps":
-								WriteBreps = true;
-								break;
-							case "/geometryv1":
+                            case "/progress":
+                                ReportProgress = true;
+                                break;
+                            case "/geometryv1":
                                 GeometryV1 = true;
                                 break;
-							case "/progress":
-								Console.WriteLine("Progress reporting on.");
-								Progress = true;
-								break;
-							default:
+                            default:
                                 Console.WriteLine("Skipping un-expected argument '{0}'", arg);
                                 break;
                         }
                         break;
-
                     case CompoundParameter.Timeout:
                         int timeout;
                         if (int.TryParse(arg, out timeout))
@@ -93,17 +125,26 @@ namespace XbimRegression
                         }
                         paramType = CompoundParameter.None;
                         break;
+                    case CompoundParameter.Breps:
+                        int brepv;
+                        if (int.TryParse(arg, out brepv))
+                        {
+                            WriteBreps.Add(brepv);
+                        }
+                        else
+						{
+                            paramType = CompoundParameter.None;
+                            i--;
+                        }
+                        break;
                 }
-                
             }
-
             IsValid = true;
-
         }
 
         private static void WriteSyntax()
         {
-            Console.WriteLine("Syntax: XbimRegression <modelfolder> [/timeout <seconds>]");
+            Console.WriteLine("Syntax: XbimRegression <modelfolder> [/timeout <seconds>] [/maxthreads <number>] [/singlethread] /writebreps [labels]");
         }
 
         /// <summary>
@@ -120,16 +161,16 @@ namespace XbimRegression
         /// Flag indicating if the parameters are valid
         /// </summary>
         public bool IsValid { get; set; }
-
+        public IEnumerable<FileInfo> FilesToProcess { get; private set; } = Enumerable.Empty<FileInfo>();
+        public string ResultsFile { get; }
 
         private enum CompoundParameter
         {
             None,
             Timeout,
             MaxThreads,
-            CachingOn
+            CachingOn,
+            Breps
         };
     }
-
-     
 }

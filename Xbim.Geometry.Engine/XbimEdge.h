@@ -26,19 +26,17 @@ namespace Xbim
 			}
 			void InstanceCleanup();
 #pragma region Initialisation
-			void Init(IIfcCurve^ edge);
-			void Init(IIfcConic^ edge);
-			void Init(IIfcCircle^ edge);
-			void Init(IIfcPolyline^ pline);
-			void Init(IIfcLine^ edge);
-			void Init(IIfcEllipse^ edge);
-			void Init(IIfcBSplineCurve^ bSpline);
-			void Init(IIfcBSplineCurveWithKnots^ bSpline);
-			void Init(IIfcRationalBSplineCurveWithKnots^ bSpline);
-			void Init(IIfcPcurve^ curve);
+			void Init(IIfcCurve^ edge, ILogger^ logger);
+			void Init(IIfcProfileDef^ profile, ILogger^ logger);
+			void Init(IIfcArbitraryClosedProfileDef^ profile, ILogger^ logger);
+			void Init(IIfcArbitraryOpenProfileDef^ profile, ILogger^ logger);
+			void Init(IIfcParameterizedProfileDef^ profile, ILogger^ logger);
+			void Init(IIfcDerivedProfileDef^ profile, ILogger^ logger);
+			void Init(IIfcCenterLineProfileDef^ profile, ILogger^ logger);
+			
 #pragma endregion
-			bool _isLinear;
-			XbimEdge() { _isLinear = false; };
+
+			XbimEdge(){};
 		public:
 			//error messages
 			static String^ GetBuildEdgeErrorMessage(BRepBuilderAPI_EdgeError edgeErr);
@@ -50,21 +48,16 @@ namespace Xbim
 			XbimEdge(IXbimVertex^ edgeStart, IXbimVertex^ edgeEnd);
 			XbimEdge(const TopoDS_Edge& edge);
 			XbimEdge(const TopoDS_Edge& edge, Object^ tag);
-			XbimEdge(IIfcCurve^ edge);
-			XbimEdge(IIfcConic^ edge);
-			XbimEdge(IIfcCircle^ edge);
-			XbimEdge(IIfcLine^ edge);
-			XbimEdge(IIfcEllipse^ edge);
-			XbimEdge(IIfcBSplineCurve^ bSpline);
-			XbimEdge(IIfcBSplineCurveWithKnots^ bSpline);
-			XbimEdge(IIfcRationalBSplineCurveWithKnots^ bSpline);
-			XbimEdge(IIfcPcurve^ pCurve);
+			XbimEdge(IIfcCurve^ edge, ILogger^ logger);
+			XbimEdge(IIfcProfileDef^ profile, ILogger^ logger);
 			XbimEdge(XbimEdge^ edgeCurve, XbimVertex^ start, XbimVertex^ end, double maxTolerance);
-			XbimEdge(const TopoDS_Wire& wire, double tolerance, double angleTolerance);
-			XbimEdge(IIfcCurve^ edgeCurve, XbimVertex^ start, XbimVertex^ end);
+			XbimEdge(const TopoDS_Wire& wire, double tolerance, double angleTolerance, ILogger^ logger);
+			XbimEdge(IIfcCurve^ edgeCurve, XbimVertex^ start, XbimVertex^ end, ILogger^ logger);
 			XbimEdge(XbimVertex^ start, XbimVertex^ midPoint, XbimVertex^ end);
 			XbimEdge(XbimCurve^ curve3D);
-			XbimEdge(XbimCurve2D^ curve2D);
+			XbimEdge(Handle(Geom_Curve) curve3D);
+			XbimEdge(XbimCurve2D^ curve2D, ILogger^ logger);
+			
 #pragma endregion
 
 
@@ -72,8 +65,6 @@ namespace Xbim
 #pragma region operators
 			operator const TopoDS_Edge& () { return *pEdge; }
 			virtual operator const TopoDS_Shape& () override { return *pEdge; }
-			virtual const TopoDS_Shape& AsShape() override { return *pEdge; };
-
 #pragma endregion
 
 #pragma region Equality Overrides
@@ -99,7 +90,6 @@ namespace Xbim
 			virtual IXbimGeometryObject^ Transform(XbimMatrix3D matrix3D) override;
 			virtual IXbimGeometryObject^ TransformShallow(XbimMatrix3D matrix3D)override;
 			virtual property bool IsClosed{bool get(){ return IsValid && pEdge->Closed() == Standard_True; }; }
-			virtual property bool IsLinear {bool get(); }
 #pragma endregion	
 
 #pragma region Properties
@@ -113,14 +103,12 @@ namespace Xbim
 
 			// Inherited via XbimOccShape
 			virtual XbimGeometryObject ^ Moved(IIfcPlacement ^ placement) override;
-			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement) override;
+			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement, ILogger^ logger) override;
 			virtual void Move(TopLoc_Location loc);
 
 			// Inherited via XbimOccShape
 			virtual void Mesh(IXbimMeshReceiver ^ mesh, double precision, double deflection, double angle) override;
-
-			
-};
+		};
 	 
 		ref class XbimBiPolarLinearEdge
 		{
@@ -155,7 +143,7 @@ namespace Xbim
 			{
 				if (refCount > 0)refCount--;
 			}
-			XbimEdge^ TakeEdge(XbimPoint3DWithTolerance^ pA, XbimPoint3DWithTolerance^ pB)
+			XbimEdge^ TakeEdge(XbimPoint3DWithTolerance^ pA)
 			{
 				if (IsEmptyLine) 
 					return nullptr;

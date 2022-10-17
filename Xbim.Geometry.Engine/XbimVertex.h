@@ -70,8 +70,6 @@ namespace Xbim
 
 			operator const TopoDS_Vertex& () { return *pVertex; }
 			virtual operator const TopoDS_Shape& () override { return *pVertex; }
-			virtual const TopoDS_Shape& AsShape() override { return *pVertex; }
-
 			property double Tolerance{double get(){ return IsValid ? BRep_Tool::Tolerance(*pVertex) : 0; }}
 #pragma endregion
 
@@ -85,7 +83,7 @@ namespace Xbim
 			virtual void Move(TopLoc_Location loc);
 
 			// Inherited via XbimOccShape
-			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement) override;
+			virtual XbimGeometryObject ^ Moved(IIfcObjectPlacement ^ objectPlacement, ILogger^ logger) override;
 
 
 			// Inherited via XbimOccShape

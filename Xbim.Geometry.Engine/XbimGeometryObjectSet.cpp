@@ -21,12 +21,37 @@
 #include <ShapeFix_Shape.hxx>
 #include <BRepCheck_Analyzer.hxx>
 #include <ShapeUpgrade_UnifySameDomain.hxx>
+#include <TopTools_ListIteratorOfListOfShape.hxx>
+#include "XbimNativeApi.h"
 using namespace System;
 using namespace System::ComponentModel;
 namespace Xbim
 {
 	namespace Geometry
 	{
+		//
+		//#pragma managed(push,off)
+		//
+		//		bool PerformBoolean(BRepAlgoAPI_BooleanOperation& boolOp)
+		//		{
+		//			bool failed = true;
+		//
+		//			try
+		//			{
+		//				boolOp.Build();
+		//				//failed = pi->TimedOut();				
+		//			}
+		//			catch (const std::exception & exc)
+		//			{
+		//				throw Error(exc.what());
+		//			}
+		//			catch (...)
+		//			{
+		//				throw Error("Unspecified failure");
+		//			}
+		//			return failed;
+		//		}
+		//#pragma managed(pop)
 		XbimGeometryObjectSet::XbimGeometryObjectSet(IEnumerable<IXbimGeometryObject^>^ objects)
 		{
 			geometryObjects = gcnew List<IXbimGeometryObject^>(objects);
@@ -56,7 +81,7 @@ namespace Xbim
 		bool XbimGeometryObjectSet::Sew()
 		{
 			bool sewn = false;
-			for each (IXbimGeometryObject^ geom in geometryObjects)
+			for each (IXbimGeometryObject ^ geom in geometryObjects)
 			{
 				XbimCompound^ comp = dynamic_cast<XbimCompound^>(geom);
 				if (comp != nullptr)
@@ -65,29 +90,29 @@ namespace Xbim
 			return sewn;
 		}
 
-		IXbimGeometryObject ^ XbimGeometryObjectSet::Transformed(IIfcCartesianTransformationOperator ^ transformation)
+		IXbimGeometryObject^ XbimGeometryObjectSet::Transformed(IIfcCartesianTransformationOperator^ transformation)
 		{
 			if (!IsValid) return this;
 			XbimGeometryObjectSet^ result = gcnew XbimGeometryObjectSet();
 			result->Tag = Tag;
-			for each (IXbimGeometryObject^ geometryObject in geometryObjects)
+			for each (IXbimGeometryObject ^ geometryObject in geometryObjects)
 			{
 				XbimOccShape^ occShape = dynamic_cast<XbimOccShape^>(geometryObject);
 				XbimSetObject^ occSet = dynamic_cast<XbimSetObject^>(geometryObject);
 				if (occShape != nullptr)
-					result->Add(occShape->Transformed(transformation));		
+					result->Add(occShape->Transformed(transformation));
 				else if (occSet != nullptr)
-					result->Add(occSet->Transformed(transformation));			
+					result->Add(occSet->Transformed(transformation));
 			}
 			return result;
 		}
 
-		IXbimGeometryObject ^ XbimGeometryObjectSet::Moved(IIfcPlacement ^ placement)
+		IXbimGeometryObject^ XbimGeometryObjectSet::Moved(IIfcPlacement^ placement)
 		{
 			if (!IsValid) return this;
-			XbimGeometryObjectSet^ result = gcnew XbimGeometryObjectSet();	
+			XbimGeometryObjectSet^ result = gcnew XbimGeometryObjectSet();
 			result->Tag = Tag;
-			for each (IXbimGeometryObject^ geometryObject in geometryObjects)
+			for each (IXbimGeometryObject ^ geometryObject in geometryObjects)
 			{
 				XbimOccShape^ occShape = dynamic_cast<XbimOccShape^>(geometryObject);
 				XbimSetObject^ occSet = dynamic_cast<XbimSetObject^>(geometryObject);
@@ -99,26 +124,26 @@ namespace Xbim
 			return result;
 		}
 
-		IXbimGeometryObject ^ XbimGeometryObjectSet::Moved(IIfcObjectPlacement ^ objectPlacement)
+		IXbimGeometryObject^ XbimGeometryObjectSet::Moved(IIfcObjectPlacement^ objectPlacement, ILogger^ logger)
 		{
 			if (!IsValid) return this;
 			XbimGeometryObjectSet^ result = gcnew XbimGeometryObjectSet();
 			result->Tag = Tag;
-			for each (IXbimGeometryObject^ geometryObject in geometryObjects)
+			for each (IXbimGeometryObject ^ geometryObject in geometryObjects)
 			{
 				XbimOccShape^ occShape = dynamic_cast<XbimOccShape^>(geometryObject);
 				XbimSetObject^ occSet = dynamic_cast<XbimSetObject^>(geometryObject);
 				if (occShape != nullptr)
-					result->Add(occShape->Moved(objectPlacement));
+					result->Add(occShape->Moved(objectPlacement, logger));
 				else if (occSet != nullptr)
-					result->Add(occSet->Moved(objectPlacement));
+					result->Add(occSet->Moved(objectPlacement, logger));
 			}
 			return result;
 		}
 
-		void XbimGeometryObjectSet::Mesh(IXbimMeshReceiver ^ mesh, double precision, double deflection, double angle)
+		void XbimGeometryObjectSet::Mesh(IXbimMeshReceiver^ mesh, double precision, double deflection, double angle)
 		{
-			for each (IXbimGeometryObject^ geometryObject  in geometryObjects)
+			for each (IXbimGeometryObject ^ geometryObject  in geometryObjects)
 			{
 				XbimSetObject^ objSet = dynamic_cast<XbimSetObject^>(geometryObject);
 				XbimOccShape^ occObject = dynamic_cast<XbimOccShape^>(geometryObject);
@@ -134,7 +159,7 @@ namespace Xbim
 		IXbimGeometryObject^ XbimGeometryObjectSet::Transform(XbimMatrix3D matrix3D)
 		{
 			List<IXbimGeometryObject^>^ result = gcnew List<IXbimGeometryObject^>(geometryObjects->Count);
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				result->Add(geomObj->Transform(matrix3D));
 			}
@@ -144,7 +169,7 @@ namespace Xbim
 		IXbimGeometryObject^ XbimGeometryObjectSet::TransformShallow(XbimMatrix3D matrix3D)
 		{
 			List<IXbimGeometryObject^>^ result = gcnew List<IXbimGeometryObject^>(geometryObjects->Count);
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				result->Add(((XbimGeometryObject^)geomObj)->TransformShallow(matrix3D));
 			}
@@ -154,7 +179,7 @@ namespace Xbim
 		XbimRect3D XbimGeometryObjectSet::BoundingBox::get()
 		{
 			XbimRect3D result = XbimRect3D::Empty;
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimRect3D bbox = geomObj->BoundingBox;
 				if (result.IsEmpty) result = bbox;
@@ -167,23 +192,23 @@ namespace Xbim
 		IXbimSolidSet^ XbimGeometryObjectSet::Solids::get()
 		{
 			XbimSolidSet^ solids = gcnew XbimSolidSet();
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimOccShape^ occ = dynamic_cast<XbimOccShape^>(geomObj);
 				XbimSolidSet^ ss = dynamic_cast<XbimSolidSet^>(geomObj);
-				if (occ!=nullptr)
+				if (occ != nullptr)
 				{
 					TopTools_IndexedMapOfShape map;
-					TopExp::MapShapes(occ, TopAbs_SOLID, map);					
+					TopExp::MapShapes(occ, TopAbs_SOLID, map);
 					for (int i = 1; i <= map.Extent(); i++)
-						solids->Add(gcnew XbimSolid(TopoDS::Solid(map(i))));					
+						solids->Add(gcnew XbimSolid(TopoDS::Solid(map(i))));
 				}
-				else if (ss!=nullptr)
+				else if (ss != nullptr)
 				{
-					for each (XbimSolid^ solid in ss)
+					for each (XbimSolid ^ solid in ss)
 					{
-						solids->Add(ss);
-					}		
+						solids->Add(solid);
+					}
 				}
 
 			}
@@ -193,7 +218,7 @@ namespace Xbim
 		IXbimShellSet^ XbimGeometryObjectSet::Shells::get()
 		{
 			List<IXbimShell^>^ shells = gcnew List<IXbimShell^>();
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimOccShape^ occ = dynamic_cast<XbimOccShape^>(geomObj);
 				XbimShellSet^ ss = dynamic_cast<XbimShellSet^>(geomObj);
@@ -206,20 +231,20 @@ namespace Xbim
 				}
 				else if (ss != nullptr)
 				{
-					for each (XbimShell^ shell in ss)
+					for each (XbimShell ^ shell in ss)
 					{
 						shells->Add(shell);
 					}
 				}
 			}
 			return gcnew XbimShellSet(shells);
-			
+
 		}
 
 		IXbimFaceSet^ XbimGeometryObjectSet::Faces::get()
 		{
 			List<IXbimFace^>^ faces = gcnew List<IXbimFace^>();
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimOccShape^ occ = dynamic_cast<XbimOccShape^>(geomObj);
 				XbimFaceSet^ fs = dynamic_cast<XbimFaceSet^>(geomObj);
@@ -232,19 +257,19 @@ namespace Xbim
 				}
 				else if (fs != nullptr)
 				{
-					for each (XbimFace^ face in fs)
+					for each (XbimFace ^ face in fs)
 					{
 						faces->Add(face);
 					}
 				}
 			}
-			return gcnew XbimFaceSet(faces);			
+			return gcnew XbimFaceSet(faces);
 		}
 
 		IXbimEdgeSet^ XbimGeometryObjectSet::Edges::get()
 		{
 			List<IXbimEdge^>^ edges = gcnew List<IXbimEdge^>();
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimOccShape^ occ = dynamic_cast<XbimOccShape^>(geomObj);
 				XbimEdgeSet^ es = dynamic_cast<XbimEdgeSet^>(geomObj);
@@ -257,19 +282,19 @@ namespace Xbim
 				}
 				else if (es != nullptr)
 				{
-					for each (XbimEdge^ edge in es)
+					for each (XbimEdge ^ edge in es)
 					{
 						edges->Add(edge);
 					}
 				}
 			}
-			return gcnew XbimEdgeSet(edges);			
+			return gcnew XbimEdgeSet(edges);
 		}
 
 		IXbimVertexSet^ XbimGeometryObjectSet::Vertices::get()
 		{
 			List<IXbimVertex^>^ vertices = gcnew List<IXbimVertex^>();
-			for each (IXbimGeometryObject^ geomObj in geometryObjects)
+			for each (IXbimGeometryObject ^ geomObj in geometryObjects)
 			{
 				XbimOccShape^ occ = dynamic_cast<XbimOccShape^>(geomObj);
 				XbimVertexSet^ vs = dynamic_cast<XbimVertexSet^>(geomObj);
@@ -282,7 +307,7 @@ namespace Xbim
 				}
 				else if (vs != nullptr)
 				{
-					for each (XbimVertex^ vertex in vs)
+					for each (XbimVertex ^ vertex in vs)
 					{
 						vertices->Add(vertex);
 					}
@@ -301,18 +326,18 @@ namespace Xbim
 			builder.MakeShell(shellBeingBuilt);
 			bool hasFacesToProcess = false;
 			bool hasContent = false;
-			for each (IXbimGeometryObject^ iGeom in geomObjects)
-			{			
+			for each (IXbimGeometryObject ^ iGeom in geomObjects)
+			{
 				// four types of geometry are found in the geomObjects
 				XbimShell^ shell = dynamic_cast<XbimShell^>(iGeom);
 				XbimSolid^ solid = dynamic_cast<XbimSolid^>(iGeom);
 				IEnumerable<IXbimGeometryObject^>^ geomSet = dynamic_cast<IEnumerable<IXbimGeometryObject^>^>(iGeom);
 				XbimFace^ face = dynamic_cast<XbimFace^>(iGeom);
-				
+
 				// type 1
 				if (solid != nullptr)
 				{
-					FTol.LimitTolerance(solid, tolerance); 			
+					FTol.LimitTolerance(solid, tolerance);
 					toBeProcessed.Append(solid);
 					hasContent = true;
 				}
@@ -340,7 +365,7 @@ namespace Xbim
 				else if (geomSet != nullptr)
 				{
 					// iteratively trying again
-					if (ParseGeometry(geomSet, toBeProcessed, aBoxes, passThrough, tolerance)) 
+					if (ParseGeometry(geomSet, toBeProcessed, aBoxes, passThrough, tolerance))
 					{
 						hasContent = true;
 					}
@@ -367,28 +392,32 @@ namespace Xbim
 			{
 				hasContent = true;
 				//sew the bits we are going to cut
-				BRepBuilderAPI_Sewing seamstress(tolerance);
-				seamstress.Add(shellBeingBuilt);
-				seamstress.Perform();
-				TopoDS_Shape shape = seamstress.SewedShape();
-			    FTol.LimitTolerance(shape, tolerance);
+
+				TopoDS_Shape shape = shellBeingBuilt;
+				std::string errMsg;
+				if (!XbimNativeApi::SewShape(shape, tolerance, XbimGeometryCreator::BooleanTimeOut, errMsg))
+				{
+					/*String^ err = gcnew String(errMsg.c_str());
+					XbimGeometryCreator::LogWarning(logger, nullptr, "Failed to sew shape: " + err);*/
+				}				
+				FTol.LimitTolerance(shape, tolerance);
 				toBeProcessed.Append(shape);
 			}
 			return hasContent;
 		}
 
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::PerformBoolean(BOPAlgo_Operation bop, IXbimGeometryObject^ geomObject, IXbimSolidSet^ solids, double tolerance)
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::PerformBoolean(BOPAlgo_Operation bop, IXbimGeometryObject^ geomObject, IXbimSolidSet^ solids, double tolerance, ILogger^ logger)
 		{
 
 			List<IXbimGeometryObject^>^ geomObjects = gcnew List<IXbimGeometryObject^>();
 			geomObjects->Add(geomObject);
-			return PerformBoolean(bop, geomObjects, solids, tolerance);
+			return PerformBoolean(bop, geomObjects, solids, tolerance, logger);
 		}
 
 		String^ XbimGeometryObjectSet::ToBRep::get()
 		{
 			std::ostringstream oss;
-			TopoDS_Compound comp = CreateCompound(geometryObjects);					
+			TopoDS_Compound comp = CreateCompound(geometryObjects);
 			BRepTools::Write(comp, oss);
 			return gcnew String(oss.str().c_str());
 		}
@@ -398,26 +427,26 @@ namespace Xbim
 			BRep_Builder builder;
 			TopoDS_Compound bodyCompound;
 			builder.MakeCompound(bodyCompound);
-			for each (IXbimGeometryObject^ gObj in geomObjects)
+			for each (IXbimGeometryObject ^ gObj in geomObjects)
 			{
 				XbimOccShape^ shape = dynamic_cast<XbimOccShape^>(gObj);
 				IEnumerable<IXbimGeometryObject^>^ geomSet = dynamic_cast<IEnumerable<IXbimGeometryObject^>^>(gObj);
 				if (shape != nullptr)
 				{
-					builder.Add(bodyCompound, ((XbimOccShape^)gObj)->AsShape());
+					builder.Add(bodyCompound, (XbimOccShape^)gObj);
 				}
-				else if(geomSet!=nullptr)
+				else if (geomSet != nullptr)
 					builder.Add(bodyCompound, CreateCompound(geomSet));
 			}
 			return bodyCompound;
 		}
 
 
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::PerformBoolean(BOPAlgo_Operation bop, IEnumerable<IXbimGeometryObject^>^ geomObjects, IXbimSolidSet^ solids, double tolerance)
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::PerformBoolean(BOPAlgo_Operation bop, IEnumerable<IXbimGeometryObject^>^ geomObjects, IXbimSolidSet^ solids, double tolerance, ILogger^ logger)
 		{
 			String^ err = "";
-			
-			BRepAlgoAPI_BooleanOperation* pBuilder = nullptr;
+
+			//BRepAlgoAPI_BooleanOperation* pBuilder = nullptr;
 			try
 			{
 				BRep_Builder builder;
@@ -430,191 +459,154 @@ namespace Xbim
 				//we are going to treat shells different from solids by only cutting those faces that intersect the cut
 				TopoDS_Shell toBePassedThrough;
 				TopoDS_Shell facesToCut;
-				
+
 				builder.MakeShell(facesToCut);
 				builder.MakeShell(toBePassedThrough);
 				TopTools_ListOfShape toBeProcessed;
 				TopTools_ListOfShape cuttingObjects;
-				int allBoxCount = 0;
 				Bnd_Array1OfBox allBoxes(1, solids->Count);
 				int i = 1;
 
-				switch (bop) {
-				case BOPAlgo_COMMON:
-					pBuilder = new BRepAlgoAPI_Common();
-					break;
-				case BOPAlgo_FUSE:
-					pBuilder = new BRepAlgoAPI_Fuse();
-					break;
-				case BOPAlgo_CUT:
-					pBuilder = new BRepAlgoAPI_Cut();
-					break;
-				case BOPAlgo_SECTION:
-					pBuilder = new BRepAlgoAPI_Section();
-					break;
-				default:
-					break;
-				}
 				
-
-				for each (XbimSolid^ solid in solids)
+				for each (XbimSolid ^ solid in solids)
 				{
-					if (solid!=nullptr && solid->IsValid)
+					if (solid != nullptr && solid->IsValid)
 					{
 						/*char buff[256];
 						sprintf(buff, "c:\\tmp\\O%d", i);
 						BRepTools::Write(solid, buff);*/
-						
-						// System::Diagnostics::Debug::WriteLine(solid->Volume);
-						
+
 						Bnd_Box box;
 						BRepBndLib::Add(solid, box);
 						allBoxes(i).SetGap(-tolerance * 2); //reduce to only catch faces that are inside tolerance and not sitting on the opening
-						if (solid->Volume <= 0)
+						if (!bodyBox.IsOut(box)) //only try and cut it if it might intersect the body
 						{
-							XbimGeometryCreator::LogWarning(solids, "Boolean operand of zero volume has been ignored.");
-						}
-						else if (!bodyBox.IsOut(box)) //only try and cut it if it might intersect the body
-						{		
-							FTol.LimitTolerance(solid, tolerance);				
+							FTol.LimitTolerance(solid, tolerance);
 							cuttingObjects.Append(solid);
 						}
 						i++;
-					}					
+					}
 				}
-				
+
 				if (cuttingObjects.Extent() == 0)
-				{					
-					//XbimGeometryCreator::LogInfo(solids, "Openings cannot be cut, none intersect with the body shape");
+				{
 					return gcnew XbimGeometryObjectSet(geomObjects);
 				}
 				if (!ParseGeometry(geomObjects, toBeProcessed, allBoxes, toBePassedThrough, tolerance)) //nothing to do so just return what we had
 					return gcnew XbimGeometryObjectSet(geomObjects);
-			
-				pBuilder->SetArguments(toBeProcessed);
-				pBuilder->SetTools(cuttingObjects);		
-				// System::Diagnostics::Debug::WriteLine(cuttingObjects);
-				pBuilder->SetNonDestructive(Standard_True);			
-				if (XbimGeometryCreator::OccFuzzyValue != -1)
-					pBuilder->SetFuzzyValue(XbimGeometryCreator::OccFuzzyValue * tolerance);
-				Handle(XbimProgressIndicator) aPI = new XbimProgressIndicator(XbimGeometryCreator::BooleanTimeOut);				
-				pBuilder->SetProgressIndicator(aPI);
-				pBuilder->Build();
-				aPI->StopTimer();
+
 				
-				if (aPI->TimedOut())
-				{
-					XbimGeometryCreator::LogError(solids, "Boolean operation timed out after {0} seconds. Operation failed, increase timout time in the config file", (int)aPI->ElapsedTime());
-					return XbimGeometryObjectSet::Empty;
-				}
-				if (pBuilder->HasErrors() == Standard_False && !pBuilder->Shape().IsNull())
-				{
-					TopoDS_Compound occCompound;
-					builder.MakeCompound(occCompound);
+				TopoDS_Compound occCompound;
+				builder.MakeCompound(occCompound);
 
-					if (BRepCheck_Analyzer(pBuilder->Shape(), Standard_False).IsValid() == Standard_False)
+				TopTools_ListIteratorOfListOfShape itl(toBeProcessed);
+
+				for (; itl.More(); itl.Next())
+				{
+					int success;
+					try
 					{
-						XbimGeometryCreator::LogError(solids, "Boolean operation result needs fixing.");
-						ShapeFix_Shape shapeFixer(pBuilder->Shape());
-						shapeFixer.SetPrecision(tolerance);
-						shapeFixer.SetMinTolerance(tolerance);
-						shapeFixer.FixFaceTool()->FixIntersectingWiresMode() = Standard_True;
-						shapeFixer.FixFaceTool()->FixOrientationMode() = Standard_True;
-						shapeFixer.FixFaceTool()->FixWireTool()->FixAddCurve3dMode() = Standard_True;
-						shapeFixer.FixFaceTool()->FixWireTool()->FixIntersectingEdgesMode() = Standard_True;
-						if (shapeFixer.Perform())
+						TopoDS_Shape result;
+
+						const TopoDS_Shape& body = itl.Value();
+						success = Xbim::Geometry::DoBoolean(body, cuttingObjects, bop, tolerance, XbimGeometryCreator::FuzzyFactor, result, XbimGeometryCreator::BooleanTimeOut);
+						if (success > 0)
 						{
-							ShapeUpgrade_UnifySameDomain unifier(shapeFixer.Shape());
-							unifier.SetAngularTolerance(0.00174533); //1 tenth of a degree
-							unifier.SetLinearTolerance(tolerance);
-							try
-							{
-								//sometimes unifier crashes
-								unifier.Build();
-								builder.Add(occCompound, unifier.Shape());
-							}
-							catch (...)
-							{
-								//default to what we had
-								builder.Add(occCompound, shapeFixer.Shape());
-							}
+							builder.Add(occCompound, result);
 						}
-						else
-							builder.Add(occCompound, pBuilder->Shape());
+
 					}
-					else
+					catch (...)
 					{
-						builder.Add(occCompound, pBuilder->Shape());
+						success = BOOLEAN_FAIL;
 					}
-					XbimCompound^ compound = gcnew XbimCompound(occCompound, false, tolerance);
-
-					if (bop != BOPAlgo_COMMON) //do not need to add these as they by definition do not intersect
+					String^ msg = "";
+					switch (success)
 					{
-						TopExp_Explorer expl(toBePassedThrough, TopAbs_FACE);
-
-						if (expl.More()) //only add if there are faces to consider
-							compound->Add(gcnew XbimShell(toBePassedThrough));
+					case BOOLEAN_PARTIALSUCCESSBADTOPOLOGY:
+						msg = "Boolean operation has created a shape with invalid BREP Topology. The result may not be correct";
+						break;
+					case BOOLEAN_PARTIALSUCCESSSINGLECUT:
+						msg = "Boolean operation executed as one tool per operation with partial success. The result may not be correct";
+						break;
+					case BOOLEAN_TIMEDOUT:
+						msg = "Boolean operation timed out. No result whas been generated";
+						break;
+					case BOOLEAN_FAIL:
+						msg = "Boolean result could not be computed. Error undetermined";
+						break;
+					default:
+						break;
 					}
-
-					XbimGeometryObjectSet^ geomObjs = gcnew XbimGeometryObjectSet();
-					geomObjs->Add(compound);
-					if (pBuilder != nullptr) delete pBuilder;					
-					return geomObjs;
+					if (!String::IsNullOrWhiteSpace(msg))
+						XbimGeometryCreator::LogWarning(logger, nullptr, msg);
 
 				}
-				else
-					err = "Unspecified Boolean Error";
-				GC::KeepAlive(solids);
-				GC::KeepAlive(geomObjects);
-				err = "Unspecified Error";
+
+
+
+				
+				XbimCompound^ compound = gcnew XbimCompound(occCompound, false, tolerance);
+
+				if (bop != BOPAlgo_COMMON) //do not need to add these as they by definition do not intersect
+				{
+					TopExp_Explorer expl(toBePassedThrough, TopAbs_FACE);
+
+					if (expl.More()) //only add if there are faces to consider
+						compound->Add(gcnew XbimShell(toBePassedThrough));
+				}
+
+				XbimGeometryObjectSet^ geomObjs = gcnew XbimGeometryObjectSet();
+				geomObjs->Add(compound);
+
+				return geomObjs;
+
 			}
 			catch (Standard_Failure e)
-			{				
+			{
 				err = "Standard Failure in Xbim.Geometry.Engine::PerformBoolean";
-			}	
+			}
 			catch (...) //catch all violations
 			{
 				err = "General Exception thrown in Xbim.Geometry.Engine::PerformBoolean";
 			}
-			XbimGeometryCreator::LogInfo(solids, "Boolean Cut failed. " + err);
-			if (pBuilder != nullptr) delete pBuilder;
+			XbimGeometryCreator::LogInfo(logger, solids, "Boolean Cut failed. " + err);
+			//if (pBuilder != nullptr) delete pBuilder;
 			return XbimGeometryObjectSet::Empty;
 		}
 
-		
-
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Cut(IXbimSolidSet^ solids, double tolerance)
-		{						
-			return PerformBoolean(BOPAlgo_CUT, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance);
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Cut(IXbimSolidSet^ solids, double tolerance, ILogger^ logger)
+		{
+			return PerformBoolean(BOPAlgo_CUT, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance, logger);
 		}
 
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Cut(IXbimSolid^ solid, double tolerance)
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Cut(IXbimSolid^ solid, double tolerance, ILogger^ logger)
 		{
 			if (Count == 0) return XbimGeometryObjectSet::Empty;
-			return PerformBoolean(BOPAlgo_CUT, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance);
+			return PerformBoolean(BOPAlgo_CUT, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance, logger);
 		}
-		
 
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Union(IXbimSolidSet^ solids, double tolerance)
+
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Union(IXbimSolidSet^ solids, double tolerance, ILogger^ logger)
 		{
-			return PerformBoolean(BOPAlgo_FUSE, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance);
+			return PerformBoolean(BOPAlgo_FUSE, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance, logger);
 		}
 
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Union(IXbimSolid^ solid, double tolerance)
-		{
-			if (Count == 0) return XbimGeometryObjectSet::Empty;
-			return PerformBoolean(BOPAlgo_FUSE, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance);
-		}
-
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Intersection(IXbimSolidSet^ solids, double tolerance)
-		{
-			return PerformBoolean(BOPAlgo_COMMON, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance);
-		}
-
-		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Intersection(IXbimSolid^ solid, double tolerance)
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Union(IXbimSolid^ solid, double tolerance, ILogger^ logger)
 		{
 			if (Count == 0) return XbimGeometryObjectSet::Empty;
-			return PerformBoolean(BOPAlgo_COMMON, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance);
+			return PerformBoolean(BOPAlgo_FUSE, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance, logger);
+		}
+
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Intersection(IXbimSolidSet^ solids, double tolerance, ILogger^ logger)
+		{
+			return PerformBoolean(BOPAlgo_COMMON, (IEnumerable<IXbimGeometryObject^>^)this, solids, tolerance, logger);
+		}
+
+		IXbimGeometryObjectSet^ XbimGeometryObjectSet::Intersection(IXbimSolid^ solid, double tolerance, ILogger^ logger)
+		{
+			if (Count == 0) return XbimGeometryObjectSet::Empty;
+			return PerformBoolean(BOPAlgo_COMMON, (IEnumerable<IXbimGeometryObject^>^)this, gcnew XbimSolidSet(solid), tolerance, logger);
 		}
 	}
 }

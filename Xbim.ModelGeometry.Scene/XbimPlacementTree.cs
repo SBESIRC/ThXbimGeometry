@@ -24,11 +24,9 @@ namespace Xbim.ModelGeometry.Scene
             if (product.ObjectPlacement is IIfcLocalPlacement)
                 placementTransform = tree[product.ObjectPlacement.EntityLabel];
             else if (product.ObjectPlacement is IIfcGridPlacement)
-                placementTransform = engine.ToMatrix3D((IIfcGridPlacement)product.ObjectPlacement);
+                placementTransform = engine.ToMatrix3D((IIfcGridPlacement)product.ObjectPlacement,null);
             return placementTransform;
         }
-
-        public List<XbimPlacementNode> RootNodes;
 
         /// <summary>
         ///     Builds a placement tree of all ifcLocalPlacements
@@ -40,7 +38,7 @@ namespace Xbim.ModelGeometry.Scene
         /// </param>
         public XbimPlacementTree(IModel model, bool adjustWcs = true)
         {
-            RootNodes = new List<XbimPlacementNode>();
+            var rootNodes = new List<XbimPlacementNode>();
             var localPlacements = model.Instances.OfType<IIfcLocalPlacement>(true).ToList();
             Nodes = new Dictionary<int, XbimPlacementNode>();
             foreach (var placement in localPlacements)
@@ -55,11 +53,11 @@ namespace Xbim.ModelGeometry.Scene
                     xbimPlacementParent.Children.Add(xbimPlacement);
                 }
                 else
-                    RootNodes.Add(Nodes[localPlacement.EntityLabel]);
+                    rootNodes.Add(Nodes[localPlacement.EntityLabel]);
             }
-            if (adjustWcs && RootNodes.Count == 1)
+            if (adjustWcs && rootNodes.Count == 1)
             {
-                var root = RootNodes[0];
+                var root = rootNodes[0];
                 WorldCoordinateSystem = root.Matrix;
                 //make the children parentless
                 foreach (var node in Nodes.Values.Where(node => node.Parent == root)) node.Parent = null;

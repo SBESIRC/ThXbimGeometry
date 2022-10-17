@@ -10,7 +10,7 @@
 #include <BRep_Builder.hxx>
 using System::Runtime::InteropServices::Marshal;
 using namespace System::Threading;
-namespace Xbim
+namespace Xbim 
 {
 	namespace Geometry
 	{
@@ -93,20 +93,12 @@ namespace Xbim
 
 		bool XbimOccWriter::Write(IXbimGeometryObject^ obj, String^ filename)
 		{
-			// todo: occ740
-
-			//if (dynamic_cast<IXbimSolid^>(obj)) 
-			//	return this->Write((IXbimSolid^)obj, filename);
-			//else if (dynamic_cast<IXbimShell^>(obj)) 
-			//	return this->Write((IXbimShell^)obj, filename);
-			//else if (dynamic_cast<IXbimWire^>(obj)) 
-			//	return this->Write((IXbimWire^)obj, filename);
-			//else if (dynamic_cast<IXbimFace^>(obj)) 
-			//	return this->Write((IXbimFace^)obj, filename);
-			//else if (dynamic_cast<IXbimGeometryObjectSet^>(obj)) 
-			//	return this->Write((IXbimGeometryObjectSet^)obj, filename);
-			//else 
-				throw gcnew Exception("Only objects from Xbim.OCC namespace can be written using the Xbim OCC writer");
+			if (dynamic_cast<IXbimSolid^>(obj)) return Write((IXbimSolid^)obj, filename);
+			else if (dynamic_cast<IXbimShell^>(obj)) return Write((IXbimShell^)obj, filename);
+			else if (dynamic_cast<IXbimWire^>(obj)) return Write((IXbimWire^)obj, filename);
+			else if (dynamic_cast<IXbimFace^>(obj)) return Write((IXbimFace^)obj, filename);
+			else if (dynamic_cast<IXbimGeometryObjectSet^>(obj)) return Write((IXbimGeometryObjectSet^)obj, filename);
+			else throw gcnew Exception("Only objects from Xbim.OCC namespace can be written using the Xbim OCC writer");
 			
 		}
 	}
