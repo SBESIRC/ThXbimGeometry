@@ -1173,7 +1173,13 @@ namespace Xbim
 				GeomAPI_ProjectPointOnSurf projector(centre, hsPlane, hs->Model->ModelFactors->Precision);
 				gp_Pnt nearest = projector.NearestPoint();
 				double bounds = 2 * maxExtrusion;
-				double z = hs->AgreementFlag ? -bounds : 0;
+				//double z = hs->AgreementFlag ? -bounds : 0;
+				double z = 0;
+				if (hs->AgreementFlag && ifcPlane->Position->Axis->Z > 0 ||
+                    !hs->AgreementFlag && ifcPlane->Position->Axis->Z < 0)
+					{
+						z = -bounds;
+					{
 				XbimPoint3D corner(-maxExtrusion, -maxExtrusion, z);
 				XbimVector3D size(bounds, bounds, bounds);
 				XbimRect3D rect3D(corner, size);
