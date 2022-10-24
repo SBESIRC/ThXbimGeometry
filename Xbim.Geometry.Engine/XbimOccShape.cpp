@@ -26,6 +26,7 @@
 using namespace System::Threading;
 using namespace System::Collections::Generic;
 using namespace Xbim::Tessellator;
+using namespace LibTessDotNet::Double;
 //
 //IMPLEMENT_STANDARD_HANDLE(XbimProgressIndicator, Message_ProgressIndicator)
 //IMPLEMENT_STANDARD_RTTIEXT(XbimProgressIndicator, Message_ProgressIndicator)
@@ -520,8 +521,8 @@ namespace Xbim
 
 					if (contours->Count > 0)
 					{
-						tess->AddContours(contours, true);
-						tess->Tessellate(Xbim::Tessellator::WindingRule::EvenOdd, Xbim::Tessellator::ElementType::Polygons, 3);
+						TessExtension::AddContours(tess, contours);
+						tess->Tessellate(WindingRule::EvenOdd, ElementType::Polygons, 3, nullptr, Vec3());
 						int numTriangles = tess->ElementCount;
 						triangleCount += numTriangles;
 

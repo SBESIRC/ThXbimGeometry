@@ -71,6 +71,7 @@
 using namespace Xbim::Common;
 using namespace System::Linq;
 using namespace System::Diagnostics;
+using namespace LibTessDotNet::Double;
 
 namespace Xbim
 {

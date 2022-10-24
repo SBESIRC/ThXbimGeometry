@@ -11,7 +11,8 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace Xbim::Ifc4::Interfaces;
 using namespace Xbim::Common::Geometry;
-using namespace Xbim::Tessellator;
+using namespace LibTessDotNet::Double;
+
 namespace Xbim
 {
 	namespace Geometry
