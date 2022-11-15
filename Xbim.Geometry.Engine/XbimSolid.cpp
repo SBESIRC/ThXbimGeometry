@@ -1154,6 +1154,8 @@ namespace Xbim
 
 		void XbimSolid::Init(IIfcHalfSpaceSolid^ hs, double maxExtrusion, XbimPoint3D centroid)
 		{
+			maxExtrusion *= 100;
+
 			if (dynamic_cast<IIfcPolygonalBoundedHalfSpace^>(hs))
 				return Init((IIfcPolygonalBoundedHalfSpace^)hs, maxExtrusion);
 			else if (dynamic_cast<IIfcBoxedHalfSpace^>(hs))
@@ -1173,14 +1175,40 @@ namespace Xbim
 				GeomAPI_ProjectPointOnSurf projector(centre, hsPlane, hs->Model->ModelFactors->Precision);
 				gp_Pnt nearest = projector.NearestPoint();
 				double bounds = 2 * maxExtrusion;
-				//double z = hs->AgreementFlag ? -bounds : 0;
-				double z = 0;
-				if ((hs->AgreementFlag && ifcPlane->Position->Axis->Z > 0) ||
-					(!hs->AgreementFlag && ifcPlane->Position->Axis->Z < 0))
+
+				double x = 0, y = 0, z = 0;
+				if (ifcPlane->Position->Axis->Z > 0.5)
 				{
-					z = -bounds;
+					x = -maxExtrusion;
+					y = -maxExtrusion;
+					if ((hs->AgreementFlag && ifcPlane->Position->Axis->Z > 0) ||
+						(!hs->AgreementFlag && ifcPlane->Position->Axis->Z < 0))
+					{
+						z = -bounds + ifcPlane->Position->Location->Z;
+					}
 				}
-				XbimPoint3D corner(-maxExtrusion, -maxExtrusion, z);
+				else if (ifcPlane->Position->Axis->X > 0.5)
+				{
+					y = -maxExtrusion;
+					z = -maxExtrusion;
+					if ((hs->AgreementFlag && ifcPlane->Position->Axis->X > 0) ||
+						(!hs->AgreementFlag && ifcPlane->Position->Axis->X < 0))
+					{
+						x = -bounds + ifcPlane->Position->Location->X;
+					}
+				}
+				else
+				{
+					x = -maxExtrusion;
+					z = -maxExtrusion;
+					if ((hs->AgreementFlag && ifcPlane->Position->Axis->Y > 0) ||
+						(!hs->AgreementFlag && ifcPlane->Position->Axis->Y < 0))
+					{
+						y = -bounds + ifcPlane->Position->Location->Y;
+					}
+				}
+
+				XbimPoint3D corner(x, y, z);
 				XbimVector3D size(bounds, bounds, bounds);
 				XbimRect3D rect3D(corner, size);
 				Init(rect3D, hs->Model->ModelFactors->Precision);
