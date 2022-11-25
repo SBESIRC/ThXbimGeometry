@@ -1176,8 +1176,8 @@ namespace Xbim
 				gp_Pnt nearest = projector.NearestPoint();
 				double bounds = 2 * maxExtrusion;
 
-				double x = 0, y = 0, z = 0;
-				if (ifcPlane->Position->Axis->Z > 0.5)
+				double x = ifcPlane->Position->Location->X, y = ifcPlane->Position->Location->Y, z = ifcPlane->Position->Location->Z;
+				if (Math::Abs(ifcPlane->Position->Axis->Z) > 0.5)
 				{
 					x = -maxExtrusion;
 					y = -maxExtrusion;
@@ -1187,7 +1187,7 @@ namespace Xbim
 						z = -bounds + ifcPlane->Position->Location->Z;
 					}
 				}
-				else if (ifcPlane->Position->Axis->X > 0.5)
+				else if (Math::Abs(ifcPlane->Position->Axis->X) > 0.5)
 				{
 					y = -maxExtrusion;
 					z = -maxExtrusion;
