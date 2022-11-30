@@ -13,6 +13,8 @@
 #include "BRepCheck_Analyzer.hxx"
 #include "ShapeFix_Shape.hxx"
 #include "ShapeUpgrade_UnifySameDomain.hxx"
+#include <Geom_Plane.hxx>
+#include <GeomAPI_ProjectPointOnSurf.hxx>
 using namespace System;
 using namespace System::Linq;
 
@@ -763,6 +765,29 @@ namespace Xbim
 			IIfcBooleanOperand^ sOp = boolOp->SecondOperand;
 			XbimSolid^ left = gcnew XbimSolid(fOp);
 			XbimSolid^ right = gcnew XbimSolid(sOp);
+
+			IIfcHalfSpaceSolid^ hs = dynamic_cast<IIfcHalfSpaceSolid^>(sOp);
+			IIfcSurface^ surface = (IIfcSurface^)hs->BaseSurface;
+			IIfcPlane^ ifcPlane = dynamic_cast<IIfcPlane^>(surface);
+
+			double x = ifcPlane->Position->Axis->X;
+			double y = ifcPlane->Position->Axis->Y;
+			double z = ifcPlane->Position->Axis->Z;
+
+			//此处按列优先初始化变换矩阵矩阵
+			XbimMatrix3D transMat = XbimMatrix3D( x, y, 0, 0,
+				                                 -y, x, 0, 0,
+				                                  0, 0, 1, 0,
+							                      0, 0, 0, 1);
+			//此处仅考虑绕 Z 轴旋转的处理
+			if (Math::Abs(x) > 0.4 && Math::Abs(y) > 0.4)
+			{
+				right = dynamic_cast<XbimSolid^> (right->Transform(transMat));
+
+				XbimVector3D vec3d;
+				vec3d = XbimVector3D(ifcPlane->Position->Location->X, 0, 0);
+				right->Translate(vec3d);
+			}
 			if (!left->IsValid)
 			{
 				if (boolOp->Operator != IfcBooleanOperator::UNION)

@@ -1152,10 +1152,8 @@ namespace Xbim
 			}
 		}
 
-		void XbimSolid::Init(IIfcHalfSpaceSolid^ hs, double maxExtrusion, XbimPoint3D centroid)
+		void XbimSolid::Init(IIfcHalfSpaceSolid^ hs, double maxExtrusion, XbimPoint3D centroid )
 		{
-			maxExtrusion *= 100;
-
 			if (dynamic_cast<IIfcPolygonalBoundedHalfSpace^>(hs))
 				return Init((IIfcPolygonalBoundedHalfSpace^)hs, maxExtrusion);
 			else if (dynamic_cast<IIfcBoxedHalfSpace^>(hs))
@@ -1177,7 +1175,8 @@ namespace Xbim
 				double bounds = 2 * maxExtrusion;
 
 				double x = ifcPlane->Position->Location->X, y = ifcPlane->Position->Location->Y, z = ifcPlane->Position->Location->Z;
-				if (Math::Abs(ifcPlane->Position->Axis->Z) > 0.5)
+				
+				if (Math::Abs(ifcPlane->Position->Axis->Z) > 0.9)//oxy平面
 				{
 					x = -maxExtrusion;
 					y = -maxExtrusion;
@@ -1187,7 +1186,7 @@ namespace Xbim
 						z = -bounds + ifcPlane->Position->Location->Z;
 					}
 				}
-				else if (Math::Abs(ifcPlane->Position->Axis->X) > 0.5)
+				else if (Math::Abs(ifcPlane->Position->Axis->X) > 0.9)//oyz平面
 				{
 					y = -maxExtrusion;
 					z = -maxExtrusion;
@@ -1197,7 +1196,7 @@ namespace Xbim
 						x = -bounds + ifcPlane->Position->Location->X;
 					}
 				}
-				else
+				else if(Math::Abs(ifcPlane->Position->Axis->Y) > 0.9)//ozx平面
 				{
 					x = -maxExtrusion;
 					z = -maxExtrusion;
@@ -1207,16 +1206,35 @@ namespace Xbim
 						y = -bounds + ifcPlane->Position->Location->Y;
 					}
 				}
+				else
+				{
+					if (Math::Abs(ifcPlane->Position->Axis->X) > 0.4&& 
+						Math::Abs(ifcPlane->Position->Axis->Y) > 0.4)//绕 Z 轴旋转
+					{
+						y = -maxExtrusion;
+						z = -maxExtrusion;
+						x = -bounds;
+					}
+					else//此处是绕 X 或 Y 轴旋转，未做处理，因此保留Xbim原有逻辑，后续有需要再修改 
+					{
+						x = -maxExtrusion;
+						y = -maxExtrusion;
+						z = hs->AgreementFlag ? -bounds : 0;
+					}
+				}
 
 				XbimPoint3D corner(x, y, z);
 				XbimVector3D size(bounds, bounds, bounds);
 				XbimRect3D rect3D(corner, size);
 				Init(rect3D, hs->Model->ModelFactors->Precision);
-				Move(ifcPlane->Position);
-				IIfcCartesianPoint^ cp = ifcPlane->Position->Location;
-				XbimVector3D vec = XbimPoint3D(nearest.X(), nearest.Y(), nearest.Z()) - XbimPoint3D(cp->X,cp->Y,cp->Z);
-				Translate(vec);
-//#endif
+				if(Math::Abs(ifcPlane->Position->Axis->X) < 0.4 ||
+				   Math::Abs(ifcPlane->Position->Axis->Y) < 0.4)//三维的话，0.577的分量模长为1，因此x,y小于0.4默认为不是绕 Z 轴旋转
+				{
+					Move(ifcPlane->Position);
+					IIfcCartesianPoint^ cp = ifcPlane->Position->Location;
+					XbimVector3D vec = XbimPoint3D(nearest.X(), nearest.Y(), nearest.Z()) - XbimPoint3D(cp->X,cp->Y,cp->Z);
+					Translate(vec);
+				}
 			}
 		}
 
@@ -1227,6 +1245,7 @@ namespace Xbim
 			BRepPrimAPI_MakeBox box(gp_Pnt(l.X, l.Y, l.Z), rect3D.SizeX, rect3D.SizeY, rect3D.SizeZ);
 			pSolid = new TopoDS_Solid();
 			*pSolid = TopoDS::Solid(box.Shape());
+			
 			ShapeFix_ShapeTolerance FTol;
 			FTol.SetTolerance(*pSolid,tolerance, TopAbs_VERTEX);
 		}
@@ -1617,6 +1636,28 @@ namespace Xbim
 			XbimSolid^ left = gcnew XbimSolid(solid->FirstOperand);
 			XbimSolid^ right = gcnew XbimSolid(solid->SecondOperand);
 
+			IIfcHalfSpaceSolid^ hs = dynamic_cast<IIfcHalfSpaceSolid^>(solid->SecondOperand);
+			IIfcSurface^ surface = (IIfcSurface^)hs->BaseSurface;
+			IIfcPlane^ ifcPlane = dynamic_cast<IIfcPlane^>(surface);
+
+			double x = ifcPlane->Position->Axis->X;
+			double y = ifcPlane->Position->Axis->Y;
+			double z = ifcPlane->Position->Axis->Z;
+			//此处按列优先初始化变换矩阵矩阵
+			XbimMatrix3D transMat = XbimMatrix3D(x, y, 0, 0,
+				                                -y, x, 0, 0,
+				                                 0, 0, 1, 0,
+				                                 0, 0, 0, 1);
+			//此处仅考虑绕 Z 轴旋转的处理
+			if (Math::Abs(x) > 0.4 && Math::Abs(y) > 0.4)
+			{
+				right = dynamic_cast<XbimSolid^> (right->Transform(transMat));
+
+				XbimVector3D vec3d;
+				vec3d = XbimVector3D(ifcPlane->Position->Location->X, 0, 0);
+				right->Translate(vec3d);
+			}
+
 			if (!left->IsValid)
 			{
 				if(solid->Operator != IfcBooleanOperator::UNION)
@@ -1784,7 +1825,7 @@ namespace Xbim
 			if (sol != nullptr) return Init(sol);
 			IIfcHalfSpaceSolid^ hs = dynamic_cast<IIfcHalfSpaceSolid^>(solid);
 			//TODO use a real halfspace when fixed in opencascade
-			if (hs != nullptr) return Init(hs, hs->Model->ModelFactors->OneMetre * 100, XbimPoint3D(0,0,0)); //take 100 metres as the largest extrusion and 0,0,0 as centre this is arbitrary due to bug in opencascade
+			if (hs != nullptr) return Init(hs, hs->Model->ModelFactors->OneMetre * 1e4, XbimPoint3D(0,0,0)); //take 100 metres as the largest extrusion and 0,0,0 as centre this is arbitrary due to bug in opencascade
 			IIfcBooleanResult^ br = dynamic_cast<IIfcBooleanResult^>(solid);
 			if (br != nullptr) return Init(br); //treat IIfcBooleanResult and IIfcBooleanClippingResult the same			
 			IIfcCsgPrimitive3D^ csg = dynamic_cast<IIfcCsgPrimitive3D^>(solid);
@@ -2069,6 +2110,7 @@ namespace Xbim
 			GC::KeepAlive(this);
 			return gcnew XbimSolid(TopoDS::Solid(gTran.Shape()));
 		}
+
 
 		IXbimGeometryObject^ XbimSolid::TransformShallow(XbimMatrix3D matrix3D)
 		{
@@ -2411,6 +2453,7 @@ namespace Xbim
 			gp_Trsf t;
 			t.SetTranslation(v);
 			pSolid->Move(t);
+			
 		}
 
 		void XbimSolid::Reverse()
