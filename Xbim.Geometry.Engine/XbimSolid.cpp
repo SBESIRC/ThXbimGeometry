@@ -1175,9 +1175,17 @@ namespace Xbim
 				double bounds = 2 * maxExtrusion;
 
 				double x = ifcPlane->Position->Location->X, y = ifcPlane->Position->Location->Y, z = ifcPlane->Position->Location->Z;
-				
-				if (Math::Abs(ifcPlane->Position->Axis->Z) > 0.9)//oxy平面
+				double ax = ifcPlane->Position->Axis->X;
+				double ay = ifcPlane->Position->Axis->Y;
+				double az = ifcPlane->Position->Axis->Z;
+				double norm = Math::Sqrt(ax * ax + ay * ay + az * az);
+				ax = ax / norm;
+				ay = ay / norm;
+				az = az / norm;
+				bool isPlane = false;
+				if (Math::Abs(az) > 0.9&& Math::Abs(ax) < 0.01&& Math::Abs(ay) < 0.01)//oxy平面
 				{
+					isPlane = true;
 					x = -maxExtrusion;
 					y = -maxExtrusion;
 					if ((hs->AgreementFlag && ifcPlane->Position->Axis->Z > 0) ||
@@ -1186,8 +1194,9 @@ namespace Xbim
 						z = -bounds + ifcPlane->Position->Location->Z;
 					}
 				}
-				else if (Math::Abs(ifcPlane->Position->Axis->X) > 0.9)//oyz平面
+				else if (Math::Abs(ax) > 0.9 && Math::Abs(ay) < 0.01 && Math::Abs(az) < 0.01)//oyz平面
 				{
+					isPlane = true;
 					y = -maxExtrusion;
 					z = -maxExtrusion;
 					if ((hs->AgreementFlag && ifcPlane->Position->Axis->X > 0) ||
@@ -1196,8 +1205,9 @@ namespace Xbim
 						x = -bounds + ifcPlane->Position->Location->X;
 					}
 				}
-				else if(Math::Abs(ifcPlane->Position->Axis->Y) > 0.9)//ozx平面
+				else if(Math::Abs(ay) > 0.9 && Math::Abs(az) < 0.01 && Math::Abs(ax) < 0.01)//ozx平面
 				{
+					isPlane = true;
 					x = -maxExtrusion;
 					z = -maxExtrusion;
 					if ((hs->AgreementFlag && ifcPlane->Position->Axis->Y > 0) ||
@@ -1208,27 +1218,25 @@ namespace Xbim
 				}
 				else
 				{
-					if (Math::Abs(ifcPlane->Position->Axis->X) > 0.4&& 
-						Math::Abs(ifcPlane->Position->Axis->Y) > 0.4)//绕 Z 轴旋转
-					{
+					//if (Math::Abs(ax) > 0.1 &&  Math::Abs(ay) > 0.1)//绕 Z 轴旋转
+					//{
 						y = -maxExtrusion;
 						z = -maxExtrusion;
 						x = -bounds;
-					}
-					else//此处是绕 X 或 Y 轴旋转，未做处理，因此保留Xbim原有逻辑，后续有需要再修改 
-					{
-						x = -maxExtrusion;
-						y = -maxExtrusion;
-						z = hs->AgreementFlag ? -bounds : 0;
-					}
+					//}
+					//else//此处是绕 X 或 Y 轴旋转，未做处理，因此保留Xbim原有逻辑，后续有需要再修改 
+					//{
+					//	x = -maxExtrusion;
+					//	y = -maxExtrusion;
+					//	z = hs->AgreementFlag ? -bounds : 0;
+					//}
 				}
 
 				XbimPoint3D corner(x, y, z);
 				XbimVector3D size(bounds, bounds, bounds);
 				XbimRect3D rect3D(corner, size);
 				Init(rect3D, hs->Model->ModelFactors->Precision);
-				if(Math::Abs(ifcPlane->Position->Axis->X) < 0.4 ||
-				   Math::Abs(ifcPlane->Position->Axis->Y) < 0.4)//三维的话，0.577的分量模长为1，因此x,y小于0.4默认为不是绕 Z 轴旋转
+				if(isPlane)//三维的话，0.577的分量模长为1，因此x,y小于0.4默认为不是绕 Z 轴旋转
 				{
 					Move(ifcPlane->Position);
 					IIfcCartesianPoint^ cp = ifcPlane->Position->Location;
@@ -1640,21 +1648,49 @@ namespace Xbim
 			IIfcSurface^ surface = (IIfcSurface^)hs->BaseSurface;
 			IIfcPlane^ ifcPlane = dynamic_cast<IIfcPlane^>(surface);
 
+			//分量归一化
 			double x = ifcPlane->Position->Axis->X;
 			double y = ifcPlane->Position->Axis->Y;
 			double z = ifcPlane->Position->Axis->Z;
-			//此处按列优先初始化变换矩阵矩阵
-			XbimMatrix3D transMat = XbimMatrix3D(x, y, 0, 0,
-				                                -y, x, 0, 0,
-				                                 0, 0, 1, 0,
-				                                 0, 0, 0, 1);
-			//此处仅考虑绕 Z 轴旋转的处理
-			if (Math::Abs(x) > 0.4 && Math::Abs(y) > 0.4)
+			double norm = Math::Sqrt(x * x + y * y + z * z);
+			x = x / norm;
+			y = y / norm;
+			z = z / norm;
+
+			XbimMatrix3D transMat;//此处按列优先初始化变换矩阵矩阵
+			if (Math::Abs(z) < 0.01)//绕 Z 轴
+			{
+				transMat = XbimMatrix3D(x, y, 0, 0,
+					-y, x, 0, 0,
+					0, 0, 1, 0,
+					0, 0, 0, 1);
+			}
+			else if (Math::Abs(y) < 0.01)//绕 Y 轴
+			{
+				transMat = XbimMatrix3D(x, 0, z, 0,
+					0, 1, 0, 0,
+					-z, 0, x, 0,
+					0, 0, 0, 1);
+			}
+			else if (Math::Abs(x) < 0.01)//绕 X 轴
+			{
+				transMat = XbimMatrix3D(1, 0, 0, 0,
+					0, y, z, 0,
+					0, -z, y, 0,
+					0, 0, 0, 1);
+			}
+			else//三个轴都存在分量，此处暂未好的处理方法
+			{
+			}
+
+			if ((Math::Abs(x) > 0.01 && Math::Abs(y) > 0.01) ||//绕 Z 轴旋转的处理
+				(Math::Abs(x) > 0.01 && Math::Abs(z) > 0.01) ||//绕 Y 轴旋转的处理
+				(Math::Abs(y) > 0.01 && Math::Abs(z) > 0.01)) //绕 X 轴旋转的处理
 			{
 				right = dynamic_cast<XbimSolid^> (right->Transform(transMat));
 
 				XbimVector3D vec3d;
-				vec3d = XbimVector3D(ifcPlane->Position->Location->X, 0, 0);
+				vec3d = XbimVector3D(ifcPlane->Position->Location->X, ifcPlane->Position->Location->Y, ifcPlane->Position->Location->Z);
 				right->Translate(vec3d);
 			}
 
