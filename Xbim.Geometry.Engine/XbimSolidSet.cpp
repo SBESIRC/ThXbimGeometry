@@ -767,14 +767,29 @@ namespace Xbim
 			XbimSolid^ right = gcnew XbimSolid(sOp);
 			
 			IIfcHalfSpaceSolid^ hs = dynamic_cast<IIfcHalfSpaceSolid^>(sOp);
-			IIfcSurface^ surface = (IIfcSurface^)hs->BaseSurface;
-			IIfcPlane^ ifcPlane = dynamic_cast<IIfcPlane^>(surface);
+			IIfcPlane^ ifcPlane;
+			XbimVector3D vec3d;
+			double x, y, z;
+			if (hs != nullptr)
+			{
+				IIfcSurface^ surface = (IIfcSurface^)hs->BaseSurface;
+				ifcPlane = dynamic_cast<IIfcPlane^>(surface);
+				x = ifcPlane->Position->Axis->X;
+				y = ifcPlane->Position->Axis->Y;
+				z = ifcPlane->Position->Axis->Z;
+				vec3d = XbimVector3D(ifcPlane->Position->Location->X, ifcPlane->Position->Location->Y, ifcPlane->Position->Location->Z);
+			}
+			else
+			{
+				IIfcExtrudedAreaSolid^ eas = dynamic_cast<IIfcExtrudedAreaSolid^>(sOp);
+				x = eas->Position->Axis->X;
+				y = eas->Position->Axis->Y;
+				z = eas->Position->Axis->Z;
+				vec3d = XbimVector3D(eas->Position->Location->X, eas->Position->Location->Y, eas->Position->Location->Z);
+			}
 
 			//分量归一化
-			double x = ifcPlane->Position->Axis->X;
-			double y = ifcPlane->Position->Axis->Y;
-			double z = ifcPlane->Position->Axis->Z;
-			double norm = Math::Sqrt(x*x + y*y + z*z);
+			double norm = Math::Sqrt(x * x + y * y + z * z);
 			x = x / norm;
 			y = y / norm;
 			z = z / norm;
@@ -782,39 +797,40 @@ namespace Xbim
 			XbimMatrix3D transMat;//此处按列优先初始化变换矩阵矩阵
 			if (Math::Abs(z) < 0.01)//绕 Z 轴
 			{
-				transMat = XbimMatrix3D( x, y, 0, 0,
-					                    -y, x, 0, 0,
-					                     0, 0, 1, 0,
-					                     0, 0, 0, 1);
+				transMat = XbimMatrix3D(
+					x, y, 0, 0,
+					-y, x, 0, 0,
+					0, 0, 1, 0,
+					0, 0, 0, 1);
 			}
 			else if (Math::Abs(y) < 0.01)//绕 Y 轴
 			{
-				transMat = XbimMatrix3D( x, 0, z, 0,
-					                     0, 1, 0, 0,
-					                    -z, 0, x, 0,
-					                     0, 0, 0, 1);
+				transMat = XbimMatrix3D(
+					x, 0, z, 0,
+					0, 1, 0, 0,
+					-z, 0, x, 0,
+					0, 0, 0, 1);
 			}
-			else if(Math::Abs(x) < 0.01)//绕 X 轴
+			else if (Math::Abs(x) < 0.01)//绕 X 轴
 			{
-				transMat = XbimMatrix3D( 1,  0, 0, 0,
-					                     0,  y, z, 0,
-					                     0, -z, y, 0,
-					                     0,  0, 0, 1);
+				transMat = XbimMatrix3D(
+					1, 0, 0, 0,
+					0, y, z, 0,
+					0, -z, y, 0,
+					0, 0, 0, 1);
 			}
 			else//三个轴都存在分量，此处暂未好的处理方法
 			{
 			}
-			
-			if ((Math::Abs(x) > 0.01 && Math::Abs(y) > 0.01)||//绕 Z 轴旋转的处理
-				(Math::Abs(x) > 0.01 && Math::Abs(z) > 0.01)||//绕 Y 轴旋转的处理
+
+			if ((Math::Abs(x) > 0.01 && Math::Abs(y) > 0.01) ||//绕 Z 轴旋转的处理
+				(Math::Abs(x) > 0.01 && Math::Abs(z) > 0.01) ||//绕 Y 轴旋转的处理
 				(Math::Abs(y) > 0.01 && Math::Abs(z) > 0.01)) //绕 X 轴旋转的处理
 			{
 				right = dynamic_cast<XbimSolid^> (right->Transform(transMat));
-
-				XbimVector3D vec3d;
-				vec3d = XbimVector3D(ifcPlane->Position->Location->X, ifcPlane->Position->Location->Y, ifcPlane->Position->Location->Z);
 				right->Translate(vec3d);
 			}
+
 			
 			if (!left->IsValid)
 			{
