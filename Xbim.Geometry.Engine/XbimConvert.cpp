@@ -424,49 +424,24 @@ namespace Xbim
 
 		gp_Trsf XbimConvert::ToTransform(IIfcCartesianTransformationOperator2D^ ct)
 		{
-			gp_Trsf2d m;
+			gp_Trsf m;
 			IIfcDirection^ axis1 = ct->Axis1;
 			IIfcDirection^ axis2 = ct->Axis2;
 			double scale = ct->Scl;
 			IIfcCartesianPoint^ o = ct->LocalOrigin;
-			gp_Mat2d mat = m.HVectorialPart();
-			if (axis1 != nullptr)
-			{
-				XbimVector3D d1(axis1->X, axis1->Y, axis1->Z);
-				d1 = d1.Normalized();
-				mat.SetValue(1, 1, d1.X);
-				mat.SetValue(1, 2, d1.Y);
-				mat.SetValue(2, 1, -d1.Y);
-				mat.SetValue(2, 2, d1.X);
 
-				if (axis2 != nullptr)
-				{
-					XbimVector3D v(-d1.Y, d1.X, 0);
-					double factor = XbimVector3D::DotProduct(XbimVector3D(axis2->X, axis2->Y, axis2->Z), v);
-					if (factor < 0)
-					{
-						mat.SetValue(2, 1, d1.Y);
-						mat.SetValue(2, 2, -d1.X);
-					}
-				}
-			}
-			else
-			{
-				if (axis2 != nullptr)
-				{
-					XbimVector3D d1(axis2->X, axis2->Y, axis2->Z);
-					d1 = d1.Normalized();
-					mat.SetValue(1, 1, d1.Y);
-					mat.SetValue(1, 2, -d1.X);
-					mat.SetValue(2, 1, d1.X);
-					mat.SetValue(2, 2, d1.X);
-				}
-			}
+			gp_Vec v1(1, 0, 0), v2(0, 1, 0);
+			if (axis1 != nullptr)
+				v1.SetXYZ(gp_XYZ(axis1->X, axis1->Y, axis1->Z));
+			if (axis2 != nullptr)
+				v2.SetXYZ(gp_XYZ(axis2->X, axis2->Y, axis2->Z));
+			m.SetValues(v1.X(), v2.X(), 0, 0,
+				v1.Y(), v2.Y(), 0, 0,
+				v1.Z(), v2.Z(), 1, 0);
 
 			m.SetScaleFactor(scale);
-			m.SetTranslationPart(gp_Vec2d(o->X, o->Y));
+			m.SetTranslationPart(gp_Vec(o->X, o->Y,0));
 			return m;
-
 		}
 
 		// Builds a windows Matrix3D from a CartesianTransformationOperator3D
