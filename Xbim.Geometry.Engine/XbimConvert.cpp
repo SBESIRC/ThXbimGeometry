@@ -435,12 +435,10 @@ namespace Xbim
 				v1.SetXYZ(gp_XYZ(axis1->X, axis1->Y, axis1->Z));
 			if (axis2 != nullptr)
 				v2.SetXYZ(gp_XYZ(axis2->X, axis2->Y, axis2->Z));
-			m.SetValues(v1.X(), v2.X(), 0, 0,
-				v1.Y(), v2.Y(), 0, 0,
+			m.SetValues(v1.X(), v2.X(), 0, o->X,
+				v1.Y(), v2.Y(), 0, o->Y,
 				v1.Z(), v2.Z(), 1, 0);
 
-			m.SetScaleFactor(scale);
-			m.SetTranslationPart(gp_Vec(o->X, o->Y,0));
 			return m;
 		}
 
